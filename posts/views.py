@@ -35,7 +35,7 @@ def list_posts(request, post_type="all"):
         if not posts.exists():
             return render(request, "message.html", {
                 "title": _("Здесь пока ничего нет"),
-                "message": _("Я ещё не добавил посты в этот раздел."),
+                "message": _("Я ещё не добавил посты в этот раздел"),
             })
 
         return render_list(request, post_type, posts)
@@ -43,7 +43,7 @@ def list_posts(request, post_type="all"):
     if not posts.exists():
         return render(request, "message.html", {
             "title": _("Здесь пока ничего нет"),
-            "message": _("Я ещё не опубликовал ни одной записи."),
+            "message": _("Я ещё не опубликовал ни одной записи"),
         })
 
     return render_list_all(request, posts)
