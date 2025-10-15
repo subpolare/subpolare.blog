@@ -71,16 +71,10 @@
                 {% endblock %}
 
                 <div class="footer-warning">
-                    {% trans "Вы можете использовать цитаты из статей, картинки и скриншоты в своих блогах и презентациях, если поставите ссылку на оригинальный пост. Присылайте ссылки на них мне в личку, мне будет приятно посмотреть как моё странное творчество идет в народ. В коммерческих целях ничего использовать нельзя." %}
+                    {% trans "Вы можете использовать цитаты из статей на этом сайте, картинки и что угодно еще в своих рассказах и историях, если поставите ссылку на оригинальный пост. Потом присылайте ссылки на них мне в личку, мне будет приятно. В коммерческих целях ничего использовать нельзя." %}
                 </div>
 
                 <div class="footer-buttons">
-                    {% for lang, text, domain in settings.DOMAIN_LANGUAGE_SELECTOR %}
-                        {% if lang != request.LANGUAGE_CODE %}
-                            <a href="{{ domain }}" class="button button-inverted button-round header-menu-item header-menu-round">{{ text }}</a>
-                        {% endif %}
-                    {% endfor %}
-
                     <label class="theme-switcher button button-inverted button-round header-menu-item header-menu-round" onclick="return toggleTheme(event);" for="checkbox">
                         <input type="checkbox" id="checkbox" />
                         <span class="slider round"></span>
