@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     "rss.apps.RssConfig",
     "inside.apps.InsideConfig",
     "clickers.apps.ClickersConfig",
-    "notifications.apps.NotificationsConfig",
 ]
 
 MIDDLEWARE = [
