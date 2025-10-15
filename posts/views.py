@@ -32,12 +32,21 @@ def list_posts(request, post_type="all"):
             raise Http404()
 
         posts = posts.filter(type=post_type)
-        if not posts:
-            raise Http404()
+        if not posts.exists():
+            return render(request, "message.html", {
+                "title": _("Здесь пока ничего нет"),
+                "message": _("Я ещё не добавил посты в этот раздел."),
+            })
 
         return render_list(request, post_type, posts)
-    else:
-        return render_list_all(request, posts)
+
+    if not posts.exists():
+        return render(request, "message.html", {
+            "title": _("Здесь пока ничего нет"),
+            "message": _("Я ещё не опубликовал ни одной записи."),
+        })
+
+    return render_list_all(request, posts)
 
 
 def show_post(request, post_type, post_slug):
