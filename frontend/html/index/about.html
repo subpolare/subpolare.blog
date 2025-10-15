@@ -1,0 +1,18 @@
+{% load i18n %}
+{% load text_filters %}
+
+<section class="container block index-block-about">
+    <div class="index-block-about-title">
+        <p>
+            {% trans "Привет" %} 👋 {% trans "Я Вастрик!" %}
+        </p>
+    </div>
+
+    <div class="index-block-about-description">
+        {{ strings.INTRO | markdown }}
+    </div>
+
+    <div class="index-block-about-contacts">
+        {% include "common/contacts.html" %}
+    </div>
+</section>

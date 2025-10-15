@@ -1,0 +1,40 @@
+{% load text_filters %}
+{% load posts %}
+{% load i18n %}
+
+<style>
+{% if post.data.headline_title_size %}
+    .sample-headline-title-customize {
+        font-size: {{ post.data.headline_title_size }};
+    }
+{% endif %}
+</style>
+
+<div class="simple-headline">
+    <div class="simple-headline-date dt-published">{{ post.published_at | date:"d E Y" | lower }}</div>
+
+    <div class="sample-headline-title-customize">
+        <div class="simple-headline-title the-title p-name">
+            {% if request.user.is_superuser %}<a href="{% url "edit_post" post.type post.slug %}">✏️</a>{% endif %}
+            {{ post.title | safe }}
+        </div>
+    </div>
+
+    <a rel="author" class="p-author h-card" href="{{ request.scheme }}://{{ request.get_host }}" style="display: none;">{{ strings.AUTHOR }}</a>
+
+    {% if post.subtitle %}
+        <div class="simple-headline-subtitle the-subtitle p-summary">{{ post.subtitle | safe }}</div>
+    {% endif %}
+
+    {% if post.is_members_only %}
+        <div class="post-members-badge">
+            <i class="fas fa-lock-open"></i>&nbsp;&nbsp;&nbsp;{% trans "пост только для своих" %}
+        </div>
+    {% endif %}
+
+    {% if post.image %}
+        <div class="simple-headline-image">
+            <img src="{{ post.main_image }}" alt="" class="the-cover">
+        </div>
+    {% endif %}
+</div>

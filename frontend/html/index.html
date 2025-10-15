@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+
+{% block body %}
+    {% for block in blocks %}
+        {% if block and block.template %}
+            {% include block.template %}
+        {% endif %}
+    {% endfor %}
+{% endblock %}

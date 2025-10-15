@@ -1,0 +1,25 @@
+{% load text_filters %}
+{% load comments %}
+{% load i18n %}
+
+<div class="comments">
+    {% if post.is_commentable or comments|length > 0 %}
+        <span class="header-2 comments-title">{% trans "Комментарии" %} 👇</span>
+    {% endif %}
+
+    <div class="comments-list" id="comments-list">
+        {% for comment in comments|without_inline_comments %}
+            {% include "comments/comment.html" %}
+        {% endfor %}
+    </div>
+</div>
+
+{% if post.is_commentable %}
+    {% if request.user.is_authenticated %}
+        {% include "comments/comment-form.html" %}
+    {% else %}
+        <div class="comments-form-login">
+            <span>{% trans "Комментирование временно недоступно" %}</span>
+        </div>
+    {% endif %}
+{% endif %}

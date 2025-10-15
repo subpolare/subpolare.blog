@@ -1,0 +1,8 @@
+<a href="{% url "click_block" post.slug block %}"
+   class="clicker {% if is_voted %}status-voted{% endif %}"
+   hx-post="{% url "click_block" post.slug block %}"
+   hx-swap="outerHTML"
+>
+    <span class="clicker-votes">{{ votes }}</span>
+    <span class="clicker-text">{{ text }}</span>
+</a>
