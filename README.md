@@ -18,7 +18,7 @@
 
 ## 🏗️ How to build
 
-If you like to build it from scratch:
+If you like to build it from scratch don't forget to create an empty Postgres database or your migrations will fail.
 
 ```
 createdb subpolare
@@ -31,8 +31,6 @@ poetry install
 poetry run python manage.py migrate
 poetry run python manage.py runserver 8000
 ```
-
-Don't forget to create an empty Postgres database called `vas3k_blog` or your migrations will fail.
 
 Another option for those who prefer Docker:
 
