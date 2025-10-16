@@ -1,7 +1,10 @@
 {% load static %}
-<link rel="icon" type="image/png" href="{% static "images/favicon_32.png" %}" sizes="32x32">
-<link rel="icon" type="image/png" href="{% static "images/favicon_64.png" %}" sizes="64x64">
-<link rel="icon" type="image/png" href="{% static "images/favicon_128.png" %}" sizes="128x128">
-<link rel="shortcut icon" type="image/png" href="{% static "images/favicon_square.png" %}">
-<link rel="apple-touch-icon" type="image/png" href="{% static "images/favicon_square.png" %}">
-<link rel="mask-icon" href="{% static "images/favicon_128.png" %}" color="#5954ca">
+{% with v=settings.STYLES_HASH %}
+    <link rel="icon" type="image/x-icon" href="{% static "images/logo.ico" %}?v={{ v }}">
+    <link rel="icon" type="image/png" href="{% static "images/logo_32.png" %}?v={{ v }}" sizes="32x32">
+    <link rel="icon" type="image/png" href="{% static "images/logo_64.png" %}?v={{ v }}" sizes="64x64">
+    <link rel="icon" type="image/png" href="{% static "images/logo_128.png" %}?v={{ v }}" sizes="128x128">
+    <link rel="shortcut icon" type="image/png" href="{% static "images/logo_square.png" %}?v={{ v }}">
+    <link rel="apple-touch-icon" type="image/png" href="{% static "images/logo_square.png" %}?v={{ v }}">
+    <link rel="mask-icon" href="{% static "images/logo_128.png" %}?v={{ v }}" color="#5954ca">
+{% endwith %}

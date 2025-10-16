@@ -3,6 +3,7 @@ from datetime import datetime
 from django.db.models import F
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _, get_language
 
 from comments.models import Comment
@@ -13,14 +14,30 @@ from vas3k_blog.posts import POST_TYPES
 
 
 def index(request):
+    toples_posts = list(
+        Post.visible_objects()
+        .filter(type="toples", is_visible_on_home_page=True)
+        .order_by("-published_at")[:3]
+    )
+
+    blocks = []
+
+    if toples_posts:
+        blocks.append({
+            "title": _("ТОПЛЕС"),
+            "template": "index/toples.html",
+            "posts": toples_posts,
+            "url": reverse("list_posts", args=("toples",)),
+        })
+
+    blocks.append({
+        "title": _("Обо мне"),
+        "template": "index/about.html",
+        "posts": [],
+    })
+
     return render(request, "index.html", {
-        "blocks": [
-            {
-                "title": _("Обо мне"),
-                "template": "index/about.html",
-                "posts": [],
-            },
-        ],
+        "blocks": blocks,
     })
 
 

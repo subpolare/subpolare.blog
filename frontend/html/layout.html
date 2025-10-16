@@ -16,14 +16,14 @@
             <meta property="og:title" content="{{ strings.TITLE }}">
             <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}">
             <meta property="og:type" content="website">
-            <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}/{% static "images/favicon_128.png" %}">
+            <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}/{% static "images/logo_128.png" %}">
             <meta property="og:description" content="{{ strings.DESCRIPTION }}">
 
             <meta name="twitter:card" content="summary_large_image">
             <meta name="twitter:title" content="{{ strings.TITLE }}">
             <meta name="twitter:description" content="{{ strings.DESCRIPTION }}">
-            <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}/{% static "images/favicon_128.png" %}">
-            <meta name="twitter:image:src" content="{{ request.scheme }}://{{ request.get_host }}/{% static "images/favicon_128.png" %}">
+            <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}/{% static "images/logo_128.png" %}">
+            <meta name="twitter:image:src" content="{{ request.scheme }}://{{ request.get_host }}/{% static "images/logo_128.png" %}">
         {% endblock %}
         {% include "common/rss.html" %}
         {% include "common/favicon.html" %}
@@ -55,7 +55,7 @@
                 {% block footer_contacts %}
                     <div class="contacts">
                         <div>{% trans "Для связи" %} &rarr;</div>
-                        <a href="{% trans "mailto:me@vas3k.ru" %}" class="contacts-item" target="_blank" rel="me">
+                        <a href="{% trans "mailto:nachatoi@list.ru" %}" class="contacts-item" target="_blank" rel="me">
                             <i class="fas fa-envelope"></i>
                             <span>{% trans "nachatoi@list.ru" %}</span>
                         </a>
