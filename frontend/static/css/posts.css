@@ -749,6 +749,7 @@
     margin-top: 100px;
     background-color: var(--block-bg-color);
     color: var(--text-color);
+    border-radius: var(--block-border-radius);
 }
 
     .post-subscribe-header {
@@ -833,6 +834,7 @@
         flex-wrap: wrap;
         align-items: center;
         justify-content: center;
+        gap: 10px;
     }
 
         .post-subscribe-items a {
