@@ -7,8 +7,7 @@ This is the code base of my blog. I used the [vas3k.blog code](https://github.co
 ## ⚙️ Tech details
 
 **Backend:**
-- Python 3.11+
-- Django 4+
+- Python 3.11+ with Django 4+
 - PostgreSQL
 - [Poetry](https://python-poetry.org/) as a package manager
 
