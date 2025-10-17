@@ -37,7 +37,13 @@ poetry run python manage.py migrate
 poetry run python manage.py runserver 8000
 ```
 
-There is one more option for those who prefer Docker. 
+Then you need to create a superuser to write your posts using http://localhost:8000/godmode 
+
+```
+poetry run python manage.py runserver 8000
+```
+
+Also there is one more option for those who prefer Docker. 
 
 ```
 $ docker-compose up
