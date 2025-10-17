@@ -40,7 +40,7 @@ poetry run python manage.py runserver 8000
 Then you need to create a superuser to write your posts using http://localhost:8000/godmode 
 
 ```
-poetry run python manage.py runserver 8000
+poetry run python manage.py createsuperuser
 ```
 
 Also there is one more option for those who prefer Docker. 
