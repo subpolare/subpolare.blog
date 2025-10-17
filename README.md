@@ -46,5 +46,5 @@ poetry run python manage.py createsuperuser
 Also there is one more option for those who prefer Docker. 
 
 ```
-$ docker-compose up
+docker-compose up
 ```
