@@ -41,13 +41,6 @@ POST_TYPES: dict[str, PostTypeConfig] = {
         list_template="posts/lists/blog.html",
         show_template="posts/full/legacy/gallery.html",
     ),
-    "toples": PostTypeConfig(
-        name="ТОПЛЕС",
-        list_items_per_page=30,
-        card_template="posts/cards/horizontal.html",
-        list_template="posts/lists/blog.html",
-        show_template="posts/full/blog.html",
-    ),
     "inside": PostTypeConfig(
         name="Вастрик.Инсайд",
         list_items_per_page=30,
