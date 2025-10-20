@@ -447,3 +447,13 @@
     border-radius: 0 !important;
 }
 
+
+
+.footer-warning a {
+    color: inherit;
+}
+
+.footer-warning a:hover {
+    color: inherit;
+    text-decoration: underline;
+}
