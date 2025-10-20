@@ -25,7 +25,6 @@ If you like to build it, don't forget to create an empty PostgreSQL database or 
 
 ```
 createdb subpolare
-psql subpolare -c "CREATE ROLE postgres WITH SUPERUSER LOGIN PASSWORD 'postgres';"
 ```
 
 After that use poetry and open http://localhost:8000 to see an empty page.
