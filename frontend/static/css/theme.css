@@ -54,7 +54,7 @@ html, html[theme="light"] {
 }
 
 html[theme="dark"] {
-    --bg-color: #282c35;
+    --bg-color: #222223;
     --opposite-bg-color: #f5f6f8;
 
     --text-color: #DDD;
