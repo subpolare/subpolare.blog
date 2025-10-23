@@ -63,7 +63,11 @@ html[theme="dark"] {
 
     --block-bg-color: #1B1B1C;
     --opposite-block-bg-color: #FFF;
-    --block-shadow: 0px 0px 0px #000;
+    --block-shadow:
+        0 0 0 1px rgba(255,255,255,0.04),
+        0 1px 2px rgba(0,0,0,0.35),
+        0 10px 30px rgba(0,0,0,0.55),
+        0 0 24px rgba(255,255,255,0.03);
     --block-border: solid 1px #FCFDFF;
 
     --card-title-color: #FFF;
