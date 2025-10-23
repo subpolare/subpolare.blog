@@ -38,14 +38,14 @@
                 <img src="{% static "images/donate/sbp.png" %}">
             </div>
             <div class="donate-service-description">
-                <strong>{% trans "СБП / Тиньков (карты РФ)" %}</strong><br>
+                <strong>{% trans "СБП / Сбер (карты РФ)" %}</strong><br>
                 {% trans "Если вы из России, перевод на карту будет проще всего. По клику откроется удобное окошко." %}
 
                 <br><br>
 
                 <span class="donate-service-footer">
                     <span>{% trans "Номер телефона:" %}</span>
-                    <span class="copy-phone" data-num="+79998148883"
+                    <span class="copy-phone" data-num="+79859585501"
                          onclick="
                            navigator.clipboard.writeText(this.dataset.num).then(() => {
                              const icon = this.querySelector('svg');
@@ -58,7 +58,7 @@
                              }, 1500);
                            })
                         ">
-                        <span>+79998148883</span>
+                        <span>+79859585501</span>
                         <svg width="800px" height="800px" viewBox="0 -2 36 36" id="Lager_112" data-name="Lager 112" xmlns="http://www.w3.org/2000/svg">
                             <path id="Path_113" data-name="Path 113" d="M34,0H14a2,2,0,0,0-2,2V8H2a2,2,0,0,0-2,2V30a2,2,0,0,0,2,2H22a2,2,0,0,0,2-2V24H34a2,2,0,0,0,2-2V2A2,2,0,0,0,34,0ZM20,14V27a1,1,0,0,1-1,1H5a1,1,0,0,1-1-1V13a1,1,0,0,1,1-1H19a1,1,0,0,1,1,1ZM32,6V19a1,1,0,0,1-1,1H24V10a2,2,0,0,0-2-2H16V5a1,1,0,0,1,1-1H31a1,1,0,0,1,1,1Z" fill="#161615"/>
                         </svg>
@@ -75,25 +75,25 @@
 
     <div class="block donate-service donate-service-column">
         <div class="donate-service-description">
-            <strong>{% trans "Криптой" %}</strong>
+            <strong>{% trans "Другой вариант — криптой" %}</strong>
         </div>
 
         <div class="donate-service-selector">
             <div class="donate-service-selector-item">
                 <span>{% trans "Биткоин" %}</span>
-                <img src="{% static "images/btc.png" %}" alt="Bitcoin QR code">
+                <img src="{% static "images/donate/btc.png" %}" alt="Bitcoin QR code">
                 <small>bc1qu5m46dq4zdmyye738pqe0wjcxtgmdq20qatm6k</small>
             </div>
 
             <div class="donate-service-selector-item">
                 <span>{% trans "Эфир или USDT" %}</span>
-                <img src="{% static "images/eth.png" %}" alt="ETH/ERC20 QR code">
+                <img src="{% static "images/donate/eth.png" %}" alt="ETH/ERC20 QR code">
                 <small>0x35c0ef9C40568b25520d25235280e73a9bcb0d77</small>
             </div>
 
             <div class="donate-service-selector-item">
                 <span>TON</span>
-                <img src="{% static "images/ton.png" %}" alt="DOT QR code">
+                <img src="{% static "images/donate/ton.png" %}" alt="DOT QR code">
                 <small>UQA3z-5WpahR8o5bJoo11FyWfogpfJgmLgnVNVZ8iXZfUS_6</small>
             </div>
         </div>

@@ -70,8 +70,6 @@
     justify-content: space-between;
     gap: 30px;
     font-size: 120%;
-    width: 95%;
-    max-width: 850px;
     margin: 40px auto;
     box-sizing: border-box;
 }
@@ -81,7 +79,9 @@
     }
 
     .donate-service-image {
-        max-width: 130px;
+        max-width: 150px;
+        align-items: center;
+        display: flex;
     }
 
     .donate-service-description {
@@ -97,7 +97,7 @@
 
     .donate-service-button {
         min-width: 200px;
-        text-align: right;
+        text-align: center;
     }
 
     .donate-service small {
@@ -141,7 +141,7 @@
     transition: background 0.2s;
 }
     .copy-phone:hover {
-        background: #e0e0e0;
+        background: #d6d6d6;
     }
 
     .copy-phone svg {
