@@ -18,7 +18,8 @@ services:
       - .env
     restart: always
     volumes:
-      - .:/app:delegated # enable hot code reload in debug mode
+      - ./static:/app/static
+      - ./media:/app/media
     depends_on:
       - postgres
     ports:
