@@ -9,7 +9,7 @@ from comments.models import Comment
 from posts.forms import PostEditForm
 from posts.models import Post
 from posts.renderers import render_list, render_list_all, render_post
-from vas3k_blog.posts import POST_TYPES
+from subpolare.posts import POST_TYPES
 
 
 def index(request):

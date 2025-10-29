@@ -1,4 +1,4 @@
-import vas3k_blog.strings as strings
+import subpolare.strings as strings
 from django.conf import settings
 
 

@@ -6,7 +6,7 @@ from django.conf import settings
 
 from utils.request import parse_ip_address
 
-log = logging.getLogger("vas3k_blog.access_log")
+log = logging.getLogger("subpolare.access_log")
 
 
 class DomainLocaleMiddleware:

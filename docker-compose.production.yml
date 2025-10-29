@@ -7,7 +7,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - DEBUG=false
-      - POSTGRES_DB=vas3k_blog
+      - POSTGRES_DB=subpolare
       - POSTGRES_USER=vas3k
       - POSTGRES_PASSWORD=vas3k
       - POSTGRES_HOST=postgres
@@ -42,8 +42,8 @@ services:
     environment:
       POSTGRES_USER: vas3k
       POSTGRES_PASSWORD: vas3k
-      POSTGRES_DB: vas3k_blog
+      POSTGRES_DB: subpolare
     volumes:
-      - /home/vas3k/pgdata_vas3k_blog:/var/lib/postgresql/data:rw
+      - /home/vas3k/pgdata_subpolare:/var/lib/postgresql/data:rw
     ports:
       - "127.0.0.1:54324:5432"

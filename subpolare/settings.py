@@ -52,8 +52,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.locale.LocaleMiddleware",
-    "vas3k_blog.middleware.DomainLocaleMiddleware",
-    "vas3k_blog.middleware.RequestLoggingMiddleware",
+    "subpolare.middleware.DomainLocaleMiddleware",
+    "subpolare.middleware.RequestLoggingMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -63,7 +63,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "vas3k_blog.urls"
+ROOT_URLCONF = "subpolare.urls"
 
 TEMPLATES = [
     {
@@ -78,15 +78,15 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.messages.context_processors.messages",
                 "django.contrib.auth.context_processors.auth",
-                "vas3k_blog.context_processors.settings_processor",
-                "vas3k_blog.context_processors.cookies_processor",
-                "vas3k_blog.context_processors.strings_processor",
+                "subpolare.context_processors.settings_processor",
+                "subpolare.context_processors.cookies_processor",
+                "subpolare.context_processors.strings_processor",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = "vas3k_blog.wsgi.application"
+WSGI_APPLICATION = "subpolare.wsgi.application"
 
 LOGGING = {
     "version": 1,
@@ -201,8 +201,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CLUB_BASE_URL = "https://vas3k.club"
 CLUB_OPENID_CONFIG = {
     "name": "club",
-    "client_id": "vas3k_blog",
-    "client_secret": os.getenv("CLUB_OPENID_CONFIG_SECRET") or "vas3k_blog",
+    "client_id": "subpolare",
+    "client_secret": os.getenv("CLUB_OPENID_CONFIG_SECRET") or "subpolare",
     "api_base_url": CLUB_BASE_URL,
     "server_metadata_url": f"{CLUB_BASE_URL}/.well-known/openid-configuration",
     "client_kwargs": {"scope": "openid"},

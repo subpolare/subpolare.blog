@@ -18,23 +18,27 @@
             <span>✏️</span>
             <span>{% trans "Посты" %}</span>
         </a>
-
+        
+        <!--
         {% if request.LANGUAGE_CODE == "ru" %}
             <a href="{% url "list_posts" "world" %}" class="button button-inverted header-menu-item">
                 <span>🌍</span>
                 <span>{% trans "Путешествия" %}</span>
             </a>
         {% endif %}
+        -->
 
         <a href="{% url "subscribe" %}" class="button button-inverted header-menu-item">
             <span>✅</span>
             <span>{% trans "Подписаться" %}</span>
         </a>
 
+        <!--
         <a href="{% url "donate" %}" class="button button-inverted header-menu-item">
             <span>👍</span>
             <span>{% trans "Донат" %}</span>
         </a>
+        -->
 
         <div class="button button-inverted button-round header-menu-item header-menu-round" onclick="return toggleHeaderSearch(event, '#header-search');">
             🔍

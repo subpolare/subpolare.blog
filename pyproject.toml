@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "vas3k_blog"
+name = "subpolare"
 version = "0.1.0"
 description = ""
 authors = ["Vasily Zubarev <me@vas3k.ru>"]

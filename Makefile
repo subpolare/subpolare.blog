@@ -3,7 +3,7 @@
 # Makes shell non-interactive and exit on any error
 .SHELLFLAGS = -ec
 
-PROJECT_NAME=vas3k_blog
+PROJECT_NAME=subpolare
 
 run-dev:  ## Runs dev server locally
 	poetry run python3 manage.py runserver 0.0.0.0:8000
@@ -16,7 +16,7 @@ docker-run-dev:  ## Runs dev server in docker
 docker-run-production:  ## Runs production server in docker
 	cp -r /app/frontend/static /tmp/
 	poetry run python3 manage.py migrate
-	poetry run gunicorn vas3k_blog.asgi:application -w 5 -k uvicorn.workers.UvicornWorker --bind=0.0.0.0:8022 --capture-output --log-level debug --access-logfile - --error-logfile -
+	poetry run gunicorn subpolare.asgi:application -w 5 -k uvicorn.workers.UvicornWorker --bind=0.0.0.0:8022 --capture-output --log-level debug --access-logfile - --error-logfile -
 
 help:  ## Display this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \

@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>subpolare.blog</h1> 
+  <h1>subpolare.ru</h1> 
 </div>
 
 This is the code base of my blog. I used the [vas3k.blog code](https://github.com/vas3k/vas3k.blog/blob/main/vas3k_blog) as a basis and edited it. 

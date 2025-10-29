@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from posts.models import Post
 from django.conf import settings
 
-from vas3k_blog.strings import DESCRIPTION
+from subpolare.strings import DESCRIPTION
 
 
 class FullFeed(Feed):
