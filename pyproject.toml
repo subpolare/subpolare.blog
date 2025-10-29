@@ -2,7 +2,7 @@
 name = "subpolare"
 version = "0.1.0"
 description = ""
-authors = ["Vasily Zubarev <me@vas3k.ru>"]
+authors = ["Vlad Nachatoi <nachatoi@list.ru>"]
 
 [tool.poetry.dependencies]
 python = "^3.12"

@@ -30,7 +30,7 @@ def media_block(md):
     some text
     }}}
 
-    They are custom to vas3k blog
+    They are custom to subpolare blog
     """
     md.block.register("media_block", MEDIA_BLOCK_PATTERN, parse_media_block)
     if md.renderer and md.renderer.NAME == "html":

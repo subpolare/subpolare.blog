@@ -27,7 +27,7 @@ def spoiler(md):
 
     Some text [? spoiler ?] other text
 
-    They are custom to vas3k blog
+    They are custom to subpolare blog
     """
     md.inline.register("spoiler", SPOILER_BLOCK_PATTERN, parse_spoiler_block, before="link")
     if md.renderer and md.renderer.NAME == "html":

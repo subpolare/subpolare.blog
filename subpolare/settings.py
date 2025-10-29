@@ -16,18 +16,14 @@ DEBUG = (os.getenv("DEBUG") != "false")
 ALLOWED_HOSTS = [
     "0.0.0.0",
     "127.0.0.1",
-    "vas3k.blog",
-    "vas3k.ru",
-    "vas3k.com",
-    "vas3k.en",
-    "es.vas3k.blog",
-    "zh.vas3k.blog",
-    "hi.vas3k.blog",
+    "localhost",
+    "subpolare.ru",
+    ".subpolare.ru",
 ]
 INTERNAL_IPS = ["127.0.0.1"]
 
 ADMINS = [
-    ("vas3k", "me@vas3k.ru"),
+    ("subpolare", "me@subpolare.ru"),
 ]
 
 
@@ -161,23 +157,23 @@ LOCALE_PATHS = [
 
 # Domain to language mapping
 DOMAIN_LANGUAGES = {
-    "vas3k.blog": "ru",
-    "vas3k.com": "en",
-    "es.vas3k.blog": "es",
-    "zh.vas3k.blog": "zh",
-    "hi.vas3k.blog": "hi",
+    "subpolare.ru": "ru",
+    "en.subpolare.ru": "en",
+    "es.subpolare.ru": "es",
+    "zh.subpolare.ru": "zh",
+    "hi.subpolare.ru": "hi",
 }
 
 if DEBUG:
     DOMAIN_LANGUAGES = {
-        "vas3k.ru": "ru",
-        "vas3k.en": "en",
+        "localhost": "ru",
+        "127.0.0.1": "ru",
         **DOMAIN_LANGUAGES,
     }
 
 DOMAIN_LANGUAGE_SELECTOR = [
-    ("ru", "RU", "https://vas3k.blog"),
-    ("en", "EN", "https://vas3k.com"),
+    ("ru", "RU", "https://subpolare.ru"),
+    ("en", "EN", "https://en.subpolare.ru"),
 ]
 
 # Static files (CSS, JavaScript, Images)
@@ -198,7 +194,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Auth
 
-CLUB_BASE_URL = "https://vas3k.club"
+CLUB_BASE_URL = "https://club.subpolare.ru"
 CLUB_OPENID_CONFIG = {
     "name": "club",
     "client_id": "subpolare",
@@ -226,7 +222,7 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = True
 
-DEFAULT_FROM_EMAIL = _("Вастрик <inside@inside.vas3k.ru>")
+DEFAULT_FROM_EMAIL = _("Вастрик <inside@inside.subpolare.ru>")
 
 # Telegram
 
@@ -240,16 +236,12 @@ AUTH_USER_MODEL = "users.User"
 SESSION_COOKIE_AGE = 300 * 24 * 60 * 60  # 300 days
 SENTRY_DSN = os.getenv("SENTRY_DSN")
 
-APP_HOST = "vas3k.blog"
-MIRRORS = ["vas3k.ru"]
+APP_HOST = "subpolare.ru"
+MIRRORS = ["www.subpolare.ru"]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://vas3k.blog",
-    "https://*.vas3k.blog",
-    "https://vas3k.ru",
-    "https://*.vas3k.ru",
-    "https://vas3k.com",
-    "https://*.vas3k.com",
+    "https://subpolare.ru",
+    "https://*.subpolare.ru",
 ]
 
 STYLES_HASH = os.getenv("GITHUB_SHA") or str(randint(1, 10000))

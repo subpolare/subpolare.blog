@@ -28,7 +28,7 @@ class FullFeed(Feed):
         return _("Вастрик")
 
     def item_copyright(self):
-        return "vas3k.blog"
+        return "subpolare.ru"
 
     def item_pubdate(self, item):
         return item.created_at

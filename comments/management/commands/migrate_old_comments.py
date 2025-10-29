@@ -30,7 +30,7 @@ class Command(BaseCommand):
                     old_user = dictfetchall(cursor)
                     if old_user:
                         old_user = old_user.pop()
-                        old_user_email = old_user["email"] or old_user["name"] + "@legacy.vas3k.ru"
+                        old_user_email = old_user["email"] or old_user["name"] + "@legacy.subpolare.ru"
                         user, _ = User.objects.get_or_create(
                             email=old_user_email,
                             defaults=dict(

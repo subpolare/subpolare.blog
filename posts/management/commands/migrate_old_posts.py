@@ -88,9 +88,11 @@ def parse_text(row):
         text = row["html"]
 
     if text:
-        text = text.replace("i.vas3k.ru", "i.vas3k.blog")
-        text = text.replace("http://vas3k.ru", "https://vas3k.blog")
-        text = text.replace("https://vas3k.ru", "https://vas3k.blog")
+        text = text.replace("i.vas3k.ru", "i.subpolare.ru")
+        text = text.replace("i.vas3k.blog", "i.subpolare.ru")
+        text = text.replace("http://vas3k.ru", "https://subpolare.ru")
+        text = text.replace("https://vas3k.ru", "https://subpolare.ru")
+        text = text.replace("https://vas3k.blog", "https://subpolare.ru")
 
     return text
 
@@ -107,14 +109,14 @@ def parse_is_raw_html(row):
 
 def parse_image(row):
     if row["image"]:
-        return row["image"].replace("i.vas3k.ru", "i.vas3k.blog").replace("http://", "https://")
+        return row["image"].replace("i.vas3k.ru", "i.subpolare.ru").replace("i.vas3k.blog", "i.subpolare.ru").replace("http://", "https://")
     return None
 
 
 def parse_og_image(row):
     og_image = row["preview_image"] or row["image"]
     if og_image:
-        return og_image.replace("i.vas3k.ru", "i.vas3k.blog").replace("http://", "https://")
+        return og_image.replace("i.vas3k.ru", "i.subpolare.ru").replace("i.vas3k.blog", "i.subpolare.ru").replace("http://", "https://")
     return None
 
 

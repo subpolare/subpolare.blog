@@ -13,9 +13,9 @@ from common.markdown.epub import markdown_epub
 def generate_epub(story):
     book = epub.EpubBook()
 
-    book.set_identifier("vas3k_ru_{}".format(story.slug))
+    book.set_identifier("subpolare_ru_{}".format(story.slug))
     book.set_language("ru")
-    book.add_author("vas3k.ru")
+    book.add_author("subpolare.ru")
     book.add_metadata('DC', 'description', story.preview_text or story.subtitle)
     if story.subtitle:
         book.set_title("{}. {}".format(story.title, story.subtitle))

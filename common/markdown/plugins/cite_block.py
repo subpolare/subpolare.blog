@@ -25,7 +25,7 @@ def cite_block(md):
 
     % some text
 
-    They are custom to vas3k blog
+    They are custom to subpolare blog
     """
     md.block.register("cite_block", CITE_BLOCK_PATTERN, parse_cite_block)
     if md.renderer and md.renderer.NAME == "html":

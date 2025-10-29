@@ -225,19 +225,19 @@
 
             <div id="my-result-text" class="challenge-result-text"></div>
 
-            <a href="https://twitter.com/intent/tweet?text=Очень%20крутой%20челленж%20у%20@vas3k:%20https%3A%2F%2Fvas3k.ru{{ request.get_full_path | urlencode }}" class="post-footer__button" style="border-color: #1da1f2; color: #1da1f2;">
+            <a href="https://twitter.com/intent/tweet?text=Очень%20крутой%20челленж%20у%20@subpolare:%20https%3A%2F%2Fsubpolare.ru{{ request.get_full_path | urlencode }}" class="post-footer__button" style="border-color: #1da1f2; color: #1da1f2;">
                 <i class="fa fa-twitter"></i>&nbsp;Твитнуть
             </a>
 
-            <a href="https://vk.com/share.php?url=https%3A%2F%2Fvas3k.ru{{ request.get_full_path | urlencode }}" class="post-footer__button" style="border-color: #45668e; color: #45668e;">
+            <a href="https://vk.com/share.php?url=https%3A%2F%2Fsubpolare.ru{{ request.get_full_path | urlencode }}" class="post-footer__button" style="border-color: #45668e; color: #45668e;">
                 <i class="fa fa-vk"></i>&nbsp;Поделиться
             </a>
 
-            <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fvas3k.ru{{ request.get_full_path | urlencode }}" class="post-footer__button" style="border-color: #3b5998; color: #3b5998;">
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fsubpolare.ru{{ request.get_full_path | urlencode }}" class="post-footer__button" style="border-color: #3b5998; color: #3b5998;">
                 <i class="fa fa-facebook"></i>&nbsp;Пошарить
             </a>
 
-            <a href="mailto:?subject=Челленж%20vas3k.ru&body=https%3A%2F%2Fvas3k.ru{{ request.get_full_path | urlencode }}" class="post-footer__button" style="border-color: #0088cc; color: #0088cc;">
+            <a href="mailto:?subject=Челленж%20subpolare.ru&body=https%3A%2F%2Fsubpolare.ru{{ request.get_full_path | urlencode }}" class="post-footer__button" style="border-color: #0088cc; color: #0088cc;">
                 <i class="fa fa-envelope"></i>&nbsp;На почту
             </a>
 
@@ -273,7 +273,7 @@
         $("#challenge-question-1").fadeIn();
         $('html,body').scrollTop(0);
         current_question = 1;
-        goal("ru.vas3k.challenge.start");
+        goal("ru.subpolare.challenge.start");
     }
 
     function check_answer() {
@@ -295,11 +295,11 @@
             setTimeout(function() {
                 next_question();
             }, 600);
-            goal("ru.vas3k.challenge." + current_question + ".ok");
+            goal("ru.subpolare.challenge." + current_question + ".ok");
         } else {
             $input.removeClass("correct").addClass("incorrect");
             $input.before("<span class='challenge-result incorrect'>Неа :(</span>");
-            goal("ru.vas3k.challenge." + current_question + ".fail");
+            goal("ru.subpolare.challenge." + current_question + ".fail");
         }
     }
 
@@ -329,7 +329,7 @@
             $("#my-result-text").html("Ну, такооооое... Самому-то не стыдно?");
         }
         $(".challenge-results").fadeIn();
-        goal("ru.vas3k.challenge.results");
+        goal("ru.subpolare.challenge.results");
     }
 </script>
 {% endblock %}
