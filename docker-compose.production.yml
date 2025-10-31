@@ -38,20 +38,6 @@ services:
         max-size: "100M"
         max-file: "3"
 
-  caddy:
-    image: caddy:2
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./etc/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - static:/srv/www/static
-      - media:/srv/www/media
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - blog_app
-
   postgres:
     image: postgres:15
     container_name: blog_postgres
