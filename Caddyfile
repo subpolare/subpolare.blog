@@ -9,5 +9,5 @@ www.subpolare.ru {
 
 subpolare.ru {
     encode zstd gzip
-    reverse_proxy web:8000
+    reverse_proxy blog_app:8000
 }
