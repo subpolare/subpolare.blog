@@ -52,11 +52,14 @@ docker compose -f docker-compose.production.yml up -d
 # Check that everything is alright
 docker compose -f docker-compose.production.yml ps
 
+# 
 docker compose -f docker-compose.production.yml exec blog_app python3 manage.py migrate
 docker compose -f docker-compose.production.yml exec blog_app python3 manage.py collectstatic --noinput
 
 # Create superuser 
 docker compose -f docker-compose.production.yml exec blog_app python3 manage.py createsuperuser
 
-
+# 
+docker compose -f docker-compose.production.yml -f docker-compose.tls.yml up -d
+docker compose -f docker-compose.production.yml -f docker-compose.tls.yml logs -f caddy
 ```
