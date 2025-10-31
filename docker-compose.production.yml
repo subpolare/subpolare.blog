@@ -38,6 +38,29 @@ services:
         max-size: "100M"
         max-file: "3"
 
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: blog_nginx
+    restart: always
+    depends_on:
+      - blog_app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - static:/var/www/static:ro
+      - media:/var/www/media:ro
+      - ./etc/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./etc/nginx/snippets:/etc/nginx/snippets:ro
+      - ./etc/nginx/docker-entrypoint.sh:/docker-entrypoint.d/10-selfsigned.sh:ro
+      - ./etc/certbot/www:/var/www/certbot
+      - ./etc/letsencrypt:/etc/letsencrypt
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50M"
+        max-file: "3"
+
   postgres:
     image: postgres:15
     container_name: blog_postgres
@@ -50,3 +73,33 @@ services:
       - /home/subpolare/pgdata_subpolare:/var/lib/postgresql/data:rw
     ports:
       - "127.0.0.1:54324:5432"
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: blog_certbot
+    restart: unless-stopped
+    depends_on:
+      - nginx
+    volumes:
+      - ./etc/letsencrypt:/etc/letsencrypt
+      - ./etc/certbot/www:/var/www/certbot
+    entrypoint: >-
+      /bin/sh -c "trap 'exit 0' TERM INT; \
+      if [ ! -f /etc/letsencrypt/live/supolare.ru/fullchain.pem ]; then \
+        certbot certonly --webroot \
+          --webroot-path /var/www/certbot \
+          --email nachatoi@list.ru \
+          --agree-tos \
+          --no-eff-email \
+          --non-interactive \
+          -d supolare.ru \
+          -d www.supolare.ru; \
+      fi; \
+      while :; do \
+        certbot renew --webroot --webroot-path /var/www/certbot --quiet; \
+        sleep 12h & wait $!; \
+      done"
+
+volumes:
+  static:
+  media:
