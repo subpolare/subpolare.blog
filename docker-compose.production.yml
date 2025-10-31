@@ -1,8 +1,10 @@
-version: "3"
 services:
   blog_app:
     command: make docker-run-production
     container_name: blog_app
+    build: 
+      context: .
+      dockerfile: Dockerfile
     environment:
       - PYTHONUNBUFFERED=1
       - DEBUG=false
