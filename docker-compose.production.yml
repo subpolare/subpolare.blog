@@ -1,17 +1,16 @@
 version: "3"
 services:
   blog_app:
-    image: ghcr.io/vas3k/blog:${GITHUB_SHA:-latest}
     command: make docker-run-production
     container_name: blog_app
     environment:
       - PYTHONUNBUFFERED=1
       - DEBUG=false
       - POSTGRES_DB=subpolare
-      - POSTGRES_USER=vas3k
-      - POSTGRES_PASSWORD=vas3k
+      - POSTGRES_USER=subpolare
+      - POSTGRES_PASSWORD=subpolare
       - POSTGRES_HOST=postgres
-      - TELEGRAM_TOKEN  # values below come from .env
+      - TELEGRAM_TOKEN
       - TELEGRAM_MAIN_CHAT_ID
       - SENTRY_DSN
       - PATREON_CLIENT_ID
@@ -40,10 +39,10 @@ services:
     container_name: blog_postgres
     restart: always
     environment:
-      POSTGRES_USER: vas3k
-      POSTGRES_PASSWORD: vas3k
+      POSTGRES_USER: subpolare
+      POSTGRES_PASSWORD: subpolare
       POSTGRES_DB: subpolare
     volumes:
-      - /home/vas3k/pgdata_subpolare:/var/lib/postgresql/data:rw
+      - /home/subpolare/pgdata_subpolare:/var/lib/postgresql/data:rw
     ports:
       - "127.0.0.1:54324:5432"
