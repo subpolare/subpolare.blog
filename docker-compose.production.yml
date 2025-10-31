@@ -83,22 +83,8 @@ services:
     volumes:
       - ./etc/letsencrypt:/etc/letsencrypt
       - ./etc/certbot/www:/var/www/certbot
-    entrypoint: >-
-      /bin/sh -c "trap 'exit 0' TERM INT; \
-      if [ ! -f /etc/letsencrypt/live/supolare.ru/fullchain.pem ]; then \
-        certbot certonly --webroot \
-          --webroot-path /var/www/certbot \
-          --email nachatoi@list.ru \
-          --agree-tos \
-          --no-eff-email \
-          --non-interactive \
-          -d supolare.ru \
-          -d www.supolare.ru; \
-      fi; \
-      while :; do \
-        certbot renew --webroot --webroot-path /var/www/certbot --quiet; \
-        sleep 12h & wait $!; \
-      done"
+      - ./etc/certbot/run.sh:/opt/certbot/run.sh:ro
+    entrypoint: ["/opt/certbot/run.sh"]
 
 volumes:
   static:
