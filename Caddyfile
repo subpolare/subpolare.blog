@@ -1,0 +1,13 @@
+{
+    email nachatoi@list.ru
+    admin off
+}
+
+www.subpolare.ru {
+    redir https://subpolare.ru{uri}
+}
+
+subpolare.ru {
+    encode zstd gzip
+    reverse_proxy web:8000
+}

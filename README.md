@@ -45,7 +45,18 @@ poetry run python manage.py createsuperuser
 Also there is one more option for those who prefer Docker. 
 
 ```
-cd /srv/subpolare.blog
-export COMPOSE_FILE=docker-compose.production.yml
-docker compose up -d --build
+# Create container with the blog 
+docker compose -f docker-compose.production.yml build
+docker compose -f docker-compose.production.yml up -d
+
+# Check that everything is alright
+docker compose -f docker-compose.production.yml ps
+
+docker compose -f docker-compose.production.yml exec blog_app python3 manage.py migrate
+docker compose -f docker-compose.production.yml exec blog_app python3 manage.py collectstatic --noinput
+
+# Create superuser 
+docker compose -f docker-compose.production.yml exec blog_app python3 manage.py createsuperuser
+
+
 ```
