@@ -45,5 +45,7 @@ poetry run python manage.py createsuperuser
 Also there is one more option for those who prefer Docker. 
 
 ```
-
+cd /srv/subpolare.blog
+export COMPOSE_FILE=docker-compose.production.yml
+docker compose up -d --build
 ```
