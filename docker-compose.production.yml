@@ -1,5 +1,8 @@
 services:
   blog_app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
     command: make docker-run-production
     container_name: blog_app
     environment:
