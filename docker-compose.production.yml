@@ -83,7 +83,8 @@ services:
       - ./etc/letsencrypt:/etc/letsencrypt
       - ./etc/certbot/www:/var/www/certbot
       - ./etc/certbot/run.sh:/opt/certbot/run.sh:ro
-    entrypoint: ["/opt/certbot/run.sh"]
+    entrypoint: ["/bin/sh","-lc"]
+    command: "sh /opt/certbot/run.sh"
 
 volumes:
   static:

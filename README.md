@@ -45,11 +45,9 @@ poetry run python manage.py createsuperuser
 Also there is one more option for those who prefer Docker. 
 
 ```
-# Create container with the blog 
 docker compose -f docker-compose.production.yml build
 docker compose -f docker-compose.production.yml up -d
 
-# Check that everything is alright
 docker compose -f docker-compose.production.yml ps
 
 # 
