@@ -1,15 +1,11 @@
 services:
-
   blog_app:
     command: make docker-run-production
     container_name: blog_app
-    build: 
-      context: .
-      dockerfile: Dockerfile
     environment:
       - PYTHONUNBUFFERED=1
       - DEBUG=false
-      - POSTGRES_DB=subpolare
+      - POSTGRES_DB=subpolare_ru
       - POSTGRES_USER=subpolare
       - POSTGRES_PASSWORD=subpolare
       - POSTGRES_HOST=postgres
@@ -26,38 +22,15 @@ services:
       - .env
     restart: always
     volumes:
-      - static:/app/static
-      - media:/app/media
+      - ./frontend/static:/tmp/static
     depends_on:
       - postgres
-    expose:
-      - "8022" 
+    ports:
+      - "127.0.0.1:8022:8022"
     logging:
       driver: "json-file"
       options:
         max-size: "100M"
-        max-file: "3"
-
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: blog_nginx
-    restart: always
-    depends_on:
-      - blog_app
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - static:/var/www/static:ro
-      - media:/var/www/media:ro
-      - ./etc/nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./etc/nginx/snippets:/etc/nginx/snippets:ro
-      - ./etc/certbot/www:/var/www/certbot
-      - ./etc/letsencrypt:/etc/letsencrypt
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "50M"
         max-file: "3"
 
   postgres:
@@ -67,25 +40,8 @@ services:
     environment:
       POSTGRES_USER: subpolare
       POSTGRES_PASSWORD: subpolare
-      POSTGRES_DB: subpolare
+      POSTGRES_DB: subpolare_ru
     volumes:
-      - /home/subpolare/pgdata_subpolare:/var/lib/postgresql/data:rw
+      - /home/subpolare/pgdata_subpolare_ru:/var/lib/postgresql/data:rw
     ports:
       - "127.0.0.1:54324:5432"
-
-  certbot:
-    image: certbot/certbot:latest
-    container_name: blog_certbot
-    restart: unless-stopped
-    depends_on:
-      - nginx
-    volumes:
-      - ./etc/letsencrypt:/etc/letsencrypt
-      - ./etc/certbot/www:/var/www/certbot
-      - ./etc/certbot/run.sh:/opt/certbot/run.sh:ro
-    entrypoint: ["/bin/sh","-lc"]
-    command: "sh /opt/certbot/run.sh"
-
-volumes:
-  static:
-  media:
