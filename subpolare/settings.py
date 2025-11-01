@@ -180,8 +180,7 @@ DOMAIN_LANGUAGE_SELECTOR = [
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = "static/"
-
-# STATIC_ROOT = BASE_DIR / "frontend/test"
+STATIC_ROOT = BASE_DIR / "frontend/static"
 
 STATICFILES_DIRS = [
     BASE_DIR / "frontend/static",
