@@ -30,8 +30,8 @@ services:
       - media:/app/media
     depends_on:
       - postgres
-    ports:
-      - "127.0.0.1:8022:8022"
+    expose:
+      - "8022" 
     logging:
       driver: "json-file"
       options:
@@ -52,7 +52,6 @@ services:
       - media:/var/www/media:ro
       - ./etc/nginx/conf.d:/etc/nginx/conf.d:ro
       - ./etc/nginx/snippets:/etc/nginx/snippets:ro
-      - ./etc/nginx/docker-entrypoint.sh:/docker-entrypoint.d/10-selfsigned.sh:ro
       - ./etc/certbot/www:/var/www/certbot
       - ./etc/letsencrypt:/etc/letsencrypt
     logging:
