@@ -6,7 +6,7 @@ This is the code base of my blog: https://subpolare.ru
 
 I used the [vas3k.blog code](https://github.com/vas3k/vas3k.blog/blob/main/vas3k_blog) as a basis and edited it. Thank you very much, [vas3k](https://github.com/vas3k). 
 
-☢️ The code is not adapted at all so that someone can take it for themselves. Take it at your own risk and don't be surprised if I did something wrong. 
+☢️ _The code is not adapted at all so that someone can take it for themselves. Take it at your own risk and don't be surprised if I did something wrong._
 
 ## ⚙️ Tech details
 
