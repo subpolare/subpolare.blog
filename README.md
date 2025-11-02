@@ -25,16 +25,18 @@ I used the [vas3k.blog code](https://github.com/vas3k/vas3k.blog/blob/main/vas3k
 
 ## 🌊 How to build
 
-### Local test with `poetry`
+### 1. poetry
 
-If you still decide to run my code, there are two ways. For the test, I recommend using `poetry`. 
+If you still decide to run my code, there are two ways. For the test, I recommend using `poetry`. Fisrt, you need to creat an empty PostgreSQL database. 
 
 ```
-# Create PostgreSQL database manually 
 apt install postgresql 
 createdb subpolare
+```
 
-# Install and run poetry
+Than you can install and run `poetry`. 
+
+```
 pip3 install poetry
 poetry install
 poetry run python3 manage.py migrate
@@ -47,39 +49,30 @@ Now you can open http://localhost:8000 and enjoy your own blog. Don't forget to 
 poetry run python3 manage.py createsuperuser
 ```
 
-### Docker 
+### 2. Docker 
 
 There is another option for those who prefer Docker. 
 
 ```
-# Building the production containers and firing them up
 docker compose -f docker-compose.production.yml build
 docker compose -f docker-compose.production.yml up -d
 
-# Quick check if everything's running smoothly 
-docker compose -f docker-compose.production.yml ps
-
-# Running migrations and collecting static files
 docker compose -f docker-compose.production.yml exec blog_app python3 manage.py migrate
 docker compose -f docker-compose.production.yml exec blog_app python3 manage.py collectstatic --noinput
 
-# Creating the admin user for the blog
 docker compose -f docker-compose.production.yml exec blog_app python3 manage.py createsuperuser
 ```
 
 Now the website on http://localhost:8000 is ready! But in order for the whole world to see it, you need to configure `nginx`. 
 
 ```
-# Updating packages and installing nginx 
 sudo apt update
 sudo apt install -y nginx
 
-# Copying our nginx config, creating symlink and removing default site
 sudo cp /srv/subpolare.blog/etc/nginx/subpolare.ru.conf /etc/nginx/sites-available/subpolare.ru.conf
 sudo ln -s /etc/nginx/sites-available/subpolare.ru.conf /etc/nginx/sites-enabled/subpolare.ru.conf
 sudo rm -f /etc/nginx/sites-enabled/default
 
-# Testing nginx config, enabling autostart and starting the service
 sudo nginx -t
 sudo systemctl enable nginx
 sudo systemctl start nginx
