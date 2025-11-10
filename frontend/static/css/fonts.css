@@ -1,7 +1,7 @@
 @font-face {
     font-family: "Merriweather";
-    src: url("../fonts/Merriweather-Italic.woff2") format("woff2"),
-        url("../fonts/Merriweather-Italic.woff") format("woff");
+    src: url("../fonts/merriweather/Merriweather-Italic.woff2") format("woff2"),
+        url("../fonts/merriweather/Merriweather-Italic.woff") format("woff");
     font-weight: normal;
     font-style: italic;
     font-display: swap;
@@ -9,8 +9,8 @@
 
 @font-face {
     font-family: "Merriweather";
-    src: url("../fonts/Merriweather-Black.woff2") format("woff2"),
-        url("../fonts/Merriweather-Black.woff") format("woff");
+    src: url("../fonts/merriweather/Merriweather-Black.woff2") format("woff2"),
+        url("../fonts/merriweather/Merriweather-Black.woff") format("woff");
     font-weight: 900;
     font-style: normal;
     font-display: swap;
@@ -18,8 +18,8 @@
 
 @font-face {
     font-family: "Merriweather";
-    src: url("../fonts/Merriweather-Bold.woff2") format("woff2"),
-        url("../fonts/Merriweather-Bold.woff") format("woff");
+    src: url("../fonts/merriweather/Merriweather-Bold.woff2") format("woff2"),
+        url("../fonts/merriweather/Merriweather-Bold.woff") format("woff");
     font-weight: bold;
     font-style: normal;
     font-display: swap;
@@ -27,8 +27,8 @@
 
 @font-face {
     font-family: "Merriweather";
-    src: url("../fonts/Merriweather-Light.woff2") format("woff2"),
-        url("../fonts/Merriweather-Light.woff") format("woff");
+    src: url("../fonts/merriweather/Merriweather-Light.woff2") format("woff2"),
+        url("../fonts/merriweather/Merriweather-Light.woff") format("woff");
     font-weight: 300;
     font-style: normal;
     font-display: swap;
@@ -36,8 +36,8 @@
 
 @font-face {
     font-family: "Merriweather";
-    src: url("../fonts/Merriweather-Regular.woff2") format("woff2"),
-        url("../fonts/Merriweather-Regular.woff") format("woff");
+    src: url("../fonts/merriweather/Merriweather-Regular.woff2") format("woff2"),
+        url("../fonts/merriweather/Merriweather-Regular.woff") format("woff");
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -45,7 +45,7 @@
 
 @font-face {
     font-family: "Ubuntu";
-    src: url("../fonts/Ubuntu-Italic.woff2") format("woff2"), url("../fonts/Ubuntu-Italic.woff") format("woff");
+    src: url("../fonts/ubuntu/Ubuntu-Italic.woff2") format("woff2"), url("../fonts/ubuntu/Ubuntu-Italic.woff") format("woff");
     font-weight: normal;
     font-style: italic;
     font-display: swap;
@@ -53,8 +53,8 @@
 
 @font-face {
     font-family: "Ubuntu";
-    src: url("../fonts/Ubuntu-BoldItalic.woff2") format("woff2"),
-        url("../fonts/Ubuntu-BoldItalic.woff") format("woff");
+    src: url("../fonts/ubuntu/Ubuntu-BoldItalic.woff2") format("woff2"),
+        url("../fonts/ubuntu/Ubuntu-BoldItalic.woff") format("woff");
     font-weight: bold;
     font-style: italic;
     font-display: swap;
@@ -62,7 +62,7 @@
 
 @font-face {
     font-family: "Ubuntu";
-    src: url("../fonts/Ubuntu-Medium.woff2") format("woff2"), url("../fonts/Ubuntu-Medium.woff") format("woff");
+    src: url("../fonts/ubuntu/Ubuntu-Medium.woff2") format("woff2"), url("../fonts/ubuntu/Ubuntu-Medium.woff") format("woff");
     font-weight: 500;
     font-style: normal;
     font-display: swap;
@@ -70,7 +70,7 @@
 
 @font-face {
     font-family: "Ubuntu";
-    src: url("../fonts/Ubuntu-Bold.woff2") format("woff2"), url("../fonts/Ubuntu-Bold.woff") format("woff");
+    src: url("../fonts/ubuntu/Ubuntu-Bold.woff2") format("woff2"), url("../fonts/ubuntu/Ubuntu-Bold.woff") format("woff");
     font-weight: bold;
     font-style: normal;
     font-display: swap;
@@ -78,7 +78,7 @@
 
 @font-face {
     font-family: "Ubuntu";
-    src: url("../fonts/Ubuntu-Regular.woff2") format("woff2"), url("../fonts/Ubuntu-Regular.woff") format("woff");
+    src: url("../fonts/ubuntu/Ubuntu-Regular.woff2") format("woff2"), url("../fonts/ubuntu/Ubuntu-Regular.woff") format("woff");
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -86,9 +86,49 @@
 
 @font-face {
     font-family: "Ubuntu";
-    src: url("../fonts/Ubuntu-MediumItalic.woff2") format("woff2"),
-        url("../fonts/Ubuntu-MediumItalic.woff") format("woff");
+    src: url("../fonts/ubuntu/Ubuntu-MediumItalic.woff2") format("woff2"),
+        url("../fonts/ubuntu/Ubuntu-MediumItalic.woff") format("woff");
     font-weight: 500;
     font-style: italic;
     font-display: swap;
+}
+
+@font-face {
+  font-family: "Raleway";
+  src:
+    url("/static/fonts/raleway/Raleway-Regular.woff2") format("woff2"),
+    url("/static/fonts/raleway/Raleway-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Raleway";
+  src:
+    url("/static/fonts/raleway/Raleway-Italic.woff2") format("woff2"),
+    url("/static/fonts/raleway/Raleway-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Raleway";
+  src:
+    url("/static/fonts/raleway/Raleway-Bold.woff2") format("woff2"),
+    url("/static/fonts/raleway/Raleway-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Raleway";
+  src:
+    url("/static/fonts/raleway/Raleway-BoldItalic.woff2") format("woff2"),
+    url("/static/fonts/raleway/Raleway-BoldItalic.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
 }
