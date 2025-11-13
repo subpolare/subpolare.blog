@@ -391,5 +391,5 @@ i.fa, i.fab {
     }
 
         .theme-switcher input:checked + .slider:after {
-            content: "🌙";
+            content: "🌒";
         }

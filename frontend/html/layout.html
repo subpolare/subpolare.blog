@@ -54,7 +54,7 @@
             <footer class="footer">
                 {% block footer_contacts %}
                     <div class="contacts">
-                        <div>{% trans "Для связи" %}</div>
+                        <!--<div>{% trans "Для связи" %}</div>-->
                         <a href="{% trans "mailto:nachatoi@list.ru" %}" class="contacts-item" target="_blank" rel="me">
                             <i class="fas fa-envelope"></i>
                             <span>{% trans "nachatoi@list.ru" %}</span>
@@ -71,8 +71,8 @@
                 {% endblock %}
 
                 <div class="footer-warning">
-                    {% trans "Вы можете использовать цитаты из статей на этом сайте, картинки и что угодно еще в своих рассказах и историях, если поставите ссылку на оригинальный пост. Потом присылайте ссылки на них мне в личку, мне будет приятно. В коммерческих целях ничего использовать нельзя." %}
-                    <br><br>
+                    <!--{% trans "Вы можете использовать цитаты из статей на этом сайте, картинки и что угодно еще в своих рассказах и историях, если поставите ссылку на оригинальный пост. Потом присылайте ссылки на них мне в личку, мне будет приятно. В коммерческих целях ничего использовать нельзя." %}
+                    <br><br>-->
                     <span>
                         {% blocktrans with club='<a href="https://vas3k.club" target="_blank" rel="noopener">vas3k.club</a>'|safe blog='<a href="https://vas3k.blog" target="_blank" rel="noopener">vas3k.blog</a>'|safe %}
                             Дизайн и код основаны на {{ club }} и {{ blog }} — самом ламповом комьюнити и самом душевном блоге. Они и вдохновили меня создать это место.
