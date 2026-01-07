@@ -2,6 +2,14 @@
     display: none;
 }
 
+html[theme="light"] .block-text {
+    box-shadow: var(--block-shadow);
+}
+
+html[theme="dark"] .block-text {
+    box-shadow: var(--block-shadow);
+}
+
 .post {
     width: 100%;
     display: block;
@@ -106,7 +114,7 @@
         width: 95%;
         max-width: 800px;
         min-width: min(300px, 95%);
-        padding-bottom: 1.2em;
+        padding-bottom: 0em;
         font-weight: 400;
         font-style: normal;
         letter-spacing: -0.003em;
@@ -114,7 +122,7 @@
     }
 
         .post li {
-            margin-bottom: 15px;
+            margin-bottom: 8px;
         }
 
     .post figure a {
@@ -243,7 +251,7 @@
     padding: 40px 60px;
     clear: both;
     box-sizing: border-box;
-    border-radius: 30px;
+    border-radius: 40px;
     background-color: var(--block-bg-color);
     color: var(--text-color);
 }
@@ -483,11 +491,11 @@
 .block-quote {
     display: block;
     text-align: center;
-    font-size: 130%;
+    font-size: 110%;
     width: 90%;
     margin: 10px auto;
     font-style: italic;
-    padding: 10px;
+    /* padding: 10px; */
     box-sizing: border-box;
 }
 
@@ -741,15 +749,17 @@
 
 .post-subscribe {
     display: block;
-    width: 100%;
+    max-width: 900px;
+    overflow: visible;
+    width: 90%;
+    margin: 0 auto; 
     padding: 40px;
     font-size: 120%;
     box-sizing: border-box;
     text-align: center;
-    margin-top: 100px;
     background-color: var(--block-bg-color);
     color: var(--text-color);
-    border-radius: var(--block-border-radius);
+    border-radius: 40px;
 }
 
     .post-subscribe-header {
@@ -783,9 +793,6 @@
         background-color: #333;
         text-align: left;
     }
-
-        .post-subscribe-form-label {
-        }
 
         .post-subscribe-form-fields {
             display: flex;

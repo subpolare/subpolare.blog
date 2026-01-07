@@ -114,12 +114,12 @@ h2 + h3,
     }
 
     .block-description {
-        width: 95%;
+        width: 80%;
         font-size: 120%;
         max-width: 800px;
         text-align: center;
         margin: 0 auto;
-        padding: 0 0 70px;
+        padding: 0 0 20px;
         box-sizing: border-box;
     }
 

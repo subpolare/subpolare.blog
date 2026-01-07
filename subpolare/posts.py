@@ -20,6 +20,13 @@ POST_TYPES: dict[str, PostTypeConfig] = {
         list_template="posts/lists/blog.html",
         show_template="posts/full/blog.html",
     ),
+    "years": PostTypeConfig(
+        name="Итоги года",
+        list_items_per_page=10,
+        card_template="posts/cards/horizontal.html",
+        list_template="posts/lists/blog.html",
+        show_template="posts/full/blog.html",
+    ),
     "notes": PostTypeConfig(
         name="Заметки",
         list_items_per_page=50,

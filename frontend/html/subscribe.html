@@ -29,12 +29,15 @@
         </div>
 
         <div class="block-description">
-            {{ strings.SUBSCRIBE }}
+            {{ "Это всего лишь сайт. Поэтому когда выходит новая статья, вам не приходит уведомление. Но если вы хотите знать обо всех новых постах, подпишитесь на мой телеграм-канал." }}
         </div>
 
         <div class="post-subscribe-items">
-            <a href="https://t.me/subpolare_blog" class="button button-blue">{% trans "Телеграм-канал с уведомлениями о постах" %}</a>
-        </div><br><br><br><br>
+            <a href="https://t.me/subpolare_blog" class="button button-blue">
+                <i class="fab fa-telegram"></i>
+                {% trans "Телеграм-канал" %}
+            </a>
+        </div><br><br><br>
     </div>
 </div>
 {% endblock %}

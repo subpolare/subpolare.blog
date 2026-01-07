@@ -67,9 +67,11 @@
     {% endblock %}
 
     {% block comments %}
-        <div class="container">
-            {% include "comments/comment-list.html" %}
-        </div>
+        {% if post.is_commentable or comments|length > 0 %}
+            <div class="container">
+                {% include "comments/comment-list.html" %}
+            </div>
+         {% endif %}
     {% endblock %}
 
     {% block post_related %}

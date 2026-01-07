@@ -23,8 +23,9 @@ def render_text_block(renderer, text, **attrs):
         block_counter = renderer.block_counter
     classes, ids = parse_classes_and_ids(attrs.get("classes") or "")
     return f'<div class="block-text {" ".join(classes)}" id="{" ".join(ids)}">' \
-           f'{text}' \
-           f'<br><br>[commentable {block_counter}]</div>\n'
+        f'{text}</div>\n' # works if there are no comments in blog
+        # f'{text}' \
+        # f'<br><br>[commentable {block_counter}]</div>\n'
 
 
 def text_block(md):
