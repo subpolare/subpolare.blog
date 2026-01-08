@@ -1,5 +1,48 @@
-{% load static %}
-{% load i18n %}
+{% load static %}{% load i18n %}<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <title>{% block title %}{{ strings.TITLE | safe }}{% endblock %}</title>
+        <meta charset="UTF-8">
+        <meta name="description" content="{{ strings.DESCRIPTION }}">
+        <meta name="keywords" content="{{ settings.KEYWORDS }}">
+        <meta name="author" content="{{ strings.AUTHOR }}">
+        <meta name="yandex-verification" content="5f66353ad89fbe6f">
+        <meta name="fediverse:creator" content="@subpolare@mastodon.online">
+        <meta name="google-site-verification" content="B8zgWa65q_o7zEV-YAA3rmgq4AlT-l37W-2nNbDE6pc">
+        <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+        <meta name="format-detection" content="telephone=no">
+        <link rel="canonical" href="https://{{ request.get_host }}{{ request.get_full_path_info }}">
+        {% block meta %}
+            <meta property="og:title" content="{{ strings.TITLE }}">
+            <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}">
+            <meta property="og:type" content="website">
+            <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}/{% static "images/logo_128.png" %}">
+            <meta property="og:description" content="{{ strings.DESCRIPTION }}">
+
+            <meta name="twitter:card" content="summary_large_image">
+            <meta name="twitter:title" content="{{ strings.TITLE }}">
+            <meta name="twitter:description" content="{{ strings.DESCRIPTION }}">
+            <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}/{% static "images/logo_128.png" %}">
+            <meta name="twitter:image:src" content="{{ request.scheme }}://{{ request.get_host }}/{% static "images/logo_128.png" %}">
+        {% endblock %}
+        {% include "common/rss.html" %}
+        {% include "common/favicon.html" %}
+        {% include "common/styles.html" %}
+        {% include "common/scripts.html" %}
+        {% block css %}{% endblock %}
+        <script>
+            const theme = localStorage.getItem('theme') ||
+                  (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('theme', theme);
+
+            htmx.onLoad(function() {
+                const themeSwitch = document.querySelector('.theme-switcher input[type="checkbox"]');
+                if (themeSwitch) {
+                    themeSwitch.checked = (theme === 'dark');
+                }
+            });
+        </script>
+    </head>
 
 <div class="header h-card">
     <a href="{% url "index" %}" class="header-logo u-url">
@@ -38,12 +81,16 @@
             <span>👍</span>
             <span>{% trans "Донат" %}</span>
         </a>
-        -->
-
+        
         <div class="button button-inverted button-round header-menu-item header-menu-round" onclick="return toggleHeaderSearch(event, '#header-search');">
             🔍
         </div>
+        -->
 
+        <label class="theme-switcher button button-inverted button-round header-menu-item header-menu-round" onclick="return toggleTheme(event);" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <span class="slider round"></span>
+        </label>
     </div>
 </div>
 
