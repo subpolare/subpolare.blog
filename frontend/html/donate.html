@@ -28,8 +28,9 @@
         </div>
 
         <div class="block-description">
-            {% trans "Независимые авторы в интернете — вымирающая редкость. Они существуют только благодаря людям, которые их поддерживают. Если вам нравится то, что я делаю, занести мне донат — это лучший способ сказать «спасибо»." %}
-        </div><br><br><br>
+            {% trans "Независимые авторы в интернете — вымирающая редкость. Они существуют только благодаря чужой поддержке. Так что если вам нравится то, что я делаю, занести донат — это лучший способ сказать «спасибо»." %}
+        </div>
+        <br><br><br>
     </div>
 
     {% if request.LANGUAGE_CODE == "ru" %}
@@ -38,34 +39,10 @@
                 <img src="{% static "images/donate/sber.png" %}">
             </div>
             <div class="donate-service-description">
-                <strong>{% trans "СБП на Сбер" %}</strong><br>
+                <br><strong>{% trans "СБП на Сбер" %}</strong><br><br>
                 {% blocktrans with sber='<a href="https://www.sberbank.com/sms/pbpn?requisiteNumber=79859585501" target="_blank" rel="noopener">по ссылке</a>'|safe %}
-                    Можете просто кликнуть {{ sber }}. Но еще есть QR-код и номер телефона, они тоже привязаны к Сберу.
+                    Можете просто кликнуть {{ sber }}. Ещё слева есть QR-код, он тоже привязан к Сберу.
                 {% endblocktrans %}
-
-                <br><br>
-
-                <span class="donate-service-footer">
-                    <span>{% trans "Номер телефона, Сбер:" %}</span>
-                    <span class="copy-phone" data-num="+79859585501"
-                         onclick="
-                           navigator.clipboard.writeText(this.dataset.num).then(() => {
-                             const icon = this.querySelector('svg');
-                             const copied = document.createElement('span');
-                             copied.className = 'copy-phone-copied';
-                             copied.innerText = 'Copied!';
-                             this.replaceChild(copied, icon);
-                             setTimeout(() => {
-                               this.replaceChild(icon, copied);
-                             }, 1500);
-                           })
-                        ">
-                        <span>+79859585501</span>
-                        <svg width="800px" height="800px" viewBox="0 -2 36 36" id="Lager_112" data-name="Lager 112" xmlns="http://www.w3.org/2000/svg">
-                            <path id="Path_113" data-name="Path 113" d="M34,0H14a2,2,0,0,0-2,2V8H2a2,2,0,0,0-2,2V30a2,2,0,0,0,2,2H22a2,2,0,0,0,2-2V24H34a2,2,0,0,0,2-2V2A2,2,0,0,0,34,0ZM20,14V27a1,1,0,0,1-1,1H5a1,1,0,0,1-1-1V13a1,1,0,0,1,1-1H19a1,1,0,0,1,1,1ZM32,6V19a1,1,0,0,1-1,1H24V10a2,2,0,0,0-2-2H16V5a1,1,0,0,1,1-1H31a1,1,0,0,1,1,1Z" fill="#161615"/>
-                        </svg>
-                    </span>
-                </span>
             </div>
             <!--
             <div class="donate-service-button">
