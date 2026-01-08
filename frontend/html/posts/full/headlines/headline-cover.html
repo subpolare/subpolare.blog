@@ -39,7 +39,7 @@
             {% endif %}
             <div class="clearfix10"></div>
             {% if request.LANGUAGE_CODE == "ru" %}
-                <div class="headline-info-date hide-on-iphone dt-published">{{ post.published_at|date:"d E Y"|lower }} — {{ post.comment_count }}&nbsp;{{ post.comment_count|rupluralize:"комментарий,комментария,комментариев" }} — {{ post.view_count }}&nbsp;{{ post.view_count|rupluralize:"просмотр,просмотра,просмотров" }} — {{ post.word_count }}&nbsp;{{ post.word_count|rupluralize:"слово,слова,слов" }}</div>
+                <div class="headline-info-date hide-on-iphone dt-published">{{ post.published_at|date:"d E Y"|lower }}<!-- — {{ post.comment_count }}&nbsp;{{ post.comment_count|rupluralize:"комментарий,комментария,комментариев" }};--> — {{ post.view_count }}&nbsp{{ post.view_count|rupluralize:"просмотр,просмотра,просмотров" }} — {{ post.word_count }}&nbsp;{{ post.word_count|rupluralize:"слово,слова,слов" }}</div>
             {% else %}
                 <div class="headline-info-date hide-on-iphone dt-published">{{ post.published_at|date:"d E Y"|lower }} — {{ post.comment_count }}&nbsp;comments — {{ post.view_count }}&nbsp;views — {{ post.word_count }}&nbsp;words</div>
             {% endif %}
