@@ -1,0 +1,19 @@
+<section class="container">
+    {% if block.title %}
+        <div class="header-1">
+            {{ block.title }}
+        </div>
+    {% endif %}
+
+    <div class="cards-group cards-group-3x cards-group-projects">
+        {% for project in block.projects %}
+            <a href="{{ project.url }}" class="card card-post card-vertical"
+               style="background-image: url('{{ project.image }}');">
+                <span class="card-info">
+                    <span class="card-title p-name">{{ project.title }}</span>
+                    <span class="card-subtitle p-summary">{{ project.subtitle }}</span>
+                </span>
+            </a>
+        {% endfor %}
+    </div>
+</section>

@@ -30,6 +30,7 @@
         {% include "common/styles.html" %}
         {% include "common/scripts.html" %}
         {% block css %}{% endblock %}
+        
         <script>
             const theme = localStorage.getItem('theme') ||
                   (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -59,7 +60,7 @@
     <div class="header-menu hide-on-iphone" id="header-menu" hx-boost="true">
         <a href="{% url "list_posts" "all" %}" class="button button-inverted header-menu-item">
             <span>✍️</span>
-            <span>{% trans "Посты" %}</span>
+            <span>{% trans "Все посты" %}</span>
         </a>
         
         <!--

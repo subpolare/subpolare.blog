@@ -13,8 +13,27 @@ from subpolare.posts import POST_TYPES
 
 
 def index(request):
+    top_post = Post.visible_objects()\
+        .filter(is_visible_on_home_page=True)\
+        .order_by("-published_at")\
+        .first()
+    
+    latest_posts = Post.visible_objects()\
+        .filter(type__in=["blog", "world"], is_visible_on_home_page=True)\
+        .exclude(id=top_post.id if top_post else None)\
+        .order_by("-published_at")[:6]
+
     return render(request, "index.html", {
         "blocks": [
+            {
+                "template": "index/main.html",
+                "post": top_post
+            },
+            {
+                "title": "",
+                "template": "index/posts3.html",
+                "posts": latest_posts
+            },
             {
                 "title": _("Обо мне"),
                 "template": "index/about.html",
