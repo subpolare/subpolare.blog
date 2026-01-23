@@ -19,7 +19,7 @@ def index(request):
         .first()
     
     latest_posts = Post.visible_objects()\
-        .filter(type__in=["blog", "world"], is_visible_on_home_page=True)\
+        .filter(type__in=["blog", "world", "years"], is_visible_on_home_page=True)\
         .exclude(id=top_post.id if top_post else None)\
         .order_by("-published_at")[:6]
 
