@@ -11,7 +11,10 @@ function initializeImageZoom() {
 }
 
 function initializeHighlightJS() {
-    hljs.initHighlightingOnLoad();
+  if (window.hljs) {
+    hljs.highlightAll?.();
+    hljs.initHighlightingOnLoad?.();
+  }
 }
 
 function initializePoorManEmoji() {
@@ -45,11 +48,20 @@ function initializeAutoResizableTextareas() {
 }
 
 function initializeSpoilers() {
-    let spoilers = document.querySelectorAll(".block-spoiler");
-    spoilers.forEach(spoiler => spoiler.addEventListener("click", event => {
-        spoiler.querySelector(".block-spoiler-button").classList.toggle("block-spoiler-button-hidden");
-        spoiler.querySelector(".block-spoiler-text").classList.toggle("block-spoiler-text-visible");
-    }));
+    const spoilers = document.querySelectorAll(".block-spoiler");
+    for (let i = 0; i < spoilers.length; i++) {
+        const spoiler = spoilers[i];
+
+        if (spoiler.dataset.spoilerBound === "1") continue;
+        spoiler.dataset.spoilerBound = "1";
+
+        spoiler.addEventListener("click", function () {
+            const btn = this.querySelector(".block-spoiler-button");
+            const txt = this.querySelector(".block-spoiler-text");
+            if (btn) btn.classList.toggle("block-spoiler-button-hidden");
+            if (txt) txt.classList.toggle("block-spoiler-text-visible");
+        });
+    }
 }
 
 function toggleTheme(event) {
@@ -76,3 +88,9 @@ window.addEventListener("DOMContentLoaded", function() {
     initializeHighlightJS();
     console.log("Done")
 });
+
+if (window.htmx) {
+    htmx.onLoad(function () {
+        initializeSpoilers();
+    });
+}
