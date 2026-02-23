@@ -25,6 +25,12 @@ html[theme="dark"] .block-text {
     font-weight: 300;
 }
 
+    .post s,
+    .post del,
+    .post strike{
+      color: #888;
+    }
+
     .post p,
     .post h1,
     .post h2,
@@ -38,6 +44,14 @@ html[theme="dark"] .block-text {
         font-style: normal;
         box-sizing: content-box;
         padding: 0;
+        margin: 0 0 0em;
+    }
+
+    .post .header-3 {
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+        margin: 0px auto 35px;
     }
 
     .post > p,
@@ -45,7 +59,6 @@ html[theme="dark"] .block-text {
     .post > h2,
     .post > h3 {
         width: 90%;
-        margin: 27px auto 0 35px;
     }
 
     .post h1 strong,
@@ -74,6 +87,10 @@ html[theme="dark"] .block-text {
     .post .header-2 a,
     .post .header-3 a {
         opacity: 0.9;
+    }
+
+    .post .header-3 > a {
+        display: inline-block;
     }
 
     .post hr {
@@ -109,8 +126,11 @@ html[theme="dark"] .block-text {
         text-decoration: none !important;
     }
 
-    .post ul, .post ol {
-        padding-left: 35px;
+    .post ul, 
+    .post ol {
+        list-style-position: outside;
+        padding-left: 1.6em;
+        margin: 16px 0;
         width: 95%;
         max-width: 800px;
         min-width: min(300px, 95%);
@@ -122,7 +142,18 @@ html[theme="dark"] .block-text {
     }
 
         .post li {
-            margin-bottom: 8px;
+            margin-bottom: 0.8em;
+            padding-left: 0.4em;
+        }
+
+        .post p + ul,
+        .post p + ol{
+            margin-top: 0;      
+        }       
+
+        .post ul + p,
+        .post ol + p{
+            margin-top: 0; 
         }
 
     .post figure a {
@@ -178,7 +209,7 @@ html[theme="dark"] .block-text {
     }
 
     .post figure img {
-        border-radius: 30px;
+        border-radius: 20px;
     }
 
     .post img {
@@ -416,7 +447,7 @@ html[theme="dark"] .block-text {
     gap: 10px;
     position: relative;
     box-sizing: border-box;
-    margin: 50px auto;
+    margin: 20px auto;
     max-width: 1000px;
     text-align: center;
 }
@@ -432,10 +463,24 @@ html[theme="dark"] .block-text {
 
     .block-media figcaption {
         font-weight: 500;
+        font-size: 90%;
         color: #666;
         padding: 10px;
         box-sizing: border-box;
     }
+    
+        .block-media figcaption a {
+            color: #666;
+            text-decoration: underline;
+            transition: color linear .1s;
+            cursor: pointer;
+        }
+
+        figcaption a:hover,
+        figcaption a:active {
+            color: #FFF;
+            text-decoration: underline;
+        }
 
     .block-media__right {
         width: 480px;
