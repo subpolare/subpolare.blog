@@ -11,3 +11,13 @@ def robots(request):
         "Clean-param: comment_order&goto&preview /",
     ]
     return HttpResponse("\n".join(lines), content_type="text/plain")
+
+
+def yandex_verification(request):
+    content = (
+        "<html>"
+        "<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></head>"
+        "<body>Verification: 5a8ac3fe600ec2e1</body>"
+        "</html>"
+    )
+    return HttpResponse(content, content_type="text/html")
