@@ -39,7 +39,7 @@
             {% endif %}
             <div class="clearfix10"></div>
 
-            <div class="headline-info-date hide-on-iphone dt-published">
+            <div class="headline-info-date dt-published">
                 <i class="fa-solid fa-cloud"></i>&nbsp;{{ post.published_at|date:"d E Y"|lower }}
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa-solid fa-eye"></i>&nbsp;{{ post.view_count }}&nbsp;{{ post.view_count|rupluralize:"просмотр,просмотра,просмотров" }}
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa-solid fa-clock"></i>&nbsp;{{ "~" }}{{ post.reading_time }}&nbsp;{{ "минут чтения" }}
