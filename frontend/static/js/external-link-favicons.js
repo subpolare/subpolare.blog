@@ -36,6 +36,7 @@
             img.referrerPolicy = "no-referrer";
 
             link.insertBefore(img, link.firstChild);
+            link.insertBefore(document.createTextNode("\u00A0"), img.nextSibling);
       });
     }
 
