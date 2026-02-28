@@ -19,7 +19,7 @@ urlpatterns = [
 
     path(r"godmode/", admin.site.urls),
 
-    path(r"donate/", donate, name="donate"),
+    # path(r"donate/", donate, name="donate"),
     path(r"subscribe/", subscribe, name="subscribe"),
 
     path(r"rss/", cache_page(60 * 60)(FullFeed()), name="rss.full"),

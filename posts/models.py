@@ -8,6 +8,8 @@ from django.utils.html import strip_tags
 from django.utils.translation import get_language
 
 from utils.slug import generate_unique_slug
+import math
+import re
 
 
 class Post(models.Model):
@@ -101,3 +103,25 @@ class Post(models.Model):
         elif self.og_image:
             return self.og_image
         return None
+
+    @property
+    def reading_time(self) -> int:
+        text = strip_tags(self.text or "")
+        words = len(text.split())
+        words_per_minute = 220
+
+        raw = self.text or ""
+        markdown_images = re.findall(r"!\[[^\]]*\]\([^\)]+\)", raw)
+        html_images = re.findall(r"<img\b[^>]*>", raw, flags=re.IGNORECASE)
+        num_images = len(markdown_images) + len(html_images)
+
+        image_seconds = 0
+        for i in range(num_images):
+            if i < 10:
+                sec = max(12 - i, 3)
+            else:
+                sec = 3
+            image_seconds += sec
+
+        minutes = round(words / float(words_per_minute) + image_seconds / 60.0, -1)
+        return max(1, int(math.ceil(minutes)))
