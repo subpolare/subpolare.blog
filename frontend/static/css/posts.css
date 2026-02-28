@@ -208,6 +208,15 @@ html[theme="dark"] .block-text {
         width: 100%;
     }
 
+    .post figure .link-favicon {
+        width: 1.1em;
+        height: 1.1em;
+        max-width: 1.1em;
+        display: inline-block;
+        vertical-align: middle;
+        padding-right: 0.2em;
+    }
+
     .post figure img {
         border-radius: 20px;
     }
@@ -435,6 +444,16 @@ html[theme="dark"] .block-text {
         background-color: transparent;
         color: #333;
     }
+
+.link-favicon {
+    display: inline-block;
+    height: 1.1em;
+    width: 1.1em;
+    background-position: center center;
+    background-size: cover;
+    vertical-align: middle;
+    padding-right: 0.2em;
+}
 
 /* Multiple photo */
 
