@@ -30,25 +30,9 @@
         {% include "common/styles.html" %}
         {% include "common/scripts.html" %}
         {% block css %}{% endblock %}
-        <script>
-            (function () {
-                const theme = localStorage.getItem('theme') ||
-                    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-                        
-                document.documentElement.setAttribute('theme', theme);
-                        
-                if (window.htmx) {
-                    htmx.onLoad(function() {
-                        const themeSwitch = document.querySelector('.theme-switcher input[type="checkbox"]');
-                        if (themeSwitch) {
-                            themeSwitch.checked = (theme === 'dark');
-                        }
-                    });
-                }
-            })();
-        </script>
 
         <script defer src="{% static 'js/external-link-favicons.js' %}"></script>
+        <script defer src="{% static 'js/theme-switcher.js' %}"></script>
 
         <!-- Yandex.Metrika counter -->
         <script type="text/javascript">
