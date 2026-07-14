@@ -1,0 +1,99 @@
+.post-editor-page {
+    max-width: 1200px;
+}
+
+.post-editor-page .form-row-row {
+    align-items: flex-start;
+}
+
+.post-editor-page input[type="text"],
+.post-editor-page input[type="url"] {
+    width: 100%;
+}
+
+.post-editor-shell {
+    display: block;
+}
+
+.post-editor-shell .EasyMDEContainer {
+    width: 100%;
+    font-family: 'Ubuntu', Helvetica, Verdana, sans-serif;
+}
+
+.post-editor-shell .EasyMDEContainer .CodeMirror {
+    min-height: 65vh;
+    border-radius: 20px;
+    border: 1px solid rgba(128, 128, 128, 0.25);
+    padding: 10px;
+    font-size: 18px;
+    line-height: 1.55;
+    font-family: 'Ubuntu', Helvetica, Verdana, sans-serif;
+}
+
+.post-editor-shell .EasyMDEContainer .CodeMirror-scroll {
+    min-height: 65vh;
+}
+
+.post-editor-shell .editor-toolbar {
+    border-radius: 20px 20px 0 0;
+    border: 1px solid rgba(128, 128, 128, 0.25);
+    border-bottom: none;
+    opacity: 1;
+}
+
+.post-editor-shell .editor-toolbar button {
+    cursor: pointer;
+}
+
+.post-editor-shell .editor-preview,
+.post-editor-shell .editor-preview-side {
+    font-family: var(--serif-font);
+    font-size: 125%;
+    line-height: 1.67;
+}
+
+.post-editor-shell .editor-preview img,
+.post-editor-shell .editor-preview-side img,
+.post-editor-shell .CodeMirror img {
+    max-width: 100%;
+    border-radius: 20px;
+}
+
+.post-editor-dragover {
+    outline: 3px dashed rgba(128, 128, 128, 0.5);
+    outline-offset: 4px;
+}
+
+.post-editor-image-field {
+    width: 100%;
+}
+
+.post-editor-image-preview {
+    margin-top: 12px;
+    max-width: 420px;
+}
+
+.post-editor-image-preview img {
+    display: block;
+    width: 100%;
+    max-height: 260px;
+    object-fit: cover;
+    border-radius: 20px;
+}
+
+.post-editor-actions {
+    gap: 10px;
+}
+
+@media (max-width: 700px) {
+    .post-editor-shell .EasyMDEContainer .CodeMirror,
+    .post-editor-shell .EasyMDEContainer .CodeMirror-scroll {
+        min-height: 70vh;
+    }
+
+    .post-editor-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
