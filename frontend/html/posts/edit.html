@@ -1,9 +1,16 @@
 {% extends "layout.html" %}
-{% load i18n %}
+{% load i18n static %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'js/vendor/easymde/easymde.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/post-editor.css' %}?v={{ settings.STYLES_HASH }}">
+{% endblock %}
 
 {% block body %}
-<div class="container block">
-    <form action="." method="post" class="form">
+<div class="container block post-editor-page">
+    <form action="." method="post" class="form"
+          data-preview-url="{% url 'preview_post' form.instance.type form.instance.slug %}"
+          data-upload-url="{% url 'upload_post_image' %}">
         {% csrf_token %}
 
         {% if form.errors %}
@@ -25,8 +32,11 @@
             {{ form.image }}
         </div>
 
-        <div class="form-row">
+        <div class="form-row post-editor-shell">
+            <label for="{{ form.text.id_for_label }}">{{ form.text.label }}</label>
             {{ form.text }}
+            <p>Markdown. Изображения JPEG, PNG, WebP и GIF до 14 МБ: скрепка, перетаскивание или вставка из буфера.</p>
+            <p id="post-editor-status" role="status" aria-live="polite"></p>
         </div>
 
         <div class="form-row form-row-right">
@@ -37,20 +47,8 @@
 {% endblock %}
 
 {% block js %}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
-    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
-    <script>
-        var simplemde = new SimpleMDE({
-            element: document.getElementById("post-editor"),
-            spellChecker: false,
-            autosave: {
-                enabled: false,
-            },
-            blockStyles: {
-                bold: "**",
-                italic: "_"
-            },
-            lineWrapping: true,
-        });
-    </script>
+    <script src="{% static 'js/vendor/easymde/easymde.min.js' %}"></script>
+    <script src="{% static 'js/vendor/inline-attachment/core.js' %}?v={{ settings.STYLES_HASH }}"></script>
+    <script src="{% static 'js/vendor/inline-attachment/codemirror4.js' %}?v={{ settings.STYLES_HASH }}"></script>
+    <script src="{% static 'js/post-editor.js' %}?v={{ settings.STYLES_HASH }}"></script>
 {% endblock %}

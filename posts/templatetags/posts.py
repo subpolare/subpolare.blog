@@ -25,10 +25,7 @@ def show_post(context, post):
                 post.save(flush_cache=False)
         html = post.html_cache or ""
 
-    html = re.sub(r"\[commentable (.+?)\]", lambda match: commentable(context, match.group(1)), html)
-    html = re.sub(r"\[clicker (.+?)\]", lambda match: clicker(context, match.group(1), match.group(1)), html)
-
-    return mark_safe(html)
+    return mark_safe(render_post_blocks(context, html))
 
     # # remove extra blocks for unauthorized users
     # if settings.EXTRA_BLOCK_CLASS in text and not context["me"]:
@@ -38,6 +35,12 @@ def show_post(context, post):
     #         block["class"] = block.get("class", []) + ["block-extra-placeholder"]
     #         block.append(BeautifulSoup(block_placeholder_template.render({"story": post}), "html.parser"))
     #     text = str(soup)
+
+
+def render_post_blocks(context, html):
+    """Expand legacy blocks without reading or writing the post/cache."""
+    html = re.sub(r"\[commentable (.+?)\]", lambda match: commentable(context, match.group(1)), html)
+    return re.sub(r"\[clicker (.+?)\]", lambda match: clicker(context, match.group(1), match.group(1)), html)
 
 
 def clicker(context, block, text=None):

@@ -10,6 +10,7 @@ from comments.views import delete_comment, create_comment
 from inside.views import donate, subscribe
 from posts.sitemaps import sitemaps
 from posts.views import index, show_post, list_posts, edit_post
+from posts.editor import preview_post, upload_post_image
 from rss.feeds import FullFeed
 from users.views import robots
 from users.views import yandex_verification
@@ -37,6 +38,8 @@ urlpatterns = [
     path("robots.txt", robots, name="robots"),
     path("yandex_5a8ac3fe600ec2e1.html", yandex_verification, name="yandex_verification"),
 
+    path("editor/upload/", upload_post_image, name="upload_post_image"),
+    path("<str:post_type>/<str:post_slug>/edit/preview/", preview_post, name="preview_post"),
     path(r"<str:post_type>/<str:post_slug>/", show_post, name="show_post"),
     path(r"<str:post_type>/<str:post_slug>/index.html", show_post, name="show_post_legacy"),  # legacy fallback
     path(r"<str:post_type>/<str:post_slug>/edit/", edit_post, name="edit_post"),

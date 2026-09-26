@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.forms import ModelForm
 
@@ -5,6 +7,12 @@ from posts.models import Post
 
 
 class PostEditForm(ModelForm):
+    def clean_text(self):
+        text = self.cleaned_data["text"]
+        if re.search(r"!\[(?:Загружаю файл|Ошибка загрузки файла)\.\.\. \d+\]\(\)", text):
+            raise forms.ValidationError("Дождитесь загрузки изображений или удалите отметки неудачных загрузок.")
+        return text
+
     title = forms.CharField(
         label="Заголовок",
         required=True,
@@ -40,4 +48,3 @@ class PostEditForm(ModelForm):
             "image",
             "text",
         ]
-

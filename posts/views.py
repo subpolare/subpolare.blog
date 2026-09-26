@@ -1,12 +1,14 @@
 from datetime import datetime
 
 from django.db.models import F
-from django.http import Http404, HttpResponseForbidden
+from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.translation import gettext_lazy as _, get_language
+from django.views.decorators.cache import never_cache
 
 from comments.models import Comment
 from posts.forms import PostEditForm
+from posts.editor import admin_only
 from posts.models import Post
 from posts.renderers import render_list, render_list_all, render_post
 from subpolare.posts import POST_TYPES
@@ -79,8 +81,10 @@ def show_post(request, post_type, post_slug):
     if post_type not in POST_TYPES:
         raise Http404()
 
-    # drafts are visible only with a flag
-    if not post.is_visible and not request.GET.get("preview"):
+    # A preview flag must not expose drafts to anonymous visitors or regular users.
+    if not post.is_visible and not (
+        request.GET.get("preview") and request.user.is_authenticated and request.user.is_superuser
+    ):
         raise Http404()
 
     Post.objects.filter(id=post.id)\
@@ -109,10 +113,9 @@ def show_post(request, post_type, post_slug):
     })
 
 
+@never_cache
+@admin_only
 def edit_post(request, post_type, post_slug):
-    if not request.user.is_authenticated or not request.user.is_superuser:
-        return HttpResponseForbidden()
-
     post = get_object_or_404(Post, type=post_type, slug=post_slug, lang=get_language())
 
     if request.method == "POST":

@@ -230,6 +230,10 @@ TELEGRAM_MAIN_CHAT_ID = os.getenv("TELEGRAM_MAIN_CHAT_ID")
 
 # App specific
 
+# Server-only Pepic credentials. Never include the code in templates or JS.
+PEPIC_UPLOAD_URL = os.getenv("PEPIC_UPLOAD_URL", "")
+PEPIC_UPLOAD_CODE = os.getenv("PEPIC_UPLOAD_CODE", "")
+
 AUTH_USER_MODEL = "users.User"
 
 SESSION_COOKIE_AGE = 300 * 24 * 60 * 60  # 300 days
