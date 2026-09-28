@@ -58,6 +58,45 @@ function setup() {
 
 const png = {name: 'test.png', type: 'image/png', size: 12};
 
+test('page textarea resizing preserves the editor source and clipboard input', () => {
+    function textarea(id, inEditor, style) {
+        return {
+            id, style, scrollHeight: 0, events: {},
+            closest(selector) {
+                assert.equal(selector, '.EasyMDEContainer');
+                return inEditor ? {} : null;
+            },
+            setAttribute(name, value) {
+                assert.equal(name, 'style');
+                this.style = value;
+            },
+            addEventListener(name, callback) { this.events[name] = callback; },
+        };
+    }
+    const source = textarea('post-editor', false, {display: 'none'});
+    const input = textarea('', true, {position: 'absolute', width: '1px', height: '1em'});
+    const comment = textarea('comment-text', false, {color: 'red'});
+    comment.scrollHeight = 80;
+    const context = {
+        document: {querySelectorAll(selector) {
+            assert.equal(selector, 'textarea');
+            return [source, input, comment];
+        }},
+        window: {addEventListener() {}},
+    };
+    runInNewContext(readFileSync(join(__dirname, '../static/js/main.js'), 'utf8'), context);
+    context.initializeAutoResizableTextareas();
+
+    assert.deepEqual(source.style, {display: 'none'});
+    assert.deepEqual(input.style, {position: 'absolute', width: '1px', height: '1em'});
+    assert.deepEqual(source.events, {});
+    assert.deepEqual(input.events, {});
+    assert.deepEqual(comment.style, {color: 'red', height: '80px', overflowY: 'hidden'});
+    comment.scrollHeight = 120;
+    comment.events.input.call(comment);
+    assert.equal(comment.style.height, '120px');
+});
+
 test('concurrent uploads replace only their own markers and preserve text typed in between', () => {
     const s = setup();
     const event = {target: {files: [png, png], value: 'file'}, stopPropagation() {}, preventDefault() {}};

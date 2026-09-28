@@ -42,7 +42,11 @@ function initializeAutoResizableTextareas() {
 
     const textareas = document.querySelectorAll("textarea");
     textareas.forEach(textarea => {
-        textarea.setAttribute("style", "height:" + (textarea.scrollHeight) + "px;overflow-y:hidden;");
+        // EasyMDE owns both the source textarea and CodeMirror's clipboard input.
+        if (textarea.id === "post-editor" || textarea.closest(".EasyMDEContainer")) return;
+
+        textarea.style.height = textarea.scrollHeight + "px";
+        textarea.style.overflowY = "hidden";
         textarea.addEventListener("input", onTextareaInput, false);
     });
 }
