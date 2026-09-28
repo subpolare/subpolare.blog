@@ -182,6 +182,14 @@
         width: calc(24% - 30px)
     }
 
+    /* Two 300px cards, a 30px gap and 20px of container padding. */
+    @media (width < 650px) {
+        .cards-group:not(.cards-group-projects) .card-post {
+            width: 100%;
+            min-width: 0;
+        }
+    }
+
     .cards-group-projects .card {
         background-size: contain;
         background-position: 50% 10px;
