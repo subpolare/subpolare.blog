@@ -336,6 +336,7 @@
         @media (max-width: 570px) {
             .headline-mobile-meta {
                 display: flex;
+                opacity: 0.75;
                 flex-wrap: wrap;
                 justify-content: center;
                 gap: 8px 16px;
