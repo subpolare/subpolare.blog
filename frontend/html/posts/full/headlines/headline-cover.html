@@ -39,13 +39,14 @@
             {% endif %}
             <div class="clearfix10"></div>
 
-            <div class="headline-info-date hide-on-iphone dt-published">
-                <i class="fa-solid fa-cloud"></i>&nbsp;{{ post.published_at|date:"d E Y"|lower }}
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa-solid fa-eye"></i>&nbsp;{{ post.view_count }}&nbsp;{{ post.view_count|rupluralize:"просмотр,просмотра,просмотров" }}
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa-solid fa-clock"></i>&nbsp;{{ "~" }}{{ post.reading_time }}&nbsp;{{ "минут чтения" }}
+            <div class="headline-info-date hide-on-iphone">
+                {% include "posts/full/headlines/headline-meta.html" %}
             </div>
 
             <a rel="author" class="p-author h-card" href="{{ request.scheme }}://{{ request.get_host }}" style="display: none;">{{ strings.AUTHOR }}</a>
         </div>
     </div>
+</div>
+<div class="headline-mobile-meta">
+    {% include "posts/full/headlines/headline-meta.html" %}
 </div>

@@ -223,6 +223,15 @@
     }
 
 
+.headline-container {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.headline-mobile-meta {
+    display: none;
+}
+
 .headline {
     position: relative;
     display: block;
@@ -316,9 +325,29 @@
         }
 
         .headline-info-date {
-            display: inline-block;
+            display: inline-flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px 24px;
             font-size: 14px;
             color: #FEFEFE;
+        }
+
+        @media (max-width: 570px) {
+            .headline-mobile-meta {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px 16px;
+                padding: 12px 16px;
+                font-size: 12px;
+                line-height: 1.5;
+                color: var(--text-color);
+            }
+
+            .headline-mobile-meta > span {
+                white-space: nowrap;
+            }
         }
 
 .simple-headline {

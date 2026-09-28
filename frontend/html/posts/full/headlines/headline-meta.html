@@ -1,0 +1,4 @@
+{% load text_filters %}
+<span><i class="fa-solid fa-cloud" aria-hidden="true"></i> <time class="dt-published" datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"d E Y"|lower }}</time></span>
+<span><i class="fa-solid fa-eye" aria-hidden="true"></i> {{ post.view_count }} {{ post.view_count|rupluralize:"просмотр,просмотра,просмотров" }}</span>
+<span><i class="fa-solid fa-clock" aria-hidden="true"></i> ~{{ post.reading_time }} минут чтения</span>
