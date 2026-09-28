@@ -10,6 +10,16 @@ html[theme="dark"] .block-text {
     box-shadow: var(--block-shadow);
 }
 
+.post-container {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.post-container > .post {
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
 .post {
     width: 100%;
     display: block;
@@ -304,7 +314,7 @@ html[theme="dark"] .block-text {
 
     @media (max-width: 570px) {
         .block-text {
-            padding: 20px;
+            padding: 30px 30px 20px;
         }
     }
 
@@ -518,6 +528,12 @@ html[theme="dark"] .block-text {
     .block-media__full {
         width: 100%;
         max-width: none;
+    }
+
+    .post-container > .post > .block-media__full {
+        width: calc(100% + 20px);
+        margin-left: -10px;
+        margin-right: -10px;
     }
 
         .block-media__full figure img {
