@@ -1,0 +1,532 @@
+/* Subpolare's visual theme for the stock Django admin.
+ * Keep admin templates, widgets and button styles owned by Django.
+ * Loaded after responsive.css so these rules apply to every admin screen.
+ */
+:root,
+html[data-theme="light"] {
+    color-scheme: light;
+    --body-bg: #f2f5fc;
+    --body-fg: #333;
+    --body-quiet-color: #626975;
+    --body-loud-color: #171717;
+    --error-fg: #ba2121;
+    --message-success-bg: #e5f3e8;
+    --message-warning-bg: #fff3d5;
+    --message-error-bg: #fce7e7;
+    --header-bg: #fff;
+    --header-color: #626975;
+    --header-branding-color: #333;
+    --header-link-color: #333;
+    --breadcrumbs-bg: #f2f5fc;
+    --breadcrumbs-fg: #626975;
+    --breadcrumbs-link-fg: #333;
+    --link-fg: #087cbd;
+    --link-hover-color: #333;
+    --link-selected-fg: #087cbd;
+    --hairline-color: #e8ecf2;
+    --border-color: #cbd2dd;
+    --darkened-bg: #f7f9fc;
+    --selected-bg: #e9f2fa;
+    --selected-row: #e9f2fa;
+    --admin-surface: #fff;
+    --admin-shadow: 0 2px 5px rgba(30, 40, 60, .03), 0 12px 32px rgba(30, 40, 60, .06);
+    --admin-radius: 15px;
+}
+
+/* Django's theme.js uses data-theme; auto follows the OS preference. */
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --body-bg: #171717;
+    --body-fg: #ddd;
+    --body-quiet-color: #a7a7af;
+    --body-loud-color: #fff;
+    --error-fg: #ff9696;
+    --message-success-bg: #193c27;
+    --message-warning-bg: #483719;
+    --message-error-bg: #481f24;
+    --header-bg: #1b1b1c;
+    --header-color: #a7a7af;
+    --header-branding-color: #fff;
+    --header-link-color: #ddd;
+    --breadcrumbs-bg: #171717;
+    --breadcrumbs-fg: #a7a7af;
+    --breadcrumbs-link-fg: #ddd;
+    --link-fg: #55bfff;
+    --link-hover-color: #fff;
+    --link-selected-fg: #55bfff;
+    --hairline-color: #303034;
+    --border-color: #505057;
+    --darkened-bg: #222225;
+    --selected-bg: #253340;
+    --selected-row: #253340;
+    --admin-surface: #1b1b1c;
+    --admin-shadow: 0 0 0 1px rgba(255, 255, 255, .04), 0 10px 30px rgba(0, 0, 0, .25);
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+        color-scheme: dark;
+        --body-bg: #171717;
+        --body-fg: #ddd;
+        --body-quiet-color: #a7a7af;
+        --body-loud-color: #fff;
+        --error-fg: #ff9696;
+        --message-success-bg: #193c27;
+        --message-warning-bg: #483719;
+        --message-error-bg: #481f24;
+        --header-bg: #1b1b1c;
+        --header-color: #a7a7af;
+        --header-branding-color: #fff;
+        --header-link-color: #ddd;
+        --breadcrumbs-bg: #171717;
+        --breadcrumbs-fg: #a7a7af;
+        --breadcrumbs-link-fg: #ddd;
+        --link-fg: #55bfff;
+        --link-hover-color: #fff;
+        --link-selected-fg: #55bfff;
+        --hairline-color: #303034;
+        --border-color: #505057;
+        --darkened-bg: #222225;
+        --selected-bg: #253340;
+        --selected-row: #253340;
+        --admin-surface: #1b1b1c;
+        --admin-shadow: 0 0 0 1px rgba(255, 255, 255, .04), 0 10px 30px rgba(0, 0, 0, .25);
+    }
+}
+
+body {
+    font-family: "Ubuntu", Helvetica, Verdana, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Current Django uses semantic elements where the vendored CSS expects divs. */
+#container > header,
+#container > nav,
+#container > footer {
+    flex-shrink: 0;
+}
+
+#header {
+    padding: 24px 40px;
+    border-bottom: 1px solid var(--hairline-color);
+    gap: 20px;
+}
+
+#site-name {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+    letter-spacing: -.04em;
+}
+
+#site-name a:link,
+#site-name a:visited {
+    color: var(--header-branding-color);
+}
+
+#user-tools {
+    line-height: 1.8;
+}
+
+div.breadcrumbs {
+    padding: 18px 40px;
+    font-size: .8125rem;
+    border-bottom: 1px solid var(--hairline-color);
+}
+
+#content {
+    padding: 32px 40px 48px;
+}
+
+#content > h1 {
+    margin-bottom: 28px;
+    color: var(--body-loud-color);
+    font-size: 1.875rem;
+    font-weight: 500;
+    letter-spacing: -.035em;
+    line-height: 1.25;
+}
+
+#content > h2 {
+    color: var(--body-quiet-color);
+}
+
+.module,
+#changelist,
+.submit-row {
+    border-radius: var(--admin-radius);
+    background: var(--admin-surface);
+    box-shadow: var(--admin-shadow);
+}
+
+.module {
+    margin-bottom: 24px;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+    padding: 16px 20px;
+    background: var(--darkened-bg);
+    color: var(--body-loud-color);
+    border-radius: var(--admin-radius) var(--admin-radius) 0 0;
+    font-size: .8125rem;
+    font-weight: 500;
+    letter-spacing: .045em;
+}
+
+.module caption a.section:link,
+.module caption a.section:visited,
+#nav-sidebar .current-app .section:link,
+#nav-sidebar .current-app .section:visited {
+    color: var(--body-loud-color);
+}
+
+.module table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.module tbody tr:nth-child(odd):not(.selected) {
+    background: var(--admin-surface);
+}
+
+.module table th,
+.module table td {
+    padding: 14px 20px;
+    vertical-align: middle;
+}
+
+.module tbody tr:last-child > :first-child {
+    border-bottom-left-radius: var(--admin-radius);
+}
+
+.module tbody tr:last-child > :last-child {
+    border-bottom-right-radius: var(--admin-radius);
+}
+
+.module tbody tr:last-child > * {
+    border-bottom: 0;
+}
+
+.dashboard #content {
+    width: auto;
+}
+
+.dashboard #content-main {
+    max-width: 1000px;
+}
+
+#content-related {
+    background: transparent;
+}
+
+#content-related .module h2 {
+    padding: 16px 20px;
+    color: var(--body-loud-color);
+    border-bottom: 0;
+}
+
+#content-related .module h3 {
+    padding: 0 20px;
+    color: var(--body-quiet-color);
+    font-size: .8125rem;
+}
+
+#content-related .module ul.actionlist {
+    margin: 0;
+    padding: 0 20px 20px;
+}
+
+#content-related .actionlist li {
+    margin-bottom: 12px;
+}
+
+#nav-sidebar {
+    background: var(--admin-surface);
+}
+
+#nav-sidebar .module {
+    margin: 12px;
+    box-shadow: none;
+}
+
+#nav-sidebar .module caption {
+    padding: 14px 12px;
+    font-size: .6875rem;
+}
+
+#nav-sidebar .module th,
+#nav-sidebar .module td {
+    padding: 12px;
+    font-size: .8125rem;
+}
+
+#nav-filter {
+    width: calc(100% - 24px);
+    margin: 18px 12px 8px;
+    padding: 10px 12px;
+    border-radius: 8px;
+}
+
+#changelist .results {
+    border-radius: var(--admin-radius) var(--admin-radius) 0 0;
+}
+
+#changelist table thead th {
+    background: var(--darkened-bg);
+    color: var(--body-quiet-color);
+    font-weight: 500;
+}
+
+#changelist table thead th .text a,
+#changelist table thead th .text span {
+    padding: 14px 12px;
+}
+
+#changelist table tbody td,
+#changelist table tbody th {
+    padding: 16px 12px;
+}
+
+#changelist tbody tr:hover {
+    background: var(--darkened-bg);
+}
+
+#changelist tbody tr.selected:hover {
+    background: var(--selected-row);
+}
+
+#changelist #toolbar,
+#changelist .actions,
+#changelist .paginator {
+    padding: 16px 20px;
+    background: var(--admin-surface);
+}
+
+#changelist #toolbar {
+    border-radius: var(--admin-radius) var(--admin-radius) 0 0;
+}
+
+#changelist .paginator {
+    border-radius: 0 0 var(--admin-radius) var(--admin-radius);
+}
+
+#changelist-filter {
+    background: var(--admin-surface);
+    border-radius: var(--admin-radius);
+    box-shadow: var(--admin-shadow);
+}
+
+#changelist-filter h2 {
+    border-radius: var(--admin-radius) var(--admin-radius) 0 0;
+    background: var(--darkened-bg);
+    color: var(--body-loud-color);
+    padding: 16px;
+}
+
+.form-row {
+    padding: 18px 20px;
+}
+
+.form-row label {
+    font-weight: 500;
+}
+
+input:not([type]),
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="url"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+select,
+textarea {
+    font-family: inherit;
+    border-radius: 8px;
+    background-color: var(--admin-surface);
+    color: var(--body-fg);
+    padding: 9px 12px;
+}
+
+input:not([type]):focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="url"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid var(--link-fg);
+    outline-offset: 2px;
+}
+
+.aligned .form-row .help {
+    color: var(--body-quiet-color);
+    line-height: 1.6;
+}
+
+.submit-row {
+    padding: 18px 20px;
+    border: 1px solid var(--hairline-color);
+}
+
+ul.messagelist li {
+    margin: 16px 40px 0;
+    border-radius: 10px;
+}
+
+body.login {
+    background: var(--body-bg);
+}
+
+.login #container {
+    width: 400px;
+    min-width: 0;
+    max-width: calc(100% - 32px);
+    margin: 10vh auto;
+    border: 1px solid var(--hairline-color);
+    border-radius: var(--admin-radius);
+    background: var(--admin-surface);
+    box-shadow: var(--admin-shadow);
+}
+
+.login #header {
+    border-radius: var(--admin-radius) var(--admin-radius) 0 0;
+    padding: 24px;
+}
+
+.login #content {
+    padding: 24px;
+}
+
+.login .submit-row {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+/* The vendored dark_mode.css predates Django's theme-toggle markup.
+ * Restore the stock toggle presentation for the installed admin templates.
+ */
+.theme-toggle {
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    background: transparent;
+    vertical-align: middle;
+    margin-inline-start: 5px;
+    margin-top: -1px;
+}
+
+.theme-toggle svg {
+    vertical-align: middle;
+    height: 1rem;
+    width: 1rem;
+    display: none;
+    fill: var(--header-link-color);
+    color: var(--header-bg);
+}
+
+.theme-toggle .visually-hidden {
+    display: none;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.base-svgs {
+    display: none;
+}
+
+.skip-to-content-link {
+    position: absolute;
+    top: -999px;
+    margin: 5px;
+    padding: 5px;
+    background: var(--body-bg);
+    z-index: 30;
+}
+
+.skip-to-content-link:focus {
+    left: 0;
+    top: 0;
+}
+
+html[data-theme="auto"] .theme-toggle .theme-label-when-auto,
+html[data-theme="dark"] .theme-toggle .theme-label-when-dark,
+html[data-theme="light"] .theme-toggle .theme-label-when-light,
+html[data-theme="auto"] .theme-toggle svg.theme-icon-when-auto,
+html[data-theme="dark"] .theme-toggle svg.theme-icon-when-dark,
+html[data-theme="light"] .theme-toggle svg.theme-icon-when-light {
+    display: block;
+}
+
+@media (max-width: 1024px) {
+    #header,
+    div.breadcrumbs {
+        padding: 18px 24px;
+    }
+
+    #content {
+        padding: 24px;
+    }
+
+    ul.messagelist li {
+        margin-inline: 24px;
+    }
+}
+
+@media (max-width: 767px) {
+    #header,
+    div.breadcrumbs {
+        padding: 16px;
+    }
+
+    #content {
+        padding: 24px 16px;
+    }
+
+    #content > h1 {
+        font-size: 1.5rem;
+    }
+
+    .module table th,
+    .module table td,
+    .form-row {
+        padding: 12px;
+    }
+
+    .aligned .form-row > div,
+    .aligned .flex-container {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .aligned .vTextField,
+    .aligned .vURLField,
+    .aligned .vLargeTextField {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    ul.messagelist li {
+        margin-inline: 16px;
+    }
+
+    .login #container {
+        margin-top: 32px;
+    }
+}

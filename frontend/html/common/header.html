@@ -77,6 +77,13 @@
             <span>{% trans "Подписаться" %}</span>
         </a>
 
+        {% if request.user.is_superuser %}
+            <a href="{% url 'admin:posts_post_changelist' %}" class="button button-inverted header-menu-item" hx-boost="false">
+                <span>🔏</span>
+                <span>{% trans "Админка" %}</span>
+            </a>
+        {% endif %}
+
         <!--
         <div class="button button-inverted button-round header-menu-item header-menu-round" onclick="return toggleHeaderSearch(event, '#header-search');">
             🔍

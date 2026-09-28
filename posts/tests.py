@@ -10,6 +10,7 @@ from django.db.models import Model
 from django.http import Http404
 from django.middleware.csrf import CsrfViewMiddleware, get_token
 from django.template import Context
+from django.template.loader import render_to_string
 from django.test import RequestFactory, SimpleTestCase, override_settings
 from django.urls import resolve, reverse
 
@@ -21,6 +22,29 @@ from posts.templatetags.posts import show_post as render_post
 from posts.views import edit_post, show_post
 from rss.feeds import FullFeed
 from users.models import User
+
+
+class HeaderAdminLinkTests(SimpleTestCase):
+    def render_header(self, user):
+        request = RequestFactory().get("/")
+        request.user = user
+        return render_to_string("common/header.html", request=request)
+
+    def test_superuser_gets_full_page_link_to_admin_posts(self):
+        html = self.render_header(User(is_superuser=True, is_staff=True))
+        self.assertIn(
+            f'href="{reverse("admin:posts_post_changelist")}" '
+            'class="button button-inverted header-menu-item" hx-boost="false"',
+            html,
+        )
+        self.assertIn("🔏", html)
+
+    def test_admin_link_is_hidden_from_visitors_members_and_staff(self):
+        for user in (AnonymousUser(), User(), User(is_staff=True)):
+            with self.subTest(user=type(user).__name__, is_staff=user.is_staff):
+                html = self.render_header(user)
+                self.assertNotIn(reverse("admin:posts_post_changelist"), html)
+                self.assertNotIn("🔏", html)
 
 
 class EditorTests(SimpleTestCase):
