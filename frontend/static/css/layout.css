@@ -360,6 +360,7 @@
         }
 
 .index-block-about {
+    width: calc(100% - 20px);
     margin-top: 150px;
     margin-bottom: 20px;
     font-size: 130%;
