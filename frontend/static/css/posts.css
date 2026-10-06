@@ -143,7 +143,7 @@ html[theme="dark"] .block-text {
             line-height: 1.2;
             text-align: center;
             padding: 0;
-            margin: 48px auto 24px;
+            margin: 48px auto;
         }
 
         .post > h1 + .block-text,
