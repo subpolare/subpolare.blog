@@ -23,6 +23,7 @@ html, html[theme="light"] {
     --opposite-bg-color: #282c35;
 
     --text-color: #333;
+    --quote-text-color: #666;
     --brighter-text-color: #000;
     --opposite-text-color: #DDD;
 
@@ -58,6 +59,7 @@ html[theme="dark"] {
     --opposite-bg-color: #f5f6f8;
 
     --text-color: #DDD;
+    --quote-text-color: #AAA;
     --brighter-text-color: #FFF;
     --opposite-text-color: #333;
 
