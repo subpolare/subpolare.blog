@@ -136,6 +136,22 @@ html[theme="dark"] .block-text {
         text-decoration: none !important;
     }
 
+    @media (max-width: 570px) {
+        .post > h1,
+        .post > .header-1 {
+            font-size: 32px;
+            line-height: 1.2;
+            text-align: center;
+            padding: 0;
+            margin: 48px auto 24px;
+        }
+
+        .post > h1 + .block-text,
+        .post > .header-1 + .block-text {
+            margin-top: 0;
+        }
+    }
+
     .post ul, 
     .post ol {
         list-style-position: outside;
