@@ -315,6 +315,11 @@ html[theme="dark"] .block-text {
     @media (max-width: 570px) {
         .block-text {
             padding: 30px 20px 20px;
+            border-radius: 24px;
+        }
+
+        .post-container > .post > .block-text:first-child {
+            margin-top: 8px;
         }
     }
 
