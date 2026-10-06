@@ -139,7 +139,7 @@ html[theme="dark"] .block-text {
     .post > h1,
     .post > .header-1 {
         padding: 0;
-        margin: 80px auto 48px;
+        margin: 80px auto 80px;
     }
 
     .post > h1 + .block-text,
