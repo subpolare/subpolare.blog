@@ -3,6 +3,7 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 import requests
+from bs4 import BeautifulSoup
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.staticfiles import finders
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -21,6 +22,7 @@ from posts.models import Post
 from posts.templatetags.posts import show_post as render_post
 from posts.views import edit_post, show_post
 from rss.feeds import FullFeed
+from subpolare.posts import POST_TYPES
 from users.models import User
 
 
@@ -45,6 +47,64 @@ class HeaderAdminLinkTests(SimpleTestCase):
                 html = self.render_header(user)
                 self.assertNotIn(reverse("admin:posts_post_changelist"), html)
                 self.assertNotIn("🔏", html)
+
+
+class SocialMetadataTests(SimpleTestCase):
+    def request(self, path):
+        request = RequestFactory().get(path, secure=True)
+        request.user = AnonymousUser()
+        return request
+
+    def assert_single_document(self, html):
+        self.assertEqual(html.lower().count("<!doctype html>"), 1)
+        soup = BeautifulSoup(html, "lxml")
+        for tag in ("html", "head", "body", "title"):
+            self.assertEqual(len(soup.find_all(tag)), 1, tag)
+        self.assertIs(soup.title.parent, soup.head)
+        for tag in soup.find_all("meta"):
+            self.assertIs(tag.parent, soup.head)
+        return soup
+
+    def test_post_metadata_is_unique_and_uses_saved_fields(self):
+        for post_type, config in POST_TYPES.items():
+            with self.subTest(post_type=post_type):
+                post = Post(
+                    type=post_type, slug="teriberka", title="Териберка",
+                    og_title='Териберка: "Морошка" & море',
+                    og_description='Полевой дневник: "пять дней" & ягоды',
+                    og_image="https://media.example.test/cover.jpg",
+                    html_cache="<p>Article</p>", data={},
+                    published_at=datetime(2026, 9, 21), is_commentable=False,
+                )
+                path = post.get_absolute_url()
+                html = render_to_string(config.show_template, {
+                    "post": post, "comments": [], "translations": [], "related": [],
+                }, request=self.request(path))
+                soup = self.assert_single_document(html)
+                expected = {
+                    "og:type": "article", "og:title": post.og_title,
+                    "og:description": post.og_description, "og:image": post.og_image,
+                    "og:url": f"https://testserver{path}",
+                    "twitter:card": "summary_large_image", "twitter:title": post.og_title,
+                    "twitter:description": post.og_description, "twitter:image": post.og_image,
+                    "twitter:image:src": post.og_image,
+                }
+                for name, value in expected.items():
+                    attribute = "property" if name.startswith("og:") else "name"
+                    tags = soup.find_all("meta", attrs={attribute: name})
+                    self.assertEqual(len(tags), 1, name)
+                    self.assertEqual(tags[0]["content"], value, name)
+
+    def test_default_layout_keeps_site_metadata_and_shared_assets_once(self):
+        html = render_to_string("layout.html", request=self.request("/"))
+        soup = self.assert_single_document(html)
+        for name in ("og:title", "og:description", "og:image", "og:url", "og:type"):
+            self.assertEqual(len(soup.find_all("meta", property=name)), 1, name)
+        self.assertEqual(soup.find("meta", property="og:type")["content"], "website")
+        for name in ("theme-switcher.js", "vendor/htmx.min.js", "main.js"):
+            scripts = [tag for tag in soup.find_all("script", src=True) if name in tag["src"]]
+            self.assertEqual(len(scripts), 1, name)
+        self.assertEqual(len(soup.select(".header.h-card")), 1)
 
 
 class EditorTests(SimpleTestCase):
