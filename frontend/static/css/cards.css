@@ -43,7 +43,7 @@
 
     .card-views {
         color: rgba(255, 255, 255, 0.6375);
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4875), 0 0 6px rgba(0, 0, 0, 0.225);
+        text-shadow: 0 0 3px rgba(0, 0, 0, 0.4875), 0 0 6px rgba(0, 0, 0, 0.225);
         position: absolute;
         top: 20px;
         right: 20px;
