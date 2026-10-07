@@ -1,0 +1,63 @@
+{
+  "environment": "nginx 1.28.0, gzip_static on, local HTTP, Python 3.12.14",
+  "version": "5410f913354fa2a3",
+  "assets": [
+    {
+      "file": "cities.json",
+      "source_bytes": 24291,
+      "gzip_bytes": 7235,
+      "http_status": 200,
+      "content_encoding": "gzip",
+      "local_ms": 13.11
+    },
+    {
+      "file": "land.json",
+      "source_bytes": 96335,
+      "gzip_bytes": 33877,
+      "http_status": 200,
+      "content_encoding": "gzip",
+      "local_ms": 0.62
+    },
+    {
+      "file": "leaflet-1.9.4/leaflet.css",
+      "source_bytes": 14806,
+      "gzip_bytes": 3522,
+      "http_status": 200,
+      "content_encoding": "gzip",
+      "local_ms": 0.42
+    },
+    {
+      "file": "leaflet-1.9.4/leaflet.js",
+      "source_bytes": 147552,
+      "gzip_bytes": 42434,
+      "http_status": 200,
+      "content_encoding": "gzip",
+      "local_ms": 0.62
+    },
+    {
+      "file": "loader.js",
+      "source_bytes": 5199,
+      "gzip_bytes": 1574,
+      "http_status": 200,
+      "content_encoding": "gzip",
+      "local_ms": 0.4
+    },
+    {
+      "file": "map.css",
+      "source_bytes": 4360,
+      "gzip_bytes": 1311,
+      "http_status": 200,
+      "content_encoding": "gzip",
+      "local_ms": 0.38
+    },
+    {
+      "file": "map.js",
+      "source_bytes": 18542,
+      "gzip_bytes": 5213,
+      "http_status": 200,
+      "content_encoding": "gzip",
+      "local_ms": 0.29
+    }
+  ],
+  "total_gzip_bytes": 95166
+}

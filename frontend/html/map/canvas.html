@@ -1,0 +1,24 @@
+{% load map_assets i18n %}{% get_current_language as map_language %}
+<div class="article-map-shell" data-map-shell>
+    <div class="article-map" data-article-map data-mode="{{ map_mode|default:'public' }}"
+         data-language="{{ map_language }}"
+         data-library="{% map_asset 'leaflet-1.9.4/leaflet.js' %}"
+         data-library-css="{% map_asset 'leaflet-1.9.4/leaflet.css' %}"
+         data-code="{% map_asset 'map.js' %}" data-css="{% map_asset 'map.css' %}"
+         data-land="{% map_asset 'land.json' %}" data-cities="{% map_asset 'cities.json' %}"
+         data-markers="{% if map_mode == 'overview' %}{% url 'admin:map_mapmarker_overview' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}{% else %}{% url 'map:markers' %}{% endif %}"
+         {% if map_mode == 'overview' %}data-add="{% url 'admin:map_mapmarker_add' %}"{% endif %}
+         role="region" aria-label="{% if map_language == 'ru' %}Карта статей{% else %}Article map{% endif %}"></div>
+    {% if map_mode == 'edit' or map_mode == 'overview' %}
+        <p class="map-load-error" hidden>Карта недоступна. Координаты можно ввести в форме; точки доступны в таблице.</p>
+    {% else %}
+        <div class="map-fallback">
+            <ul>
+                {% for marker in map_markers %}<li><a href="{{ marker.url }}" target="_self" hx-boost="false">{{ marker.title }}</a></li>{% empty %}
+                    <li>{% if map_language == 'ru' %}Здесь пока нет статей.{% else %}No articles here yet.{% endif %}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+<script src="{% map_asset 'loader.js' %}" defer></script>

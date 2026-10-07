@@ -39,6 +39,7 @@ urlpatterns = [
     path("yandex_5a8ac3fe600ec2e1.html", yandex_verification, name="yandex_verification"),
 
     path("editor/upload/", upload_post_image, name="upload_post_image"),
+    path("map/", include("map.urls")),
     path("<str:post_type>/<str:post_slug>/edit/preview/", preview_post, name="preview_post"),
     path(r"<str:post_type>/<str:post_slug>/", show_post, name="show_post"),
     path(r"<str:post_type>/<str:post_slug>/index.html", show_post, name="show_post_legacy"),  # legacy fallback

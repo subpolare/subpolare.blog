@@ -12,6 +12,7 @@ from posts.editor import admin_only
 from posts.models import Post
 from posts.renderers import render_list, render_list_all, render_post
 from subpolare.posts import POST_TYPES
+from map.views import public_markers
 
 
 def index(request):
@@ -26,6 +27,7 @@ def index(request):
         .order_by("-published_at")[:6]
 
     return render(request, "index.html", {
+        "map_markers": list(public_markers()),
         "blocks": [
             {
                 "template": "index/main.html",
@@ -40,6 +42,9 @@ def index(request):
                 "title": _("Обо мне"),
                 "template": "index/about.html",
                 "posts": [],
+            },
+            {
+                "template": "index/map.html",
             },
         ],
     })

@@ -11,7 +11,7 @@ I used the [vas3k.blog code](https://github.com/vas3k/vas3k.blog/blob/main/vas3k
 ## ⚙️ Tech details
 
 **Backend:**
-- Python 3.11+ with Django 4+
+- Python 3.12+ with Django (versions in `pyproject.toml` / `poetry.lock`)
 - PostgreSQL
 - [Poetry](https://python-poetry.org/) as a package manager
 
@@ -198,3 +198,98 @@ production compose уже подключает его через `env_file`. Н�
 Frontend-сборки нет. Перезапуск нужен для Python-кода и переменных окружения.
 Dockerfile уже выполняет `poetry lock` при сборке — это существующее поведение,
 зависимости и lock-файл в рамках редактора не изменялись.
+
+## Карта статей
+
+После «Обо мне» главная показывает физическую карту с точками статей. Данные
+Natural Earth и Leaflet 1.9.4 лежат локально: ключи API, тайлы, внешний геокодер
+и frontend-сборка не нужны. До приближения к карте загружается только маленький
+загрузчик; без JavaScript или при ошибке остаётся список статей.
+
+Управление: `/godmode/map/mapmarker/`, раздел **Map → Точки**. Доступ имеет
+только активный superuser с `is_staff`. Нажатие на свободное место обзорной карты
+открывает добавление с координатами, на точку — редактирование. В форме можно
+найти город, передвинуть точку, выбрать статью, цвет и превью. Изменения карты
+попадают в БД только после «Сохранить». Одна статья — одна точка. Публичная карта
+исключает выключенные точки, черновики, будущие и закрытые статьи; учитывает язык
+сайта, но не флаг показа статьи в основной ленте.
+
+Превью — квадрат WebP 128×128 до 20 КБ, хранится в БД. Режим «Из статьи» сохраняет
+снимок `Post.main_image()` при сохранении точки. Действие «Обновить превью из
+статьи» в списке обновляет такие снимки; режим «Своё» оно пропускает. Исходники
+не сохраняются и не передаются посетителям. При ошибке используется заглушка,
+а godmode показывает предупреждение.
+
+`MAP_IMAGE_ALLOWED_HOSTS` задаётся в серверном окружении: точные имена хостов
+через запятую, без схемы, пути и wildcard; по умолчанию `i.subpolare.ru`.
+Например, `MAP_IMAGE_ALLOWED_HOSTS=i.subpolare.ru,images.example.org`.
+Скачивание разрешено только по HTTPS:443, без редиректов, прокси и непубличных IP.
+Ограничения: 8 МиБ, 24 Мп, 12000 px по стороне; DNS до 3 с, транспорт до 8 с
+с таймаутом отдельной операции до 3 с. Добавлять хост нужно только при доверии
+к его содержимому. Свой файл загружается непосредственно в форму точки.
+
+### Данные и обновление статики
+
+Использованы `ne_110m_land.geojson` и `ne_110m_populated_places.geojson` из
+[Natural Earth, ревизия ca96624](https://github.com/nvkelso/natural-earth-vector/tree/ca96624a56bd078437bca8184e78163e5039ad19/geojson).
+Natural Earth разрешает использование и изменение этих данных как
+[public domain](https://www.naturalearthdata.com/about/terms-of-use/).
+В подготовленном слое суши нет атрибутов; у 243 городов остаются только
+координаты, русское/английское название, ранг и население. Координаты округлены
+до трёх знаков. Государственных границ, стран и принадлежности городов нет.
+Leaflet взят из официального npm-архива 1.9.4; BSD-2-Clause лицензия сохранена
+в `frontend/static/map/leaflet-1.9.4/LICENSE`. Вид колец основан на
+[референсе vas3k.club](https://github.com/vas3k/vas3k.club/blob/master/frontend/static/css/components/people.css).
+
+Воспроизводимая подготовка с проверкой SHA-256 исходников:
+
+```sh
+poetry run python utils/prepare_map_assets.py
+# Без сети: каталог содержит оба исходных GeoJSON и leaflet-1.9.4.tgz
+poetry run python utils/prepare_map_assets.py --source-dir /path/to/downloads
+# После изменений JS/CSS (также обновляет hash в URL и проверяет лимит 200 КБ):
+poetry run python utils/prepare_map_assets.py --pack-only
+```
+
+Готовые JSON, JS, CSS, `.gz` и `manifest.json` нужно включать в один коммит.
+Приложение никогда не скачивает Natural Earth или Leaflet во время работы.
+Шаблоны используют версию из manifest; после обновления ресурсов перезапустите
+приложение, чтобы сбросить кеш версии. Nginx уже отдаёт `frontend/static/`
+с `gzip_static on`; добавлен `gzip_vary on`. `tmp/static/` не редактируется.
+
+### Проверки и применение владельцем
+
+```sh
+poetry run python manage.py test --settings=subpolare.test_settings
+node --test frontend/tests/*.test.cjs
+node --check frontend/static/map/loader.js
+node --check frontend/static/map/map.js
+node --check frontend/static/js/post-editor.js
+git diff --check
+```
+
+Для отдельных интеграционных тестов нужен **одноразовый PostgreSQL**, пользователь
+с правом создания БД и Python 3.12 (на нём выполнена приёмка). Экспортируйте
+`MAP_TEST_HOST`, `MAP_TEST_PORT`, `MAP_TEST_USER`, `MAP_TEST_PASSWORD`, `MAP_TEST_DB`;
+значения по умолчанию описаны в `subpolare/integration_test_settings.py`.
+Тесты создают и удаляют `test_subpolare_map`, не подключайте их к рабочему кластеру.
+
+```sh
+poetry run python manage.py test map.integration_tests --settings=subpolare.integration_test_settings --noinput
+```
+
+Перед запуском обновлённого приложения примените новую миграцию на нужной БД:
+
+```sh
+poetry run python manage.py migrate
+# Либо для существующей production-конфигурации:
+docker compose -f docker-compose.production.yml exec blog_app python3 manage.py migrate
+```
+
+Затем перезапустите приложение, проверьте `nginx -t` и примените конфигурацию
+nginx обычным способом. Статика отдаётся из исходного каталога, отдельной npm
+сборки нет. При необходимости отката Python-кода таблицу карты можно оставить;
+обратная миграция удаляет точки и их превью. Автоматический деплой не выполнялся.
+
+Замеры, выполненные проверки, ограничения ручной приёмки и скриншоты находятся
+в [отчёте по карте](docs/map-acceptance.md).

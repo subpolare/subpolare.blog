@@ -1,0 +1,9 @@
+{% extends "admin/change_form.html" %}
+{% block form_top %}
+    <div class="map-city-search">
+        <label for="map-city">Найти город</label>
+        <input type="search" id="map-city" autocomplete="off" placeholder="Название города" aria-controls="map-city-results">
+        <div id="map-city-results" aria-live="polite"></div>
+    </div>
+    {% include "map/canvas.html" with map_mode="edit" %}
+{% endblock %}

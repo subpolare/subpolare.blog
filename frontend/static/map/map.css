@@ -1,0 +1,161 @@
+.article-map-shell {
+    position: relative;
+    width: 100%;
+    margin: 0;
+}
+
+.article-map {
+    --map-water: #e5ebf2;
+    --map-land: #faf9f5;
+    --map-coast: #c4c9c9;
+    --map-label: #626a70;
+    --map-surface: #fff;
+    --map-ink: #333;
+    width: 100%;
+    height: 560px;
+    background: var(--map-water);
+    font-family: Ubuntu, Helvetica, sans-serif;
+    isolation: isolate;
+    z-index: 0;
+}
+
+html[theme="dark"] .article-map,
+html[data-theme="dark"] .article-map {
+    --map-water: #1c2229;
+    --map-land: #363c40;
+    --map-coast: #535b5e;
+    --map-label: #adb6bb;
+    --map-surface: #25292d;
+    --map-ink: #eee;
+}
+
+@media (prefers-color-scheme: dark) {
+    html[data-theme="auto"] .article-map {
+        --map-water: #1c2229;
+        --map-land: #363c40;
+        --map-coast: #535b5e;
+        --map-label: #adb6bb;
+        --map-surface: #25292d;
+        --map-ink: #eee;
+    }
+}
+
+.article-map .leaflet-bar a,
+.article-map .leaflet-bar button,
+.article-map .leaflet-control-attribution {
+    background: var(--map-surface);
+    color: var(--map-ink);
+}
+
+.article-map .leaflet-control-attribution a {
+    color: var(--map-label);
+}
+
+.map-world-control button {
+    display: block;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    font-size: 23px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.map-marker-host { background: none; border: 0; }
+.article-map .map-marker {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 2px solid var(--map-surface);
+    border-radius: 50%;
+    background: #bcc0c2;
+    color: var(--map-ink);
+    text-decoration: none;
+    cursor: pointer;
+    font: 700 12px Ubuntu, sans-serif;
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--marker-color) 85%, transparent),
+        0 0 0 5px color-mix(in srgb, var(--marker-color) 40%, transparent),
+        0 0 0 8px color-mix(in srgb, var(--marker-color) 16%, transparent);
+}
+
+.article-map .map-marker-large {
+    width: 46px;
+    height: 46px;
+    border-width: 3px;
+    font-size: 16px;
+    box-shadow:
+        0 0 0 3px color-mix(in srgb, var(--marker-color) 85%, transparent),
+        0 0 0 7px color-mix(in srgb, var(--marker-color) 45%, transparent),
+        0 0 0 12px color-mix(in srgb, var(--marker-color) 18%, transparent);
+}
+
+.article-map .map-marker img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0;
+}
+
+.map-marker-title {
+    position: absolute;
+    top: calc(100% + 15px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: min(240px, 65vw);
+    padding: 5px 9px;
+    border-radius: 5px;
+    background: var(--map-surface);
+    color: var(--map-ink);
+    font-size: 13px;
+    line-height: 1.4;
+    text-align: center;
+    overflow-wrap: anywhere;
+    pointer-events: none;
+    display: none;
+    box-shadow: 0 2px 12px #0002;
+}
+
+.map-marker:hover .map-marker-title,
+.map-marker:focus .map-marker-title { display: block; }
+.map-marker-host:focus-within,
+.map-marker-host:hover { z-index: 10000 !important; }
+.map-marker:focus-visible { outline: 3px solid var(--map-ink); outline-offset: 12px; }
+.map-city-host { pointer-events: none; }
+.map-city-label {
+    color: var(--map-label);
+    font: 12px/20px Ubuntu, sans-serif;
+    white-space: nowrap;
+    text-shadow: 0 1px var(--map-water), 0 -1px var(--map-water), 1px 0 var(--map-water), -1px 0 var(--map-water);
+}
+.map-city-label::before { content: "· "; }
+.map-edit-pin {
+    display: block;
+    width: 26px;
+    height: 26px;
+    box-sizing: border-box;
+    border: 3px solid var(--map-surface);
+    border-radius: 50%;
+    background: #477f98;
+    box-shadow: 0 0 0 5px #477f9855;
+}
+.map-city-search { margin-bottom: 14px; }
+.map-city-search input { margin: 0 10px; max-width: 100%; }
+#map-city-results { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+#map-city-results button { padding: 6px 12px; cursor: pointer; }
+#content .article-map-shell { margin-bottom: 24px; }
+/* The site's padded admin theme needs more room than Django's fixed select height. */
+#mapmarker_form select { height: auto; min-height: 38px; max-width: 100%; }
+.article-map[data-mode="overview"] { height: 360px; }
+.article-map[data-mode="edit"] { height: 400px; }
+.map-load-error { padding: 12px; }
+.article-map-shell [hidden] { display: none !important; }
+@media (max-width: 570px) { .article-map { height: 400px; } }
