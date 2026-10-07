@@ -2,8 +2,11 @@
     display: none;
 }
 
-html[theme="light"] .block-text {
-    box-shadow: var(--block-shadow);
+html:not([theme="dark"]) .block-text {
+    box-shadow:
+        0 0 0 1px rgba(30, 40, 60, 0.025),
+        0 1px 2px rgba(30, 40, 60, 0.04),
+        0 10px 30px rgba(30, 40, 60, 0.08);
 }
 
 html[theme="dark"] .block-text {

@@ -42,11 +42,16 @@
     }
 
     .card-views {
-        color: var(--opposite-text-color);
+        color: #FFF;
+        background-color: rgba(0, 0, 0, 0.65);
+        padding: 5px 10px;
+        border-radius: 999px;
         position: absolute;
         top: 20px;
         right: 20px;
         font-size: 12px;
+        line-height: 1.5;
+        z-index: 21;
     }
 
     .card-icon-lock {
@@ -57,7 +62,6 @@
         font-size: 26px;
     }
 
-        .card:hover .card-views,
         .card:hover .card-icon-lock {
             color: var(--text-color);
         }

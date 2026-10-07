@@ -330,7 +330,13 @@
             justify-content: center;
             gap: 8px 24px;
             font-size: 14px;
-            color: #FEFEFE;
+            line-height: 1.5;
+            color: #FFF;
+            background-color: rgba(0, 0, 0, 0.65);
+            padding: 8px 14px;
+            border-radius: 16px;
+            max-width: calc(100% - 32px);
+            box-sizing: border-box;
         }
 
         @media (max-width: 570px) {
