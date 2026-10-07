@@ -42,10 +42,8 @@
     }
 
     .card-views {
-        color: #FFF;
-        background-color: rgba(0, 0, 0, 0.65);
-        padding: 5px 10px;
-        border-radius: 999px;
+        color: rgba(255, 255, 255, 0.85);
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65), 0 0 6px rgba(0, 0, 0, 0.3);
         position: absolute;
         top: 20px;
         right: 20px;
