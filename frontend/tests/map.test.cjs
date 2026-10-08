@@ -36,14 +36,99 @@ test("city language fallback remains available for the admin search", () => {
     assert.equal(api.cityName(cities[1], "ru"), "Small city");
 });
 
-test("minimum zoom covers both viewport axes in EPSG:4326, including after shrinking", () => {
-    for (const size of [{x: 1440, y: 560}, {x: 390, y: 400}, {x: 2560, y: 560}, {x: 800, y: 560}]) {
+test("minimum zoom fits the entire world in wide and square viewports", () => {
+    for (const size of [{x: 1440, y: 576}, {x: 390, y: 390}, {x: 2560, y: 1024}, {x: 320, y: 320}]) {
         const scale = 2 ** api.minimumWorldZoom(size);
-        assert.ok(512 * scale >= size.x - 1e-9);
-        assert.ok(256 * scale >= size.y - 1e-9);
+        assert.ok(512 * scale <= size.x + 1e-9);
+        assert.ok(256 * scale <= size.y + 1e-9);
         assert.ok(Math.abs(512 * scale - size.x) < 1e-9 || Math.abs(256 * scale - size.y) < 1e-9);
     }
     assert.ok(api.minimumWorldZoom({x: 800, y: 560}) < api.minimumWorldZoom({x: 2560, y: 560}));
+});
+
+test("mobile overview fits every article with padding, including distant points", () => {
+    const size = {x: 390, y: 390};
+    for (const items of [
+        [{latitude: 55.75, longitude: 37.6}, {latitude: 69.16, longitude: 35.14}],
+        [{latitude: -85, longitude: -179}, {latitude: 85, longitude: 179}],
+        [{latitude: 10, longitude: 100}]
+    ]) {
+        const view = api.initialView(size, items, true);
+        assert.ok(Number.isFinite(view.zoom));
+        for (const item of items) {
+            const x = size.x / 2 + (item.longitude - view.center[1]) * 512 / 360 * 2 ** view.zoom;
+            assert.ok(x >= 64 - 1e-9 && x <= size.x - 36 + 1e-9);
+            assert.ok(Math.abs(item.latitude - view.center[0]) * 256 / 180 * 2 ** view.zoom <= size.y / 2 - 36 + 1e-9);
+        }
+    }
+    assert.deepEqual(api.initialView(size, [], true), {center: [0, 0], zoom: api.minimumWorldZoom(size)});
+    assert.equal(api.zoomPercentage(2.3, 2.3), 100);
+    assert.equal(api.zoomPercentage(3.3, 2.3), 200);
+    assert.equal(api.zoomPercentage(1.3, 2.3), 50);
+});
+
+function trackpad() {
+    const events = {}, frames = new Map(), changes = [];
+    let zoom = 1, next = 0;
+    const element = {
+        addEventListener(name, callback, options) { events[name] = callback; assert.equal(options.passive, false); },
+        removeEventListener(name) { delete events[name]; }
+    };
+    const win = {
+        requestAnimationFrame(callback) { frames.set(++next, callback); return next; },
+        cancelAnimationFrame(id) { frames.delete(id); }
+    };
+    const map = {
+        getZoom: () => zoom, getMinZoom: () => -1, getMaxZoom: () => 6,
+        getSize: () => ({x: 390, y: 390}),
+        mouseEventToContainerPoint: event => [event.clientX, event.clientY],
+        setZoomAround(point, value) { zoom = value; changes.push({point, zoom}); }
+    };
+    const destroy = api.installTrackpadZoom(element, map, win);
+    return {events, frames, changes, destroy, map,
+        event(extra) { return Object.assign({clientX: 140, clientY: 120, deltaY: -50, deltaMode: 0, ctrlKey: true, preventDefault() { this.prevented = true; }}, extra); },
+        flush() { let count = 0; while (frames.size) { assert.ok(++count < 100); const [id, callback] = frames.entries().next().value; frames.delete(id); callback(); } }
+    };
+}
+
+test("trackpad pinch smoothly zooms at the pointer, clamps limits and preserves page scrolling", () => {
+    const env = trackpad();
+    const scroll = env.event({ctrlKey: false});
+    env.events.wheel(scroll);
+    assert.equal(scroll.prevented, undefined);
+    assert.equal(env.frames.size, 0);
+    const pinch = env.event({});
+    env.events.wheel(pinch);
+    assert.equal(pinch.prevented, true);
+    env.events.wheel(env.event({}));
+    assert.equal(env.frames.size, 1);
+    env.flush();
+    assert.equal(env.map.getZoom(), 2);
+    assert.ok(env.changes.length > 1);
+    assert.deepEqual(env.changes[0].point, [140, 120]);
+    for (const [deltaY, expected] of [[-10000, 6], [10000, -1]]) {
+        env.events.wheel(env.event({deltaY})); env.flush();
+        assert.equal(env.map.getZoom(), expected);
+    }
+    env.events.wheel(env.event({}));
+    env.destroy();
+    assert.equal(env.frames.size, 0);
+    assert.deepEqual(env.events, {});
+});
+
+test("Safari gesture scale doubles map size without also applying Ctrl+wheel", () => {
+    const env = trackpad();
+    const start = env.event({});
+    env.events.gesturestart(start);
+    assert.equal(start.prevented, true);
+    env.events.gesturechange(env.event({scale: 2}));
+    env.events.wheel(env.event({deltaY: -100}));
+    env.flush();
+    assert.equal(env.map.getZoom(), 2);
+    env.events.gestureend(env.event({}));
+    env.events.wheel(env.event({deltaY: 100})); env.flush();
+    assert.equal(env.map.getZoom(), 1);
+    env.destroy();
 });
 
 test("titles use textContent, links use current tab, previews must be local", () => {

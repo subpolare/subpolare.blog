@@ -7,7 +7,79 @@
 
     function minimumWorldZoom(size) {
         // EPSG:4326 spans 512 × 256 pixels at zoom zero.
-        return Math.max(0, Math.log2(Math.max(size.x / 512, size.y / 256)));
+        return Math.log2(Math.min(size.x / 512, size.y / 256));
+    }
+
+    function initialView(size, items, mobile) {
+        const worldZoom = minimumWorldZoom(size);
+        if (!mobile || !items.length) return {center: [0, 0], zoom: worldZoom};
+        const latitudes = items.map(item => item.latitude);
+        const longitudes = items.map(item => item.longitude);
+        const south = Math.min(...latitudes), north = Math.max(...latitudes);
+        const west = Math.min(...longitudes), east = Math.max(...longitudes);
+        // Leave room for thumbnails/rings and the controls along the left edge.
+        const zoom = Math.min(3, Math.log2(Math.min(
+            Math.max(1, size.x - 100) / ((east - west) * 512 / 360),
+            Math.max(1, size.y - 72) / ((north - south) * 256 / 180)
+        )));
+        const longitudeOffset = 14 * 360 / (512 * Math.pow(2, zoom));
+        return {center: [(south + north) / 2, (west + east) / 2 - longitudeOffset], zoom: zoom};
+    }
+
+    function zoomPercentage(zoom, baseline) {
+        return Math.round(100 * Math.pow(2, zoom - baseline));
+    }
+
+    function installTrackpadZoom(element, map, win) {
+        let frame = null, targetZoom = null, anchor, gestureStartZoom = null;
+        const options = {passive: false};
+        function clamp(zoom) { return Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), zoom)); }
+        function step() {
+            frame = null;
+            targetZoom = clamp(targetZoom);
+            const difference = targetZoom - map.getZoom();
+            const done = Math.abs(difference) < 0.001;
+            map.setZoomAround(anchor, done ? targetZoom : map.getZoom() + difference * 0.4, {animate: false});
+            if (done) targetZoom = null;
+            else frame = win.requestAnimationFrame(step);
+        }
+        function schedule(event, zoom) {
+            anchor = map.mouseEventToContainerPoint(event);
+            targetZoom = clamp(zoom);
+            if (frame === null) frame = win.requestAnimationFrame(step);
+        }
+        function wheel(event) {
+            // Chromium/Firefox expose trackpad pinches as Ctrl+wheel. Ordinary
+            // two-finger scrolling must still scroll the page past the map.
+            if (!event.ctrlKey) return;
+            event.preventDefault();
+            if (gestureStartZoom !== null) return;
+            const units = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? map.getSize().y : 1;
+            schedule(event, (targetZoom === null ? map.getZoom() : targetZoom) - event.deltaY * units / 100);
+        }
+        function gestureStart(event) {
+            event.preventDefault();
+            gestureStartZoom = map.getZoom();
+        }
+        function gestureChange(event) {
+            event.preventDefault();
+            if (gestureStartZoom !== null && event.scale > 0) schedule(event, gestureStartZoom + Math.log2(event.scale));
+        }
+        function gestureEnd(event) {
+            event.preventDefault();
+            gestureStartZoom = null;
+        }
+        const handlers = {wheel};
+        // On touch screens Leaflet already handles finger pinches. Safari's
+        // additional gesture events are only needed for desktop trackpads.
+        if (!win.navigator || !win.navigator.maxTouchPoints) {
+            Object.assign(handlers, {gesturestart: gestureStart, gesturechange: gestureChange, gestureend: gestureEnd});
+        }
+        Object.entries(handlers).forEach(([name, handler]) => element.addEventListener(name, handler, options));
+        return function () {
+            if (frame !== null) win.cancelAnimationFrame(frame);
+            Object.entries(handlers).forEach(([name, handler]) => element.removeEventListener(name, handler, options));
+        };
     }
 
     function wrapLongitude(longitude) {
@@ -109,10 +181,10 @@
         const [land, cities, lakes, rivers, items] = values;
         const worldBounds = L.latLngBounds([[-90, -180], [90, 180]]);
         const map = L.map(element, {
-            crs: L.CRS.EPSG4326, preferCanvas: true, maxZoom: 6, minZoom: 0,
+            crs: L.CRS.EPSG4326, preferCanvas: true, maxZoom: 6, minZoom: -3,
             zoomSnap: 0, maxBounds: worldBounds, maxBoundsViscosity: 1,
             scrollWheelZoom: false, touchZoom: true, bounceAtZoomLimits: false,
-            dragging: true, keyboard: true, worldCopyJump: false,
+            dragging: true, keyboard: true, worldCopyJump: false, trackResize: false,
             attributionControl: true, zoomControl: true
         });
         const cleaners = [];
@@ -124,17 +196,21 @@
             map.remove();
         }
         try {
-            function minimumZoom() {
-                // Cover the viewport: neither axis may expose space beyond the
-                // single world, including on portrait screens and after resize.
-                return minimumWorldZoom(map.getSize());
+            function homeView() {
+                return initialView(map.getSize(), items, !edit && !overview && win.matchMedia("(max-width: 570px)").matches);
             }
+            let home = homeView();
+            let atHome = true;
+            let resizing = false;
+            map.on("zoomstart", function () { if (!resizing) atHome = false; });
 
             function showWorld() {
-                map.setView([15, 0], map.getMinZoom(), {animate: false});
+                home = homeView();
+                map.setView(home.center, home.zoom, {animate: false});
+                atHome = true;
             }
 
-            map.setMinZoom(minimumZoom());
+            map.setMinZoom(Math.min(minimumWorldZoom(map.getSize()), home.zoom));
             map.attributionControl.setPrefix(false);
             map.attributionControl.addAttribution('<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>');
             const language = data.language;
@@ -156,6 +232,24 @@
             });
             map.addControl(new WorldControl());
             showWorld();
+            const ZoomReadout = L.Control.extend({
+                options: {position: "bottomleft"},
+                onAdd: function () {
+                    const box = L.DomUtil.create("div", "map-zoom-readout");
+                    function update() {
+                        box.textContent = zoomPercentage(map.getZoom(), home.zoom) + "%";
+                        box.setAttribute("aria-label", (language === "ru" ? "Масштаб: " : "Zoom: ") + box.textContent);
+                    }
+                    box.title = language === "ru" ? "100% — начальный обзор" : "100% is the initial view";
+                    map.on("zoomend resize", update);
+                    cleaners.push(function () { map.off("zoomend resize", update); });
+                    L.DomEvent.disableClickPropagation(box);
+                    update();
+                    return box;
+                }
+            });
+            map.addControl(new ZoomReadout());
+            cleaners.push(installTrackpadZoom(element, map, win));
             const landLayer = L.layerGroup().addTo(map);
             const markerLayer = L.layerGroup().addTo(map);
             const cityLayer = L.layerGroup().addTo(map);
@@ -192,7 +286,7 @@
 
             function addMarker(item, position, count, onClick) {
                 const large = map.getZoom() >= 4;
-                const diameter = large ? 46 : 26;
+                const diameter = large ? 32 : 18;
                 const node = markerElement(doc, item, large, count, win.location.origin);
                 // An actual anchor handles Enter and a single tap, in the current tab.
                 L.DomEvent.disableClickPropagation(node);
@@ -245,9 +339,10 @@
                 cityLayer.clearLayers();
                 const color = win.getComputedStyle(element).getPropertyValue("--map-label").trim();
                 cities.forEach(function (city) {
+                    if (city.hidden) return;
                     const position = pointFor(city.coordinates[1], city.coordinates[0]);
                     L.circleMarker(position, {
-                        radius: 1.75, stroke: false, fillColor: color, fillOpacity: 0.5, interactive: false
+                        radius: 1.1, stroke: false, fillColor: color, fillOpacity: 0.6, interactive: false
                     }).addTo(cityLayer);
                 });
             }
@@ -334,11 +429,19 @@
             const preference = win.matchMedia("(prefers-color-scheme: dark)");
             listen(preference, "change", drawGeography);
             const resize = new win.ResizeObserver(function () {
-                const wasWorldView = Math.abs(map.getZoom() - map.getMinZoom()) < 0.001;
+                const wasWorldView = atHome;
+                resizing = true;
                 map.invalidateSize({pan: false});
-                map.setMinZoom(minimumZoom());
+                home = homeView();
+                const minimum = Math.min(minimumWorldZoom(map.getSize()), home.zoom);
+                // setMinZoom would queue an animated zoom when the viewport
+                // grows; that delayed animation can overwrite showWorld below.
+                if (map.getZoom() < minimum) map.setZoom(minimum, {animate: false});
+                map.setMinZoom(minimum);
                 if (wasWorldView) showWorld();
                 else map.panInsideBounds(worldBounds, {animate: false});
+                map.fire("zoomend");
+                resizing = false;
             });
             resize.observe(element);
             cleaners.push(function () { resize.disconnect(); });
@@ -351,7 +454,8 @@
         }
     }
 
-    return {mount: mount, minimumWorldZoom: minimumWorldZoom, wrapLongitude: wrapLongitude,
+    return {mount: mount, minimumWorldZoom: minimumWorldZoom, initialView: initialView,
+        zoomPercentage: zoomPercentage, installTrackpadZoom: installTrackpadZoom, wrapLongitude: wrapLongitude,
         groupMarkers: groupMarkers, cityName: cityName,
         safeURL: safeURL, markerElement: markerElement};
 });

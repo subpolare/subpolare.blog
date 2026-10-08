@@ -13,7 +13,8 @@
     --map-surface: #fff;
     --map-ink: #333;
     width: 100%;
-    height: 560px;
+    height: auto;
+    aspect-ratio: 5 / 2;
     background: var(--map-water);
     font-family: Ubuntu, Helvetica, sans-serif;
     isolation: isolate;
@@ -66,14 +67,24 @@ html[data-theme="dark"] .article-map {
 }
 
 .map-marker-host { background: none; border: 0; }
+.map-zoom-readout {
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: var(--map-surface);
+    color: var(--map-ink);
+    font: 12px/1.4 Ubuntu, sans-serif;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 1px 4px #0002;
+}
+
 .article-map .map-marker {
     display: flex;
     position: relative;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    width: 26px;
-    height: 26px;
+    width: 18px;
+    height: 18px;
     padding: 0;
     border: 2px solid var(--map-surface);
     border-radius: 50%;
@@ -81,22 +92,22 @@ html[data-theme="dark"] .article-map {
     color: var(--map-ink);
     text-decoration: none;
     cursor: pointer;
-    font: 700 12px Ubuntu, sans-serif;
+    font: 700 10px Ubuntu, sans-serif;
     box-shadow:
-        0 0 0 2px color-mix(in srgb, var(--marker-color) 85%, transparent),
-        0 0 0 5px color-mix(in srgb, var(--marker-color) 40%, transparent),
-        0 0 0 8px color-mix(in srgb, var(--marker-color) 16%, transparent);
+        0 0 0 1px color-mix(in srgb, var(--marker-color) 65%, transparent),
+        0 0 0 3px color-mix(in srgb, var(--marker-color) 25%, transparent),
+        0 0 0 5px color-mix(in srgb, var(--marker-color) 10%, transparent);
 }
 
 .article-map .map-marker-large {
-    width: 46px;
-    height: 46px;
-    border-width: 3px;
-    font-size: 16px;
+    width: 32px;
+    height: 32px;
+    border-width: 2px;
+    font-size: 13px;
     box-shadow:
-        0 0 0 3px color-mix(in srgb, var(--marker-color) 85%, transparent),
-        0 0 0 7px color-mix(in srgb, var(--marker-color) 45%, transparent),
-        0 0 0 12px color-mix(in srgb, var(--marker-color) 18%, transparent);
+        0 0 0 2px color-mix(in srgb, var(--marker-color) 65%, transparent),
+        0 0 0 4px color-mix(in srgb, var(--marker-color) 30%, transparent),
+        0 0 0 7px color-mix(in srgb, var(--marker-color) 12%, transparent);
 }
 
 .article-map .map-marker img {
@@ -153,4 +164,4 @@ html[data-theme="dark"] .article-map {
 .article-map[data-mode="edit"] { height: 400px; }
 .map-load-error { padding: 12px; }
 .article-map-shell [hidden] { display: none !important; }
-@media (max-width: 570px) { .article-map { height: 400px; } }
+@media (max-width: 570px) { .article-map[data-mode="public"] { aspect-ratio: 1; } }

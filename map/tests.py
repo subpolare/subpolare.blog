@@ -41,8 +41,8 @@ class MapAssetsTests(SimpleTestCase):
         root = Path(__file__).resolve().parent.parent / "frontend/static/map"
         for filename, types, count in (
             ("land.json", ("Polygon", "MultiPolygon"), None),
-            ("lakes.json", ("Polygon", "MultiPolygon"), 24),
-            ("rivers.json", ("LineString", "MultiLineString"), 13),
+            ("lakes.json", ("Polygon", "MultiPolygon"), 412),
+            ("rivers.json", ("LineString", "MultiLineString"), 461),
         ):
             collection = json.loads((root / filename).read_text())
             self.assertTrue(collection["features"])
@@ -52,12 +52,28 @@ class MapAssetsTests(SimpleTestCase):
                 self.assertEqual(feature["properties"], {})
                 self.assertIn(feature["geometry"]["type"], types)
         cities = json.loads((root / "cities.json").read_text())
-        self.assertEqual(len(cities), 243)
+        self.assertEqual(len(cities), 1251)
         for city in cities:
-            self.assertEqual(set(city), {"coordinates", "ru", "en", "rank", "population"})
+            self.assertEqual(set(city) - {"hidden"}, {"coordinates", "ru", "en", "rank", "population"})
             self.assertTrue(city["ru"] and city["en"])
             validate_longitude(city["coordinates"][0])
             validate_latitude(city["coordinates"][1])
+        hidden = [city for city in cities if city.get("hidden")]
+        self.assertEqual(len(hidden), 12)
+        self.assertTrue(all(city["hidden"] is True for city in hidden))
+        victoria = [city for city in cities if city["en"] == "Victoria" and city["coordinates"][0] < 0]
+        self.assertEqual(len(victoria), 1)
+        self.assertNotIn("hidden", victoria[0])
+
+    def test_simplification_keeps_bends_endpoints_and_tiny_closed_islands(self):
+        from utils.prepare_map_assets import simplify_coordinates, simplify_line
+
+        self.assertEqual(simplify_line([[0, 0], [1, 0.01], [2, 0]], 0.05), [[0, 0], [2, 0]])
+        bend = [[0, 0], [1, 1], [2, 0]]
+        self.assertEqual(simplify_line(bend, 0.05), bend)
+        island = [[0, 0], [0.01, 0], [0.01, 0.01], [0, 0]]
+        self.assertEqual(simplify_coordinates([island]), [island])
+        self.assertEqual(simplify_coordinates([]), [])
 
     def test_gzip_siblings_manifest_version_and_size_budget_match_source(self):
         root = Path(__file__).resolve().parent.parent / "frontend/static/map"
@@ -74,7 +90,7 @@ class MapAssetsTests(SimpleTestCase):
             total += len(compressed)
         self.assertEqual(manifest["version"], digest.hexdigest()[:16])
         self.assertEqual(manifest["gzip_bytes"], total)
-        self.assertLessEqual(total, 200_000)
+        self.assertLessEqual(total, 325_000)
 
 
 class MapValidationTests(SimpleTestCase):

@@ -15,11 +15,29 @@ from urllib.request import urlopen
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "frontend/static/map"
 REVISION = "ca96624a56bd078437bca8184e78163e5039ad19"
+GEOMETRY_TOLERANCE = 0.05  # degrees; roughly 5.6 km at the equator
+ASSET_BUDGET = 325_000
+# Tiny ocean islands look like stray dots at the site's overview scale.
+# Keep these places searchable in the editor, but omit their background dots.
+HIDDEN_CITY_DOTS = {
+    (179.217, -8.517),  # Funafuti
+    (144.75, 13.47),  # Hagåtña
+    (171.38, 7.103),  # Majuro
+    (73.509, 4.172),  # Malé
+    (134.627, 7.487),  # Melekeok
+    (158.15, 6.917),  # Palikir
+    (-149.567, -17.533),  # Papeete
+    (173.018, 1.338),  # South Tarawa
+    (55.45, -4.617),  # Victoria, Seychelles
+    (-171.769, -13.836),  # Apia
+    (-175.221, -21.139),  # Nuku'alofa
+    (-170.707, -14.277),  # Pago Pago
+}
 SOURCES = {
-    "ne_110m_lakes.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_110m_lakes.geojson", "eb02ecc86c82004fccbf979058bfabbbd6c2d07968c7844d38eb1c9152d2ffc9"),
-    "ne_110m_rivers_lake_centerlines.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_110m_rivers_lake_centerlines.geojson", "55aa4497405afc07cdc931b7fbe062c4d6693ba2a550c0d24899953f5d507c8d"),
-    "ne_110m_land.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_110m_land.geojson", "9e0729ee253ca7d7a5c4ae9395fb1902264c5377c52e224d13dd85010e2835d9"),
-    "ne_110m_populated_places.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_110m_populated_places.geojson", "a86028b083182b68c7620fc6e1a8a47ee547cb9cd2fb62ccbb78bea786440899"),
+    "ne_50m_lakes.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_50m_lakes.geojson", "d350b75978b26fe839b797c2c529b2fb8f47fb3983c03f4964e36d5df9378a52"),
+    "ne_50m_rivers_lake_centerlines.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_50m_rivers_lake_centerlines.geojson", "f286e0ce978fde999ca2d7a78c764be08542e19b63cded52b05c12d5173ccc51"),
+    "ne_50m_land.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_50m_land.geojson", "e874b27a51d146452be360cafb3cc50c86001074a67d534113e6534682f9826b"),
+    "ne_50m_populated_places.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_50m_populated_places.geojson", "da4662b7bbfeb897d02f228c5839131dce27acff5717630f91ccff4f67828ee7"),
     "leaflet-1.9.4.tgz": ("https://registry.npmjs.org/leaflet/-/leaflet-1.9.4.tgz", "84c65a256e50657896f54c33bd857b6849ebe94c817803be818bf32a3dde0b77"),
 }
 
@@ -44,17 +62,47 @@ def round_coordinates(value):
     return [round_coordinates(item) for item in value] if isinstance(value, list) else round(value, 3)
 
 
+def simplify_line(points, tolerance):
+    """Douglas–Peucker simplification, retaining endpoints and detailed bends."""
+    if len(points) <= 2:
+        return points
+    first, last = points[0], points[-1]
+    dx, dy = last[0] - first[0], last[1] - first[1]
+    length = dx * dx + dy * dy
+    farthest, split = 0, 0
+    for index, point in enumerate(points[1:-1], 1):
+        fraction = max(0, min(1, ((point[0] - first[0]) * dx + (point[1] - first[1]) * dy) / length)) if length else 0
+        distance = (point[0] - first[0] - fraction * dx) ** 2 + (point[1] - first[1] - fraction * dy) ** 2
+        if distance > farthest:
+            farthest, split = distance, index
+    if farthest > tolerance * tolerance:
+        return simplify_line(points[:split + 1], tolerance)[:-1] + simplify_line(points[split:], tolerance)
+    return [first, last]
+
+
+def simplify_coordinates(coordinates):
+    if not coordinates:
+        return []
+    if isinstance(coordinates[0][0], (int, float)):
+        simplified = simplify_line(coordinates, GEOMETRY_TOLERANCE)
+        # Preserve tiny islands/lakes rather than collapsing their closed rings.
+        if coordinates[0] == coordinates[-1] and len(simplified) < 4:
+            simplified = coordinates
+        return round_coordinates(simplified)
+    return [simplify_coordinates(part) for part in coordinates]
+
+
 def prepare(directory):
     OUTPUT.mkdir(parents=True, exist_ok=True)
     for name, source_name in (("land", "land"), ("lakes", "lakes"), ("rivers", "rivers_lake_centerlines")):
-        collection = json.loads(source(f"ne_110m_{source_name}.geojson", directory))
+        collection = json.loads(source(f"ne_50m_{source_name}.geojson", directory))
         write_json(f"{name}.json", {"type": "FeatureCollection", "features": [
             {"type": "Feature", "properties": {}, "geometry": {
                 "type": feature["geometry"]["type"],
-                "coordinates": round_coordinates(feature["geometry"]["coordinates"]),
-            }} for feature in collection["features"]
+                "coordinates": simplify_coordinates(feature["geometry"]["coordinates"]),
+            }} for feature in collection["features"] if feature["geometry"]["coordinates"]
         ]})
-    places = json.loads(source("ne_110m_populated_places.geojson", directory))
+    places = json.loads(source("ne_50m_populated_places.geojson", directory))
     cities = []
     for feature in places["features"]:
         props = feature["properties"]
@@ -63,6 +111,7 @@ def prepare(directory):
             "ru": props.get("NAME_RU") or props["NAME"],
             "en": props.get("NAME_EN") or props["NAME"],
             "rank": props["SCALERANK"], "population": props["POP_MAX"],
+            **({"hidden": True} if tuple(round_coordinates(feature["geometry"]["coordinates"])) in HIDDEN_CITY_DOTS else {}),
         })
     write_json("cities.json", sorted(cities, key=lambda city: (city["rank"], -city["population"], city["en"])))
     vendor = OUTPUT / "leaflet-1.9.4"
@@ -94,8 +143,8 @@ def pack():
         total += len(compressed)
         print(f"{path.relative_to(OUTPUT)}: {len(data):,} bytes; gzip {len(compressed):,}")
     write_json("manifest.json", {"version": digest.hexdigest()[:16], "gzip_bytes": total, "natural_earth_revision": REVISION})
-    print(f"TOTAL: {total:,} bytes gzip (budget 200,000)")
-    if total > 200_000:
+    print(f"TOTAL: {total:,} bytes gzip (budget {ASSET_BUDGET:,})")
+    if total > ASSET_BUDGET:
         raise ValueError("Map asset budget exceeded")
 
 
