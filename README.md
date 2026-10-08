@@ -230,13 +230,19 @@ Natural Earth и Leaflet 1.9.4 лежат локально: ключи API, та
 
 ### Данные и обновление статики
 
-Использованы `ne_110m_land.geojson` и `ne_110m_populated_places.geojson` из
+Использованы `ne_110m_land.geojson`, `ne_110m_lakes.geojson`,
+`ne_110m_rivers_lake_centerlines.geojson` и `ne_110m_populated_places.geojson` из
 [Natural Earth, ревизия ca96624](https://github.com/nvkelso/natural-earth-vector/tree/ca96624a56bd078437bca8184e78163e5039ad19/geojson).
 Natural Earth разрешает использование и изменение этих данных как
 [public domain](https://www.naturalearthdata.com/about/terms-of-use/).
-В подготовленном слое суши нет атрибутов; у 243 городов остаются только
+В подготовленных слоях суши, 24 озёр и 13 рек нет атрибутов; у 243 городов остаются только
 координаты, русское/английское название, ранг и население. Координаты округлены
 до трёх знаков. Государственных границ, стран и принадлежности городов нет.
+Карта использует `L.CRS.EPSG4326`: все города показаны тусклыми точками
+радиусом 1,75 px без подписей. Единственный мир ограничен долготами ±180°
+и широтами ±90°. Минимальный масштаб заполняет блок по обеим осям и
+пересчитывается при изменении его размера; на узком экране мир можно двигать
+по горизонтали. Названия городов сохранены для поиска в редакторе.
 Leaflet взят из официального npm-архива 1.9.4; BSD-2-Clause лицензия сохранена
 в `frontend/static/map/leaflet-1.9.4/LICENSE`. Вид колец основан на
 [референсе vas3k.club](https://github.com/vas3k/vas3k.club/blob/master/frontend/static/css/components/people.css).
@@ -245,7 +251,7 @@ Leaflet взят из официального npm-архива 1.9.4; BSD-2-Cla
 
 ```sh
 poetry run python utils/prepare_map_assets.py
-# Без сети: каталог содержит оба исходных GeoJSON и leaflet-1.9.4.tgz
+# Без сети: каталог содержит четыре исходных GeoJSON и leaflet-1.9.4.tgz
 poetry run python utils/prepare_map_assets.py --source-dir /path/to/downloads
 # После изменений JS/CSS (также обновляет hash в URL и проверяет лимит 200 КБ):
 poetry run python utils/prepare_map_assets.py --pack-only

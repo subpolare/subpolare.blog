@@ -20,13 +20,11 @@ test("exact coordinate matches group together, including both sides of the date 
     const original = JSON.stringify(markers);
     assert.deepEqual(api.groupMarkers(markers).map(group => group.map(item => item.id)), [[1, 2], [3]]);
     assert.equal(JSON.stringify(markers), original);
-    assert.equal(api.nearestLongitude(-179, 179), 181);
-    assert.equal(api.nearestLongitude(179, -179), -181);
     assert.equal(api.wrapLongitude(541), -179);
     assert.equal(api.groupMarkers([{latitude: 0, longitude: 0}, {latitude: 0, longitude: 1e-15}]).length, 2);
 });
 
-test("city language fallback, zoom population thresholds and rank priority", () => {
+test("city language fallback remains available for the admin search", () => {
     const cities = [
         {ru: "Москва", en: "Moscow", population: 6000000, rank: 2},
         {ru: "", en: "Small city", population: 999999, rank: 1},
@@ -36,12 +34,16 @@ test("city language fallback, zoom population thresholds and rank priority", () 
     assert.equal(api.cityName(cities[0], "ru"), "Москва");
     assert.equal(api.cityName(cities[0], "es"), "Moscow");
     assert.equal(api.cityName(cities[1], "ru"), "Small city");
-    assert.equal(api.visibleCities(cities, 2).length, 2);
-    assert.equal(api.visibleCities(cities, 3).length, 3);
-    assert.equal(api.visibleCities(cities, 4).length, 4);
-    assert.equal(api.visibleCities(cities, 4)[0].en, "Large");
-    assert.equal(api.intersects({left: 0, right: 20, top: 0, bottom: 20}, {left: 19, right: 30, top: 10, bottom: 30}), true);
-    assert.equal(api.intersects({left: 0, right: 20, top: 0, bottom: 20}, {left: 21, right: 30, top: 10, bottom: 30}), false);
+});
+
+test("minimum zoom covers both viewport axes in EPSG:4326, including after shrinking", () => {
+    for (const size of [{x: 1440, y: 560}, {x: 390, y: 400}, {x: 2560, y: 560}, {x: 800, y: 560}]) {
+        const scale = 2 ** api.minimumWorldZoom(size);
+        assert.ok(512 * scale >= size.x - 1e-9);
+        assert.ok(256 * scale >= size.y - 1e-9);
+        assert.ok(Math.abs(512 * scale - size.x) < 1e-9 || Math.abs(256 * scale - size.y) < 1e-9);
+    }
+    assert.ok(api.minimumWorldZoom({x: 800, y: 560}) < api.minimumWorldZoom({x: 2560, y: 560}));
 });
 
 test("titles use textContent, links use current tab, previews must be local", () => {

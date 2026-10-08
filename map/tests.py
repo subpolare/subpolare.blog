@@ -39,13 +39,20 @@ def image_bytes(size=(240, 180), format="PNG"):
 class MapAssetsTests(SimpleTestCase):
     def test_geodata_has_only_physical_geometry_and_city_fields(self):
         root = Path(__file__).resolve().parent.parent / "frontend/static/map"
-        land = json.loads((root / "land.json").read_text())
-        self.assertTrue(land["features"])
-        for feature in land["features"]:
-            self.assertEqual(feature["properties"], {})
-            self.assertIn(feature["geometry"]["type"], ("Polygon", "MultiPolygon"))
+        for filename, types, count in (
+            ("land.json", ("Polygon", "MultiPolygon"), None),
+            ("lakes.json", ("Polygon", "MultiPolygon"), 24),
+            ("rivers.json", ("LineString", "MultiLineString"), 13),
+        ):
+            collection = json.loads((root / filename).read_text())
+            self.assertTrue(collection["features"])
+            if count is not None:
+                self.assertEqual(len(collection["features"]), count)
+            for feature in collection["features"]:
+                self.assertEqual(feature["properties"], {})
+                self.assertIn(feature["geometry"]["type"], types)
         cities = json.loads((root / "cities.json").read_text())
-        self.assertTrue(cities)
+        self.assertEqual(len(cities), 243)
         for city in cities:
             self.assertEqual(set(city), {"coordinates", "ru", "en", "rank", "population"})
             self.assertTrue(city["ru"] and city["en"])

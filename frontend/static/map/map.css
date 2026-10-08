@@ -8,6 +8,7 @@
     --map-water: #e5ebf2;
     --map-land: #faf9f5;
     --map-coast: #c4c9c9;
+    --map-river: #a8bdcc;
     --map-label: #626a70;
     --map-surface: #fff;
     --map-ink: #333;
@@ -24,6 +25,7 @@ html[data-theme="dark"] .article-map {
     --map-water: #1c2229;
     --map-land: #363c40;
     --map-coast: #535b5e;
+    --map-river: #657e91;
     --map-label: #adb6bb;
     --map-surface: #25292d;
     --map-ink: #eee;
@@ -34,6 +36,7 @@ html[data-theme="dark"] .article-map {
         --map-water: #1c2229;
         --map-land: #363c40;
         --map-coast: #535b5e;
+        --map-river: #657e91;
         --map-label: #adb6bb;
         --map-surface: #25292d;
         --map-ink: #eee;
@@ -129,14 +132,6 @@ html[data-theme="dark"] .article-map {
 .map-marker-host:focus-within,
 .map-marker-host:hover { z-index: 10000 !important; }
 .map-marker:focus-visible { outline: 3px solid var(--map-ink); outline-offset: 12px; }
-.map-city-host { pointer-events: none; }
-.map-city-label {
-    color: var(--map-label);
-    font: 12px/20px Ubuntu, sans-serif;
-    white-space: nowrap;
-    text-shadow: 0 1px var(--map-water), 0 -1px var(--map-water), 1px 0 var(--map-water), -1px 0 var(--map-water);
-}
-.map-city-label::before { content: "· "; }
 .map-edit-pin {
     display: block;
     width: 26px;

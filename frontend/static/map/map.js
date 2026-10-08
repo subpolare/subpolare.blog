@@ -5,8 +5,9 @@
 })(typeof window === "undefined" ? globalThis : window, function () {
     "use strict";
 
-    function nearestLongitude(longitude, center) {
-        return longitude + 360 * Math.round((center - longitude) / 360);
+    function minimumWorldZoom(size) {
+        // EPSG:4326 spans 512 × 256 pixels at zoom zero.
+        return Math.max(0, Math.log2(Math.max(size.x / 512, size.y / 256)));
     }
 
     function wrapLongitude(longitude) {
@@ -28,16 +29,6 @@
 
     function cityName(city, language) {
         return (language === "ru" ? city.ru : city.en) || city.en || city.ru || "";
-    }
-
-    function visibleCities(cities, zoom) {
-        const minimum = zoom < 3 ? 5000000 : zoom < 4 ? 1000000 : 0;
-        return cities.filter(city => city.population >= minimum)
-            .sort((a, b) => a.rank - b.rank || b.population - a.population);
-    }
-
-    function intersects(a, b) {
-        return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
     }
 
     function safeURL(value, origin) {
@@ -103,6 +94,8 @@
             values = await Promise.all([
                 fetchJSON(data.land, requestController.signal),
                 fetchJSON(data.cities, requestController.signal),
+                fetchJSON(data.lakes, requestController.signal),
+                fetchJSON(data.rivers, requestController.signal),
                 edit ? Promise.resolve([]) : fetchJSON(data.markers, requestController.signal)
             ]);
         } catch (error) {
@@ -113,10 +106,13 @@
             signal.removeEventListener("abort", abort);
         }
         if (signal.aborted) throw new Error("Map removed");
-        const [land, cities, items] = values;
+        const [land, cities, lakes, rivers, items] = values;
+        const worldBounds = L.latLngBounds([[-90, -180], [90, 180]]);
         const map = L.map(element, {
-            preferCanvas: true, maxZoom: 6, minZoom: 0,
-            scrollWheelZoom: false, touchZoom: true, dragging: true, keyboard: true, worldCopyJump: true,
+            crs: L.CRS.EPSG4326, preferCanvas: true, maxZoom: 6, minZoom: 0,
+            zoomSnap: 0, maxBounds: worldBounds, maxBoundsViscosity: 1,
+            scrollWheelZoom: false, touchZoom: true, bounceAtZoomLimits: false,
+            dragging: true, keyboard: true, worldCopyJump: false,
             attributionControl: true, zoomControl: true
         });
         const cleaners = [];
@@ -128,6 +124,17 @@
             map.remove();
         }
         try {
+            function minimumZoom() {
+                // Cover the viewport: neither axis may expose space beyond the
+                // single world, including on portrait screens and after resize.
+                return minimumWorldZoom(map.getSize());
+            }
+
+            function showWorld() {
+                map.setView([15, 0], map.getMinZoom(), {animate: false});
+            }
+
+            map.setMinZoom(minimumZoom());
             map.attributionControl.setPrefix(false);
             map.attributionControl.addAttribution('<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>');
             const language = data.language;
@@ -141,46 +148,40 @@
                     button.textContent = "↺";
                     button.title = worldTitle;
                     button.setAttribute("aria-label", worldTitle);
-                    button.addEventListener("click", function () { map.fitWorld(); });
+                    button.addEventListener("click", showWorld);
                     box.appendChild(button);
                     L.DomEvent.disableClickPropagation(box);
                     return box;
                 }
             });
             map.addControl(new WorldControl());
-            map.fitWorld();
+            showWorld();
             const landLayer = L.layerGroup().addTo(map);
             const markerLayer = L.layerGroup().addTo(map);
             const cityLayer = L.layerGroup().addTo(map);
             const connectorLayer = L.layerGroup().addTo(map);
-            let worldRange;
             let expanded;
             let expandedFocus;
             let formMarker;
 
-            function landStyle() {
+            function drawGeography() {
                 const style = win.getComputedStyle(element);
-                return {fillColor: style.getPropertyValue("--map-land").trim(), color: style.getPropertyValue("--map-coast").trim(), weight: 0.65, fillOpacity: 1, interactive: false};
-            }
-
-            function drawLand(force) {
-                const bounds = map.getBounds();
-                const first = Math.floor((bounds.getWest() + 180) / 360) - 1;
-                const last = Math.floor((bounds.getEast() + 180) / 360) + 1;
-                const range = first + ":" + last;
-                if (!force && worldRange === range) return;
-                worldRange = range;
+                const color = name => style.getPropertyValue(name).trim();
                 landLayer.clearLayers();
-                const style = landStyle();
-                for (let offset = first; offset <= last; offset++) {
-                    L.geoJSON(land, {style: style, interactive: false,
-                        coordsToLatLng: coords => L.latLng(coords[1], coords[0] + offset * 360)
-                    }).addTo(landLayer);
-                }
+                L.geoJSON(land, {interactive: false, style: {
+                    fillColor: color("--map-land"), color: color("--map-coast"), weight: 0.65, fillOpacity: 1
+                }}).addTo(landLayer);
+                L.geoJSON(rivers, {interactive: false, style: {
+                    color: color("--map-river"), weight: 1, opacity: 0.85
+                }}).addTo(landLayer);
+                L.geoJSON(lakes, {interactive: false, style: {
+                    fillColor: color("--map-water"), color: color("--map-river"), weight: 0.5, fillOpacity: 1
+                }}).addTo(landLayer);
+                drawCities();
             }
 
             function pointFor(latitude, longitude) {
-                return L.latLng(latitude, nearestLongitude(longitude, map.getCenter().lng));
+                return L.latLng(latitude, longitude);
             }
 
             function inView(point, padding) {
@@ -240,28 +241,18 @@
                 expandedFocus = false;
             }
 
-            const measure = doc.createElement("canvas").getContext("2d");
-            measure.font = "12px Ubuntu, sans-serif";
             function drawCities() {
                 cityLayer.clearLayers();
-                const occupied = [];
-                visibleCities(cities, map.getZoom()).forEach(function (city) {
+                const color = win.getComputedStyle(element).getPropertyValue("--map-label").trim();
+                cities.forEach(function (city) {
                     const position = pointFor(city.coordinates[1], city.coordinates[0]);
-                    if (!inView(position, 0)) return;
-                    const point = map.latLngToContainerPoint(position);
-                    const name = cityName(city, language);
-                    const width = measure.measureText(name).width + 12;
-                    const box = {left: point.x + 3, right: point.x + width + 3, top: point.y - 10, bottom: point.y + 10};
-                    if (occupied.some(other => intersects(box, other))) return;
-                    occupied.push(box);
-                    const label = doc.createElement("span");
-                    label.className = "map-city-label";
-                    label.textContent = name;
-                    L.marker(position, {icon: L.divIcon({html: label, className: "map-city-host", iconSize: [width, 20], iconAnchor: [-3, 10]}), interactive: false, keyboard: false, pane: "tooltipPane"}).addTo(cityLayer);
+                    L.circleMarker(position, {
+                        radius: 1.75, stroke: false, fillColor: color, fillOpacity: 0.5, interactive: false
+                    }).addTo(cityLayer);
                 });
             }
 
-            function redraw() { drawLand(); drawCities(); if (edit) updateFormMarker(); else drawMarkers(); }
+            function redraw() { if (edit) updateFormMarker(); else drawMarkers(); }
             map.on("moveend resize", redraw);
             map.on("click", function (event) {
                 if (overview) {
@@ -337,14 +328,21 @@
                 cleaners.push(function () { results.replaceChildren(); });
             }
 
-            const themeObserver = new win.MutationObserver(function () { drawLand(true); });
+            const themeObserver = new win.MutationObserver(drawGeography);
             themeObserver.observe(doc.documentElement, {attributes: true, attributeFilter: ["theme", "data-theme"]});
             cleaners.push(function () { themeObserver.disconnect(); });
             const preference = win.matchMedia("(prefers-color-scheme: dark)");
-            listen(preference, "change", function () { drawLand(true); });
-            const resize = new win.ResizeObserver(function () { map.invalidateSize(); });
+            listen(preference, "change", drawGeography);
+            const resize = new win.ResizeObserver(function () {
+                const wasWorldView = Math.abs(map.getZoom() - map.getMinZoom()) < 0.001;
+                map.invalidateSize({pan: false});
+                map.setMinZoom(minimumZoom());
+                if (wasWorldView) showWorld();
+                else map.panInsideBounds(worldBounds, {animate: false});
+            });
             resize.observe(element);
             cleaners.push(function () { resize.disconnect(); });
+            drawGeography();
             redraw();
             return {destroy: destroy};
         } catch (error) {
@@ -353,7 +351,7 @@
         }
     }
 
-    return {mount: mount, nearestLongitude: nearestLongitude, wrapLongitude: wrapLongitude,
-        groupMarkers: groupMarkers, cityName: cityName, visibleCities: visibleCities,
-        intersects: intersects, safeURL: safeURL, markerElement: markerElement};
+    return {mount: mount, minimumWorldZoom: minimumWorldZoom, wrapLongitude: wrapLongitude,
+        groupMarkers: groupMarkers, cityName: cityName,
+        safeURL: safeURL, markerElement: markerElement};
 });

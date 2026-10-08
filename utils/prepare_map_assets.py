@@ -16,6 +16,8 @@ ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "frontend/static/map"
 REVISION = "ca96624a56bd078437bca8184e78163e5039ad19"
 SOURCES = {
+    "ne_110m_lakes.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_110m_lakes.geojson", "eb02ecc86c82004fccbf979058bfabbbd6c2d07968c7844d38eb1c9152d2ffc9"),
+    "ne_110m_rivers_lake_centerlines.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_110m_rivers_lake_centerlines.geojson", "55aa4497405afc07cdc931b7fbe062c4d6693ba2a550c0d24899953f5d507c8d"),
     "ne_110m_land.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_110m_land.geojson", "9e0729ee253ca7d7a5c4ae9395fb1902264c5377c52e224d13dd85010e2835d9"),
     "ne_110m_populated_places.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_110m_populated_places.geojson", "a86028b083182b68c7620fc6e1a8a47ee547cb9cd2fb62ccbb78bea786440899"),
     "leaflet-1.9.4.tgz": ("https://registry.npmjs.org/leaflet/-/leaflet-1.9.4.tgz", "84c65a256e50657896f54c33bd857b6849ebe94c817803be818bf32a3dde0b77"),
@@ -44,13 +46,14 @@ def round_coordinates(value):
 
 def prepare(directory):
     OUTPUT.mkdir(parents=True, exist_ok=True)
-    land = json.loads(source("ne_110m_land.geojson", directory))
-    write_json("land.json", {"type": "FeatureCollection", "features": [
-        {"type": "Feature", "properties": {}, "geometry": {
-            "type": feature["geometry"]["type"],
-            "coordinates": round_coordinates(feature["geometry"]["coordinates"]),
-        }} for feature in land["features"]
-    ]})
+    for name, source_name in (("land", "land"), ("lakes", "lakes"), ("rivers", "rivers_lake_centerlines")):
+        collection = json.loads(source(f"ne_110m_{source_name}.geojson", directory))
+        write_json(f"{name}.json", {"type": "FeatureCollection", "features": [
+            {"type": "Feature", "properties": {}, "geometry": {
+                "type": feature["geometry"]["type"],
+                "coordinates": round_coordinates(feature["geometry"]["coordinates"]),
+            }} for feature in collection["features"]
+        ]})
     places = json.loads(source("ne_110m_populated_places.geojson", directory))
     cities = []
     for feature in places["features"]:

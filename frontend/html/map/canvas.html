@@ -6,6 +6,7 @@
          data-library-css="{% map_asset 'leaflet-1.9.4/leaflet.css' %}"
          data-code="{% map_asset 'map.js' %}" data-css="{% map_asset 'map.css' %}"
          data-land="{% map_asset 'land.json' %}" data-cities="{% map_asset 'cities.json' %}"
+         data-lakes="{% map_asset 'lakes.json' %}" data-rivers="{% map_asset 'rivers.json' %}"
          data-markers="{% if map_mode == 'overview' %}{% url 'admin:map_mapmarker_overview' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}{% else %}{% url 'map:markers' %}{% endif %}"
          {% if map_mode == 'overview' %}data-add="{% url 'admin:map_mapmarker_add' %}"{% endif %}
          role="region" aria-label="{% if map_language == 'ru' %}Карта статей{% else %}Article map{% endif %}"></div>
