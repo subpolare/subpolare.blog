@@ -1,12 +1,15 @@
 {# Reserve space before loading any map resources, including its CSS. #}
 <style>
+    .index-map { padding-top: 40px; }
     .article-map-shell { position: relative; width: 100%; }
     .article-map { width: 100%; height: auto; aspect-ratio: 5 / 2; }
     .map-fallback { position: absolute; inset: 0; overflow: auto; padding: 24px; box-sizing: border-box; }
     .map-fallback ul { margin: 0 auto; max-width: 800px; }
     .map-fallback[hidden] { display: none; }
-    .index-map-caption { max-width: 800px; margin: 24px auto 0; padding: 0 20px; font-size: 110%; line-height: 1.6; text-align: center; }
+    .index-map-caption { max-width: 800px; margin: 24px auto 0; padding: 0 20px; font-size: 110%; line-height: 1.6; text-align: center; color: #666; }
     @media (max-width: 570px) { .article-map { aspect-ratio: 1; } }
 </style>
-{% include "map/canvas.html" %}
-<p class="index-map-caption">Эта карта выглядит пустой. Но это потому что подписал я на ней только то, что хоть раз в жизни видел своими глазами.</p>
+<div class="index-map">
+    {% include "map/canvas.html" %}
+    <p class="index-map-caption">Эта карта выглядит пустой. Но это потому что подписал я на ней только то, что хоть раз в жизни видел своими глазами</p>
+</div>
