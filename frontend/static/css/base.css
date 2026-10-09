@@ -381,6 +381,15 @@ i.fa, i.fab {
     width: 60px;
 }
 
+    /* Touch browsers can keep :hover active after tapping the switch. */
+    @media (hover: none) {
+        .theme-switcher:hover {
+            background-color: var(--button-color);
+            color: var(--button-bg-color);
+            border: var(--button-border);
+        }
+    }
+
     .theme-switcher input {
         display: none;
     }
