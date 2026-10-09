@@ -19,6 +19,32 @@ def validate_longitude(value):
 validate_color = RegexValidator(r"\A#[0-9a-fA-F]{6}\Z", "Укажите цвет в формате #RRGGBB.")
 
 
+class MapPlace(models.Model):
+    name = models.CharField("Название", max_length=200)
+    latitude = models.FloatField("Широта", validators=[validate_latitude])
+    longitude = models.FloatField("Долгота", validators=[validate_longitude])
+    note = models.CharField("Краткая заметка", max_length=500, blank=True,
+                            help_text="Показывается вместе с названием при наведении на жёлтую точку.")
+    is_enabled = models.BooleanField("Включена", default=True)
+
+    class Meta:
+        verbose_name = "жёлтая точка"
+        verbose_name_plural = "жёлтые точки"
+        ordering = ("name", "pk")
+        constraints = [
+            models.CheckConstraint(condition=models.Q(latitude__gte=-90, latitude__lte=90), name="map_place_latitude_range"),
+            models.CheckConstraint(condition=models.Q(longitude__gte=-180, longitude__lte=180), name="map_place_longitude_range"),
+        ]
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        validate_latitude(self.latitude)
+        validate_longitude(self.longitude)
+        return super().save(*args, **kwargs)
+
+
 class MapMarkerQuerySet(models.QuerySet):
     def public(self):
         return self.filter(

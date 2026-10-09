@@ -16,6 +16,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import Http404
 from django.middleware.csrf import CsrfViewMiddleware, get_token
 from django.test import RequestFactory, SimpleTestCase
+from django.template.loader import render_to_string
 from django.urls import resolve, reverse
 from django.utils import translation
 from PIL import Image
@@ -37,12 +38,34 @@ def image_bytes(size=(240, 180), format="PNG"):
 
 
 class MapAssetsTests(SimpleTestCase):
+    def test_land_omits_antarctica_and_retains_other_continents(self):
+        from utils.prepare_map_assets import without_antarctica
+
+        root = Path(__file__).resolve().parent.parent / "frontend/static/map"
+        collection = json.loads((root / "land.json").read_text())
+        for feature in collection["features"]:
+            geometry = feature["geometry"]
+            self.assertEqual(without_antarctica(geometry), geometry)
+        antarctica = [[[-180, -90], [0, -63], [180, -90], [-180, -90]]]
+        america = [[[-80, -55], [-100, 70], [-40, 20], [-80, -55]]]
+        self.assertEqual(without_antarctica({"type": "Polygon", "coordinates": antarctica})["coordinates"], [])
+        self.assertEqual(without_antarctica({"type": "MultiPolygon", "coordinates": [antarctica, america]})["coordinates"], [america])
+
+    def test_zoom_readout_is_enabled_only_for_superusers(self):
+        for user in (AnonymousUser(), User(is_staff=False), User(is_staff=True), User(is_staff=True, is_superuser=True)):
+            request = RequestFactory().get("/")
+            request.user = user
+            for mode in ("public", "edit", "overview"):
+                with self.subTest(user=user, mode=mode):
+                    html = render_to_string("map/canvas.html", {"map_mode": mode}, request=request)
+                    self.assertEqual('data-show-zoom="true"' in html, user.is_superuser)
+
     def test_geodata_has_only_physical_geometry_and_city_fields(self):
         root = Path(__file__).resolve().parent.parent / "frontend/static/map"
         for filename, types, count in (
             ("land.json", ("Polygon", "MultiPolygon"), None),
             ("lakes.json", ("Polygon", "MultiPolygon"), 412),
-            ("rivers.json", ("LineString", "MultiLineString"), 461),
+            ("rivers.json", ("LineString", "MultiLineString"), 62),
         ):
             collection = json.loads((root / filename).read_text())
             self.assertTrue(collection["features"])

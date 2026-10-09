@@ -13,7 +13,7 @@ from PIL import Image
 
 from posts.models import Post
 from users.models import User
-from .models import MapMarker
+from .models import MapMarker, MapPlace
 from .previews import placeholder
 from .tests import image_bytes
 
@@ -201,3 +201,53 @@ class MapPostgreSQLTests(TestCase):
         self.assertIn('&lt;script&gt;', html)
         self.assertNotIn('<script src="/static/map/leaflet', html)
         self.assertNotIn('src="/map/previews/', html)
+
+    def test_yellow_places_seed_and_public_visibility(self):
+        self.assertEqual(MapPlace.objects.count(), 37)
+        self.assertEqual(MapPlace.objects.filter(name="Токио").count(), 1)
+        self.assertTrue(MapPlace.objects.filter(name="Идзу").exists())
+        place = MapPlace.objects.get(name="ББС")
+        place.note = '<img src=x onerror="alert(1)">\nЗаметка'
+        place.save()
+        response = self.client.get(reverse("map:places"))
+        self.assertIn("no-store", response["Cache-Control"])
+        row = next(row for row in response.json() if row["id"] == place.pk)
+        self.assertEqual(row["note"], place.note)
+        self.assertEqual(set(row), {"id", "name", "note", "latitude", "longitude"})
+        place.is_enabled = False
+        place.save()
+        self.assertNotIn(place.pk, [row["id"] for row in self.client.get(reverse("map:places")).json()])
+        self.assertEqual(self.client.post(reverse("map:places")).status_code, 405)
+
+    def test_yellow_place_admin_create_edit_delete_and_constraints(self):
+        add = reverse("admin:map_mapplace_add")
+        token = self.csrf(add)
+        fields = {"name": "Новое место", "latitude": "12.3", "longitude": "45.6", "note": "Короткая заметка", "is_enabled": "on", "csrfmiddlewaretoken": token, "_save": "Save"}
+        for invalid in ({"latitude": "NaN"}, {"longitude": "181"}, {"note": "a" * 501}):
+            response = self.owner_client.post(add, dict(fields, **invalid))
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(response.context["adminform"].form.errors)
+        self.assertEqual(self.owner_client.post(add, fields).status_code, 302)
+        place = MapPlace.objects.get(name="Новое место")
+        change = reverse("admin:map_mapplace_change", args=[place.pk])
+        self.assertEqual(self.owner_client.post(change, dict(fields, note="Изменена", latitude="-90")).status_code, 302)
+        place.refresh_from_db()
+        self.assertEqual((place.note, place.latitude), ("Изменена", -90))
+        for field, value in (("latitude", 91), ("longitude", float("nan")), ("longitude", float("inf"))):
+            with self.assertRaises(IntegrityError), transaction.atomic():
+                MapPlace.objects.filter(pk=place.pk).update(**{field: value})
+        delete = reverse("admin:map_mapplace_delete", args=[place.pk])
+        self.assertEqual(self.owner_client.post(delete, {"post": "yes", "csrfmiddlewaretoken": token}).status_code, 302)
+        self.assertFalse(MapPlace.objects.filter(pk=place.pk).exists())
+
+    def test_yellow_place_admin_permissions_and_csrf(self):
+        place = MapPlace.objects.first()
+        for name, args in (("changelist", []), ("add", []), ("change", [place.pk]), ("delete", [place.pk])):
+            url = reverse("admin:map_mapplace_" + name, args=args)
+            self.assertEqual(self.owner_client.post(url, {}).status_code, 403)
+            for user in (None, self.reader, self.staff):
+                client = Client()
+                if user:
+                    client.force_login(user)
+                for method in (client.get, client.post):
+                    self.assertIn(method(url, {}).status_code, (302, 403))

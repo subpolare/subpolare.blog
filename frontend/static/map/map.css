@@ -5,9 +5,9 @@
 }
 
 .article-map {
-    --map-water: #e5ebf2;
-    --map-land: #faf9f5;
-    --map-coast: #c4c9c9;
+    --map-water: var(--bg-color, #f2f5fc);
+    --map-land: var(--block-bg-color, #fff);
+    --map-coast: #d5dbe5;
     --map-river: #a8bdcc;
     --map-label: #626a70;
     --map-surface: #fff;
@@ -23,9 +23,9 @@
 
 html[theme="dark"] .article-map,
 html[data-theme="dark"] .article-map {
-    --map-water: #1c2229;
-    --map-land: #363c40;
-    --map-coast: #535b5e;
+    --map-water: var(--bg-color, #171717);
+    --map-land: var(--block-bg-color, #1b1b1c);
+    --map-coast: #343436;
     --map-river: #657e91;
     --map-label: #adb6bb;
     --map-surface: #25292d;
@@ -34,9 +34,9 @@ html[data-theme="dark"] .article-map {
 
 @media (prefers-color-scheme: dark) {
     html[data-theme="auto"] .article-map {
-        --map-water: #1c2229;
-        --map-land: #363c40;
-        --map-coast: #535b5e;
+        --map-water: var(--bg-color, #171717);
+        --map-land: var(--block-bg-color, #1b1b1c);
+        --map-coast: #343436;
         --map-river: #657e91;
         --map-label: #adb6bb;
         --map-surface: #25292d;
@@ -83,8 +83,9 @@ html[data-theme="dark"] .article-map {
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    width: 18px;
-    height: 18px;
+    width: var(--map-marker-size, 28px);
+    height: var(--map-marker-size, 28px);
+    transform: translate(-50%, -50%);
     padding: 0;
     border: 2px solid var(--map-surface);
     border-radius: 50%;
@@ -100,8 +101,6 @@ html[data-theme="dark"] .article-map {
 }
 
 .article-map .map-marker-large {
-    width: 32px;
-    height: 32px;
     border-width: 2px;
     font-size: 13px;
     box-shadow:
@@ -143,6 +142,30 @@ html[data-theme="dark"] .article-map {
 .map-marker-host:focus-within,
 .map-marker-host:hover { z-index: 10000 !important; }
 .map-marker:focus-visible { outline: 3px solid var(--map-ink); outline-offset: 12px; }
+
+.map-place-host { background: none; border: 0; }
+.article-map .map-place {
+    display: block;
+    position: relative;
+    width: var(--map-place-size, 5px);
+    height: var(--map-place-size, 5px);
+    transform: translate(-50%, -50%);
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #f2c94c;
+    box-sizing: border-box;
+    cursor: pointer;
+    font: 13px/1.4 Ubuntu, Helvetica, sans-serif;
+}
+/* A larger transparent target keeps the small dots usable on touch screens. */
+.map-place::before { content: ""; position: absolute; inset: -5px; border-radius: 50%; }
+.map-place:hover .map-marker-title,
+.map-place:focus .map-marker-title { display: block; }
+.map-place-host:hover,
+.map-place-host:focus-within { z-index: 10001 !important; }
+.map-place:focus-visible { outline: 2px solid var(--map-ink); outline-offset: 4px; }
+.map-place-note { display: block; margin-top: 4px; font-weight: normal; white-space: pre-line; }
 .map-edit-pin {
     display: block;
     width: 26px;

@@ -8,7 +8,7 @@ from django.utils.http import parse_etags
 from django.views.decorators.http import require_GET
 
 from .access import is_map_admin, safe_post_url
-from .models import MapMarker
+from .models import MapMarker, MapPlace
 from .previews import placeholder
 
 
@@ -29,6 +29,15 @@ def public_markers():
 @require_GET
 def markers(request):
     response = JsonResponse(list(public_markers()), safe=False)
+    patch_cache_control(response, no_store=True)
+    return response
+
+
+@require_GET
+def places(request):
+    response = JsonResponse(list(MapPlace.objects.filter(is_enabled=True).values(
+        "id", "name", "latitude", "longitude", "note",
+    )), safe=False)
     patch_cache_control(response, no_store=True)
     return response
 

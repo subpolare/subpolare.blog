@@ -17,6 +17,7 @@ OUTPUT = ROOT / "frontend/static/map"
 REVISION = "ca96624a56bd078437bca8184e78163e5039ad19"
 GEOMETRY_TOLERANCE = 0.05  # degrees; roughly 5.6 km at the equator
 ASSET_BUDGET = 325_000
+MAX_RIVER_RANK = 2  # Only the largest rivers; keep their lake centerline segments.
 # Tiny ocean islands look like stray dots at the site's overview scale.
 # Keep these places searchable in the editor, but omit their background dots.
 HIDDEN_CITY_DOTS = {
@@ -92,15 +93,28 @@ def simplify_coordinates(coordinates):
     return [simplify_coordinates(part) for part in coordinates]
 
 
+def without_antarctica(geometry):
+    """Omit Antarctic polygons and islands south of 60°S."""
+    polygons = [geometry["coordinates"]] if geometry["type"] == "Polygon" else geometry["coordinates"]
+    polygons = [polygon for polygon in polygons if any(point[1] >= -60 for point in polygon[0])]
+    return {"type": geometry["type"], "coordinates": (
+        polygons[0] if polygons else []
+    ) if geometry["type"] == "Polygon" else polygons}
+
+
 def prepare(directory):
     OUTPUT.mkdir(parents=True, exist_ok=True)
     for name, source_name in (("land", "land"), ("lakes", "lakes"), ("rivers", "rivers_lake_centerlines")):
         collection = json.loads(source(f"ne_50m_{source_name}.geojson", directory))
+        if name == "land":
+            for feature in collection["features"]:
+                feature["geometry"] = without_antarctica(feature["geometry"])
         write_json(f"{name}.json", {"type": "FeatureCollection", "features": [
             {"type": "Feature", "properties": {}, "geometry": {
                 "type": feature["geometry"]["type"],
                 "coordinates": simplify_coordinates(feature["geometry"]["coordinates"]),
             }} for feature in collection["features"] if feature["geometry"]["coordinates"]
+            and (name != "rivers" or feature["properties"]["scalerank"] <= MAX_RIVER_RANK)
         ]})
     places = json.loads(source("ne_50m_populated_places.geojson", directory))
     cities = []

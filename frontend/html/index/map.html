@@ -5,6 +5,10 @@
     .map-fallback { position: absolute; inset: 0; overflow: auto; padding: 24px; box-sizing: border-box; }
     .map-fallback ul { margin: 0 auto; max-width: 800px; }
     .map-fallback[hidden] { display: none; }
+    .index-map-title { margin: 60px auto 24px; padding: 0; text-align: center; font-size: 290%; font-weight: 500; }
+    .index-map-caption { max-width: 800px; margin: 24px auto 0; padding: 0 20px; font-size: 110%; line-height: 1.6; text-align: center; }
     @media (max-width: 570px) { .article-map { aspect-ratio: 1; } }
 </style>
+<h1 class="index-map-title" id="places">Места</h1>
 {% include "map/canvas.html" %}
+<p class="index-map-caption">Эта карта выглядит пустой. Но это потому что подписал я на ней только то, что хоть раз в жизни видел своими глазами (включая моря и океаны!)</p>

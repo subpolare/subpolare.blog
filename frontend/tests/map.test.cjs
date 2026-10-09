@@ -36,21 +36,20 @@ test("city language fallback remains available for the admin search", () => {
     assert.equal(api.cityName(cities[1], "ru"), "Small city");
 });
 
-test("minimum zoom fits the entire world in wide and square viewports", () => {
+test("minimum zoom fills wide and mobile viewports without exposing world edges", () => {
     for (const size of [{x: 1440, y: 576}, {x: 390, y: 390}, {x: 2560, y: 1024}, {x: 320, y: 320}]) {
         const scale = 2 ** api.minimumWorldZoom(size);
-        assert.ok(512 * scale <= size.x + 1e-9);
-        assert.ok(256 * scale <= size.y + 1e-9);
-        assert.ok(Math.abs(512 * scale - size.x) < 1e-9 || Math.abs(256 * scale - size.y) < 1e-9);
+        assert.ok(512 * scale >= size.x - 1e-9);
+        assert.ok(150 * 256 / 180 * scale >= size.y - 1e-9);
+        assert.ok(Math.abs(512 * scale - size.x) < 1e-9 || Math.abs(150 * 256 / 180 * scale - size.y) < 1e-9);
     }
     assert.ok(api.minimumWorldZoom({x: 800, y: 560}) < api.minimumWorldZoom({x: 2560, y: 560}));
 });
 
-test("mobile overview fits every article with padding, including distant points", () => {
+test("mobile overview fits nearby articles with padding and respects minimum zoom", () => {
     const size = {x: 390, y: 390};
     for (const items of [
         [{latitude: 55.75, longitude: 37.6}, {latitude: 69.16, longitude: 35.14}],
-        [{latitude: -85, longitude: -179}, {latitude: 85, longitude: 179}],
         [{latitude: 10, longitude: 100}]
     ]) {
         const view = api.initialView(size, items, true);
@@ -61,7 +60,9 @@ test("mobile overview fits every article with padding, including distant points"
             assert.ok(Math.abs(item.latitude - view.center[0]) * 256 / 180 * 2 ** view.zoom <= size.y / 2 - 36 + 1e-9);
         }
     }
-    assert.deepEqual(api.initialView(size, [], true), {center: [0, 0], zoom: api.minimumWorldZoom(size)});
+    const distant = api.initialView(size, [{latitude: -55, longitude: -179}, {latitude: 85, longitude: 179}], true);
+    assert.equal(distant.zoom, api.minimumWorldZoom(size));
+    assert.deepEqual(api.initialView(size, [], true), {center: [15, 0], zoom: api.minimumWorldZoom(size)});
     assert.equal(api.zoomPercentage(2.3, 2.3), 100);
     assert.equal(api.zoomPercentage(3.3, 2.3), 200);
     assert.equal(api.zoomPercentage(1.3, 2.3), 50);
@@ -192,6 +193,39 @@ function environment({mountError = false, deferredMount = false, observer = true
         get mounts() { return mounts; }, get destroys() { return destroys; }, get signal() { return signal; }};
 }
 const tick = () => new Promise(resolve => setImmediate(resolve));
+
+test("city dots, yellow places and larger article previews scale continuously with zoom", () => {
+    const home = api.pointSizes(1, 1);
+    assert.equal(home.article, 28);
+    for (const kind of ["city", "place", "article"]) {
+        assert.ok(api.pointSizes(2, 1)[kind] > home[kind]);
+        assert.ok(api.pointSizes(2.5, 1)[kind] > api.pointSizes(2, 1)[kind]);
+        assert.ok(Number.isFinite(api.pointSizes(6, -1)[kind]));
+    }
+    assert.ok(api.pointSizes(6, -1).article <= 52);
+    assert.ok(home.place > home.city * 2);
+});
+
+test("yellow place tooltip safely renders names and notes and stays keyboard accessible", () => {
+    const name = '<img src=x onerror="alert(1)">';
+    const note = '<script>alert(2)</script>\nВторая строка';
+    const place = api.placeElement({createElement: node}, {name, note});
+    assert.equal(place.tag, "button");
+    assert.equal(place.type, "button");
+    assert.equal(place.attributes["aria-label"], name + ". " + note);
+    const tooltip = place.children[0];
+    assert.equal(tooltip.children[0].textContent, name);
+    assert.equal(tooltip.children[1].textContent, note);
+    assert.equal(tooltip.children[1].innerHTML, undefined);
+    assert.equal(api.placeElement({createElement: node}, {name, note: ""}).children[0].children.length, 1);
+});
+
+test("yellow cities replace matching background dots without hiding nearby towns", () => {
+    const city = {ru: "Москва", en: "Moscow", coordinates: [37.614, 55.754]};
+    assert.equal(api.isHighlightedCity(city, [{name: "Москва", latitude: 55.75, longitude: 37.62}]), true);
+    assert.equal(api.isHighlightedCity(city, [{name: "Другое название", latitude: 55.754, longitude: 37.614}]), true);
+    assert.equal(api.isHighlightedCity(city, [{name: "Соседний город", latitude: 55.9, longitude: 37.8}]), false);
+});
 
 test("lazy load makes no resource requests before 300px threshold and initializes once", async () => {
     const env = environment();

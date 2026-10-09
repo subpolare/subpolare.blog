@@ -5,23 +5,27 @@
 })(typeof window === "undefined" ? globalThis : window, function () {
     "use strict";
 
+    const WORLD_SOUTH = -60;
+    const WORLD_NORTH = 90;
+
     function minimumWorldZoom(size) {
-        // EPSG:4326 spans 512 × 256 pixels at zoom zero.
-        return Math.log2(Math.min(size.x / 512, size.y / 256));
+        // Fill the viewport within the world bounds, excluding Antarctica.
+        // Fitting the whole world instead leaves draggable empty space on mobile.
+        return Math.log2(Math.max(size.x / 512, size.y / ((WORLD_NORTH - WORLD_SOUTH) * 256 / 180)));
     }
 
     function initialView(size, items, mobile) {
         const worldZoom = minimumWorldZoom(size);
-        if (!mobile || !items.length) return {center: [0, 0], zoom: worldZoom};
+        if (!mobile || !items.length) return {center: [(WORLD_SOUTH + WORLD_NORTH) / 2, 0], zoom: worldZoom};
         const latitudes = items.map(item => item.latitude);
         const longitudes = items.map(item => item.longitude);
         const south = Math.min(...latitudes), north = Math.max(...latitudes);
         const west = Math.min(...longitudes), east = Math.max(...longitudes);
         // Leave room for thumbnails/rings and the controls along the left edge.
-        const zoom = Math.min(3, Math.log2(Math.min(
+        const zoom = Math.max(worldZoom, Math.min(3, Math.log2(Math.min(
             Math.max(1, size.x - 100) / ((east - west) * 512 / 360),
             Math.max(1, size.y - 72) / ((north - south) * 256 / 180)
-        )));
+        ))));
         const longitudeOffset = 14 * 360 / (512 * Math.pow(2, zoom));
         return {center: [(south + north) / 2, (west + east) / 2 - longitudeOffset], zoom: zoom};
     }
@@ -103,6 +107,37 @@
         return (language === "ru" ? city.ru : city.en) || city.en || city.ru || "";
     }
 
+    function pointSizes(zoom, baseline) {
+        const scale = Math.pow(2, Math.max(0, zoom - baseline) * 0.22);
+        return {city: Math.min(3, 1.1 * scale), place: Math.min(10, 5 * scale), article: Math.min(52, 28 * scale)};
+    }
+
+    function placeElement(doc, place) {
+        const node = doc.createElement("button");
+        node.type = "button";
+        node.className = "map-place";
+        node.setAttribute("aria-label", place.name + (place.note ? ". " + place.note : ""));
+        const tooltip = doc.createElement("span");
+        tooltip.className = "map-marker-title";
+        const name = doc.createElement("strong");
+        name.textContent = place.name;
+        tooltip.appendChild(name);
+        if (place.note) {
+            const note = doc.createElement("span");
+            note.className = "map-place-note";
+            note.textContent = place.note;
+            tooltip.appendChild(note);
+        }
+        node.appendChild(tooltip);
+        return node;
+    }
+
+    function isHighlightedCity(city, places) {
+        return places.some(place => place.name === city.ru || place.name === city.en ||
+            (Math.abs(place.latitude - city.coordinates[1]) < 0.02 &&
+             Math.abs(wrapLongitude(place.longitude - city.coordinates[0])) < 0.02));
+    }
+
     function safeURL(value, origin) {
         try {
             if (!value || /[\s\\\u0000-\u001f\u007f]/.test(value) || value.startsWith("//")) return null;
@@ -168,7 +203,8 @@
                 fetchJSON(data.cities, requestController.signal),
                 fetchJSON(data.lakes, requestController.signal),
                 fetchJSON(data.rivers, requestController.signal),
-                edit ? Promise.resolve([]) : fetchJSON(data.markers, requestController.signal)
+                edit ? Promise.resolve([]) : fetchJSON(data.markers, requestController.signal),
+                fetchJSON(data.places, requestController.signal)
             ]);
         } catch (error) {
             requestController.abort();
@@ -178,14 +214,19 @@
             signal.removeEventListener("abort", abort);
         }
         if (signal.aborted) throw new Error("Map removed");
-        const [land, cities, lakes, rivers, items] = values;
-        const worldBounds = L.latLngBounds([[-90, -180], [90, 180]]);
+        const [land, cities, lakes, rivers, items, places] = values;
+        const worldBounds = L.latLngBounds([[WORLD_SOUTH, -180], [WORLD_NORTH, 180]]);
         const map = L.map(element, {
             crs: L.CRS.EPSG4326, preferCanvas: true, maxZoom: 6, minZoom: -3,
             zoomSnap: 0, maxBounds: worldBounds, maxBoundsViscosity: 1,
             scrollWheelZoom: false, touchZoom: true, bounceAtZoomLimits: false,
             dragging: true, keyboard: true, worldCopyJump: false, trackResize: false,
             attributionControl: true, zoomControl: true
+        });
+        // Leaflet applies maxBounds to dragging and completed zooms, but its
+        // two-finger handler also needs bounds during movement and its final reset.
+        map.on("move", function () {
+            map.panInsideBounds(worldBounds, {animate: false});
         });
         const cleaners = [];
         let destroyed = false;
@@ -210,7 +251,7 @@
                 atHome = true;
             }
 
-            map.setMinZoom(Math.min(minimumWorldZoom(map.getSize()), home.zoom));
+            map.setMinZoom(minimumWorldZoom(map.getSize()));
             map.attributionControl.setPrefix(false);
             map.attributionControl.addAttribution('<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>');
             const language = data.language;
@@ -248,11 +289,12 @@
                     return box;
                 }
             });
-            map.addControl(new ZoomReadout());
+            if (data.showZoom === "true") map.addControl(new ZoomReadout());
             cleaners.push(installTrackpadZoom(element, map, win));
             const landLayer = L.layerGroup().addTo(map);
             const markerLayer = L.layerGroup().addTo(map);
             const cityLayer = L.layerGroup().addTo(map);
+            const placeLayer = L.layerGroup().addTo(map);
             const connectorLayer = L.layerGroup().addTo(map);
             let expanded;
             let expandedFocus;
@@ -266,10 +308,10 @@
                     fillColor: color("--map-land"), color: color("--map-coast"), weight: 0.65, fillOpacity: 1
                 }}).addTo(landLayer);
                 L.geoJSON(rivers, {interactive: false, style: {
-                    color: color("--map-river"), weight: 1, opacity: 0.85
+                    color: color("--map-river"), weight: 0.65, opacity: 0.22
                 }}).addTo(landLayer);
                 L.geoJSON(lakes, {interactive: false, style: {
-                    fillColor: color("--map-water"), color: color("--map-river"), weight: 0.5, fillOpacity: 1
+                    fillColor: color("--map-water"), stroke: false, fillOpacity: 1
                 }}).addTo(landLayer);
                 drawCities();
             }
@@ -286,12 +328,11 @@
 
             function addMarker(item, position, count, onClick) {
                 const large = map.getZoom() >= 4;
-                const diameter = large ? 32 : 18;
                 const node = markerElement(doc, item, large, count, win.location.origin);
                 // An actual anchor handles Enter and a single tap, in the current tab.
                 L.DomEvent.disableClickPropagation(node);
                 if (onClick) node.addEventListener("click", onClick);
-                L.marker(position, {icon: L.divIcon({html: node, className: "map-marker-host", iconSize: [diameter, diameter], iconAnchor: [diameter / 2, diameter / 2]}), keyboard: false, bubblingMouseEvents: false}).addTo(markerLayer);
+                L.marker(position, {icon: L.divIcon({html: node, className: "map-marker-host", iconSize: [0, 0], iconAnchor: [0, 0]}), keyboard: false, bubblingMouseEvents: false}).addTo(markerLayer);
                 return node;
             }
 
@@ -317,7 +358,8 @@
                     }
                     if (expanded !== key) return;
                     const center = map.latLngToContainerPoint(origin);
-                    const radius = Math.max(map.getZoom() >= 4 ? 82 : 58, group.length * (map.getZoom() >= 4 ? 76 : 52) / (2 * Math.PI));
+                    const diameter = pointSizes(map.getZoom(), minimumWorldZoom(map.getSize())).article;
+                    const radius = Math.max(diameter + 36, group.length * (diameter + 28) / (2 * Math.PI));
                     // Keep the circle anchored to its real point, so even a large
                     // group can be panned into view without changing coordinates.
                     group.forEach(function (member, index) {
@@ -339,13 +381,32 @@
                 cityLayer.clearLayers();
                 const color = win.getComputedStyle(element).getPropertyValue("--map-label").trim();
                 cities.forEach(function (city) {
-                    if (city.hidden) return;
+                    if (city.hidden || isHighlightedCity(city, places)) return;
                     const position = pointFor(city.coordinates[1], city.coordinates[0]);
                     L.circleMarker(position, {
-                        radius: 1.1, stroke: false, fillColor: color, fillOpacity: 0.6, interactive: false
+                        radius: pointSizes(map.getZoom(), minimumWorldZoom(map.getSize())).city,
+                        stroke: false, fillColor: color, fillOpacity: 0.6, interactive: false
                     }).addTo(cityLayer);
                 });
             }
+
+            places.forEach(function (place) {
+                const node = placeElement(doc, place);
+                L.DomEvent.disableClickPropagation(node);
+                L.marker(pointFor(place.latitude, place.longitude), {
+                    icon: L.divIcon({html: node, className: "map-place-host", iconSize: [0, 0], iconAnchor: [0, 0]}),
+                    keyboard: false, bubblingMouseEvents: false, zIndexOffset: -1000
+                }).addTo(placeLayer);
+            });
+
+            function resizePoints() {
+                const sizes = pointSizes(map.getZoom(), minimumWorldZoom(map.getSize()));
+                element.style.setProperty("--map-place-size", sizes.place + "px");
+                element.style.setProperty("--map-marker-size", sizes.article + "px");
+                cityLayer.eachLayer(city => city.setRadius(sizes.city));
+            }
+            map.on("zoom resize", resizePoints);
+            resizePoints();
 
             function redraw() { if (edit) updateFormMarker(); else drawMarkers(); }
             map.on("moveend resize", redraw);
@@ -433,7 +494,7 @@
                 resizing = true;
                 map.invalidateSize({pan: false});
                 home = homeView();
-                const minimum = Math.min(minimumWorldZoom(map.getSize()), home.zoom);
+                const minimum = minimumWorldZoom(map.getSize());
                 // setMinZoom would queue an animated zoom when the viewport
                 // grows; that delayed animation can overwrite showWorld below.
                 if (map.getZoom() < minimum) map.setZoom(minimum, {animate: false});
@@ -456,6 +517,7 @@
 
     return {mount: mount, minimumWorldZoom: minimumWorldZoom, initialView: initialView,
         zoomPercentage: zoomPercentage, installTrackpadZoom: installTrackpadZoom, wrapLongitude: wrapLongitude,
-        groupMarkers: groupMarkers, cityName: cityName,
+        groupMarkers: groupMarkers, cityName: cityName, pointSizes: pointSizes,
+        placeElement: placeElement, isHighlightedCity: isHighlightedCity,
         safeURL: safeURL, markerElement: markerElement};
 });

@@ -2,6 +2,8 @@
 <div class="article-map-shell" data-map-shell>
     <div class="article-map" data-article-map data-mode="{{ map_mode|default:'public' }}"
          data-language="{{ map_language }}"
+         {% if request.user.is_superuser %}data-show-zoom="true"{% endif %}
+         data-places="{% url 'map:places' %}"
          data-library="{% map_asset 'leaflet-1.9.4/leaflet.js' %}"
          data-library-css="{% map_asset 'leaflet-1.9.4/leaflet.css' %}"
          data-code="{% map_asset 'map.js' %}" data-css="{% map_asset 'map.css' %}"

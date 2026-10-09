@@ -9,8 +9,27 @@ from django.views.decorators.http import require_GET
 
 from .access import is_map_admin
 from .forms import MapMarkerForm
-from .models import MapMarker
+from .models import MapMarker, MapPlace
 from .previews import update_preview
+
+
+@admin.register(MapPlace)
+class MapPlaceAdmin(admin.ModelAdmin):
+    change_form_template = "admin/map/change_form.html"
+    list_display = ("name", "latitude", "longitude", "note", "is_enabled")
+    list_filter = ("is_enabled",)
+    search_fields = ("name", "note")
+    fields = ("name", ("latitude", "longitude"), "note", "is_enabled")
+
+    def has_module_permission(self, request):
+        return is_map_admin(request.user)
+
+    def has_view_permission(self, request, obj=None):
+        return is_map_admin(request.user)
+
+    has_add_permission = has_view_permission
+    has_change_permission = has_view_permission
+    has_delete_permission = has_view_permission
 
 
 @admin.register(MapMarker)
