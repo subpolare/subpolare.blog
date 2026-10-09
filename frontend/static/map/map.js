@@ -109,7 +109,11 @@
 
     function pointSizes(zoom, baseline) {
         const scale = Math.pow(2, Math.max(0, zoom - baseline) * 0.22);
-        return {city: Math.min(3, 1.1 * scale), place: Math.min(10, 5 * scale), article: Math.min(52, 28 * scale)};
+        return {city: Math.min(3, 1.1 * scale), place: Math.min(10, 5 * scale), article: Math.min(72, 44 * scale)};
+    }
+
+    function cityAppearance(city, size) {
+        return {radius: size * (city.secondary ? 0.85 : 1), fillOpacity: city.secondary ? 0.32 : 0.6};
     }
 
     function placeElement(doc, place) {
@@ -384,8 +388,9 @@
                     if (city.hidden || isHighlightedCity(city, places)) return;
                     const position = pointFor(city.coordinates[1], city.coordinates[0]);
                     L.circleMarker(position, {
-                        radius: pointSizes(map.getZoom(), minimumWorldZoom(map.getSize())).city,
-                        stroke: false, fillColor: color, fillOpacity: 0.6, interactive: false
+                        ...cityAppearance(city, pointSizes(map.getZoom(), minimumWorldZoom(map.getSize())).city),
+                        secondary: Boolean(city.secondary),
+                        stroke: false, fillColor: color, interactive: false
                     }).addTo(cityLayer);
                 });
             }
@@ -403,7 +408,7 @@
                 const sizes = pointSizes(map.getZoom(), minimumWorldZoom(map.getSize()));
                 element.style.setProperty("--map-place-size", sizes.place + "px");
                 element.style.setProperty("--map-marker-size", sizes.article + "px");
-                cityLayer.eachLayer(city => city.setRadius(sizes.city));
+                cityLayer.eachLayer(city => city.setRadius(cityAppearance(city.options, sizes.city).radius));
             }
             map.on("zoom resize", resizePoints);
             resizePoints();
@@ -467,7 +472,7 @@
                     results.replaceChildren();
                     const query = input.value.trim().toLocaleLowerCase();
                     if (query.length < 2) return;
-                    cities.filter(city => (city.ru + " " + city.en).toLocaleLowerCase().includes(query)).slice(0, 12).forEach(function (city) {
+                    cities.filter(city => !city.secondary && (city.ru + " " + city.en).toLocaleLowerCase().includes(query)).slice(0, 12).forEach(function (city) {
                         const button = doc.createElement("button");
                         button.type = "button";
                         button.textContent = cityName(city, language);
@@ -517,7 +522,7 @@
 
     return {mount: mount, minimumWorldZoom: minimumWorldZoom, initialView: initialView,
         zoomPercentage: zoomPercentage, installTrackpadZoom: installTrackpadZoom, wrapLongitude: wrapLongitude,
-        groupMarkers: groupMarkers, cityName: cityName, pointSizes: pointSizes,
+        groupMarkers: groupMarkers, cityName: cityName, pointSizes: pointSizes, cityAppearance: cityAppearance,
         placeElement: placeElement, isHighlightedCity: isHighlightedCity,
         safeURL: safeURL, markerElement: markerElement};
 });

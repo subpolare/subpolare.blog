@@ -75,8 +75,17 @@ class MapAssetsTests(SimpleTestCase):
                 self.assertEqual(feature["properties"], {})
                 self.assertIn(feature["geometry"]["type"], types)
         cities = json.loads((root / "cities.json").read_text())
-        self.assertEqual(len(cities), 1251)
-        for city in cities:
+        primary = [city for city in cities if not city.get("secondary")]
+        secondary = [city for city in cities if city.get("secondary")]
+        self.assertEqual(len(primary), 1251)
+        self.assertEqual(len(secondary), sum(not city.get("hidden") for city in primary))
+        self.assertEqual(len({tuple(city["coordinates"]) for city in cities}), len(cities))
+        for city in secondary:
+            self.assertEqual(set(city), {"coordinates", "secondary"})
+            self.assertIs(city["secondary"], True)
+            validate_longitude(city["coordinates"][0])
+            validate_latitude(city["coordinates"][1])
+        for city in primary:
             self.assertEqual(set(city) - {"hidden"}, {"coordinates", "ru", "en", "rank", "population"})
             self.assertTrue(city["ru"] and city["en"])
             validate_longitude(city["coordinates"][0])
@@ -84,7 +93,7 @@ class MapAssetsTests(SimpleTestCase):
         hidden = [city for city in cities if city.get("hidden")]
         self.assertEqual(len(hidden), 12)
         self.assertTrue(all(city["hidden"] is True for city in hidden))
-        victoria = [city for city in cities if city["en"] == "Victoria" and city["coordinates"][0] < 0]
+        victoria = [city for city in cities if city.get("en") == "Victoria" and city["coordinates"][0] < 0]
         self.assertEqual(len(victoria), 1)
         self.assertNotIn("hidden", victoria[0])
 

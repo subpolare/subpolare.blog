@@ -35,6 +35,7 @@ HIDDEN_CITY_DOTS = {
     (-170.707, -14.277),  # Pago Pago
 }
 SOURCES = {
+    "ne_10m_populated_places_simple.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_10m_populated_places_simple.geojson", "fd3fa867a320cbd5c5b6bb5bc550afeec2939fb2cef688e508007282a55ac42f"),
     "ne_50m_lakes.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_50m_lakes.geojson", "d350b75978b26fe839b797c2c529b2fb8f47fb3983c03f4964e36d5df9378a52"),
     "ne_50m_rivers_lake_centerlines.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_50m_rivers_lake_centerlines.geojson", "f286e0ce978fde999ca2d7a78c764be08542e19b63cded52b05c12d5173ccc51"),
     "ne_50m_land.geojson": (f"https://raw.githubusercontent.com/nvkelso/natural-earth-vector/{REVISION}/geojson/ne_50m_land.geojson", "e874b27a51d146452be360cafb3cc50c86001074a67d534113e6534682f9826b"),
@@ -116,18 +117,7 @@ def prepare(directory):
             }} for feature in collection["features"] if feature["geometry"]["coordinates"]
             and (name != "rivers" or feature["properties"]["scalerank"] <= MAX_RIVER_RANK)
         ]})
-    places = json.loads(source("ne_50m_populated_places.geojson", directory))
-    cities = []
-    for feature in places["features"]:
-        props = feature["properties"]
-        cities.append({
-            "coordinates": round_coordinates(feature["geometry"]["coordinates"]),
-            "ru": props.get("NAME_RU") or props["NAME"],
-            "en": props.get("NAME_EN") or props["NAME"],
-            "rank": props["SCALERANK"], "population": props["POP_MAX"],
-            **({"hidden": True} if tuple(round_coordinates(feature["geometry"]["coordinates"])) in HIDDEN_CITY_DOTS else {}),
-        })
-    write_json("cities.json", sorted(cities, key=lambda city: (city["rank"], -city["population"], city["en"])))
+    prepare_cities(directory)
     vendor = OUTPUT / "leaflet-1.9.4"
     vendor.mkdir(exist_ok=True)
     with tarfile.open(fileobj=io.BytesIO(source("leaflet-1.9.4.tgz", directory))) as archive:
@@ -139,6 +129,46 @@ def prepare(directory):
     draw = ImageDraw.Draw(placeholder)
     draw.ellipse((42, 42, 86, 86), fill="#e5e7e8")
     placeholder.save(ROOT / "map/placeholder.webp", format="WEBP", quality=70, method=6)
+
+
+def prepare_cities(directory):
+    places = json.loads(source("ne_50m_populated_places.geojson", directory))
+    cities = []
+    for feature in places["features"]:
+        props = feature["properties"]
+        cities.append({
+            "coordinates": round_coordinates(feature["geometry"]["coordinates"]),
+            "ru": props.get("NAME_RU") or props["NAME"],
+            "en": props.get("NAME_EN") or props["NAME"],
+            "rank": props["SCALERANK"], "population": props["POP_MAX"],
+            **({"hidden": True} if tuple(round_coordinates(feature["geometry"]["coordinates"])) in HIDDEN_CITY_DOTS else {}),
+        })
+    cities.sort(key=lambda city: (city["rank"], -city["population"], city["en"]))
+    # Add only coordinate pairs for smaller towns; no new geometry or browser requests.
+    detailed = json.loads(source("ne_10m_populated_places_simple.geojson", directory))
+    candidates = sorted(detailed["features"], key=lambda feature: (
+        feature["properties"]["scalerank"], -feature["properties"]["pop_max"],
+        feature["properties"]["name"],
+    ))
+    remaining = sum(not city.get("hidden") for city in cities)
+    for feature in candidates:
+        if not 1000 <= feature["properties"]["pop_max"] <= 150000:
+            continue
+        coordinates = round_coordinates(feature["geometry"]["coordinates"])
+        if coordinates[1] < -60:
+            continue
+        # Exclude duplicate towns, suburbs and previously hidden island capitals.
+        if any(abs(coordinates[1] - city["coordinates"][1]) < 0.15 and
+               abs((coordinates[0] - city["coordinates"][0] + 180) % 360 - 180) < 0.15
+               for city in cities):
+            continue
+        cities.append({"coordinates": coordinates, "secondary": True})
+        remaining -= 1
+        if not remaining:
+            break
+    if remaining:
+        raise ValueError("Not enough additional towns to double the visible city dots")
+    write_json("cities.json", cities)
 
 
 def pack():
@@ -166,7 +196,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-dir", type=Path)
     parser.add_argument("--pack-only", action="store_true")
+    parser.add_argument("--cities-only", action="store_true", help="Refresh city coordinates without rebuilding geography/vendor assets")
     args = parser.parse_args()
-    if not args.pack_only:
+    if args.cities_only:
+        prepare_cities(args.source_dir)
+    elif not args.pack_only:
         prepare(args.source_dir)
     pack()

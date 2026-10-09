@@ -194,16 +194,26 @@ function environment({mountError = false, deferredMount = false, observer = true
 }
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
-test("city dots, yellow places and larger article previews scale continuously with zoom", () => {
+test("city dots, highlighted places and larger article previews scale continuously with zoom", () => {
     const home = api.pointSizes(1, 1);
-    assert.equal(home.article, 28);
+    assert.equal(home.article, 44);
     for (const kind of ["city", "place", "article"]) {
         assert.ok(api.pointSizes(2, 1)[kind] > home[kind]);
         assert.ok(api.pointSizes(2.5, 1)[kind] > api.pointSizes(2, 1)[kind]);
         assert.ok(Number.isFinite(api.pointSizes(6, -1)[kind]));
     }
-    assert.ok(api.pointSizes(6, -1).article <= 52);
+    assert.ok(api.pointSizes(6, -1).article <= 72);
     assert.ok(home.place > home.city * 2);
+});
+
+test("secondary city dots stay slightly smaller and fainter throughout zooming", () => {
+    for (const zoom of [0, 1, 2.5, 6]) {
+        const size = api.pointSizes(zoom, 1).city;
+        const primary = api.cityAppearance({}, size);
+        const secondary = api.cityAppearance({secondary: true}, size);
+        assert.equal(secondary.radius / primary.radius, 0.85);
+        assert.ok(secondary.fillOpacity < primary.fillOpacity);
+    }
 });
 
 test("yellow place tooltip safely renders names and notes and stays keyboard accessible", () => {

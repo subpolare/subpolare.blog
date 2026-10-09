@@ -10,6 +10,7 @@
     --map-coast: #d5dbe5;
     --map-river: #a8bdcc;
     --map-label: #626a70;
+    --map-place-color: #c76a24;
     --map-surface: #fff;
     --map-ink: #333;
     width: 100%;
@@ -28,6 +29,7 @@ html[data-theme="dark"] .article-map {
     --map-coast: #343436;
     --map-river: #657e91;
     --map-label: #adb6bb;
+    --map-place-color: #f2c94c;
     --map-surface: #25292d;
     --map-ink: #eee;
 }
@@ -39,6 +41,7 @@ html[data-theme="dark"] .article-map {
         --map-coast: #343436;
         --map-river: #657e91;
         --map-label: #adb6bb;
+        --map-place-color: #f2c94c;
         --map-surface: #25292d;
         --map-ink: #eee;
     }
@@ -83,8 +86,8 @@ html[data-theme="dark"] .article-map {
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    width: var(--map-marker-size, 28px);
-    height: var(--map-marker-size, 28px);
+    width: var(--map-marker-size, 44px);
+    height: var(--map-marker-size, 44px);
     transform: translate(-50%, -50%);
     padding: 0;
     border: 2px solid var(--map-surface);
@@ -153,7 +156,7 @@ html[data-theme="dark"] .article-map {
     padding: 0;
     border: 0;
     border-radius: 50%;
-    background: #f2c94c;
+    background: var(--map-place-color);
     box-sizing: border-box;
     cursor: pointer;
     font: 13px/1.4 Ubuntu, Helvetica, sans-serif;
