@@ -16,10 +16,10 @@ from .previews import update_preview
 @admin.register(MapPlace)
 class MapPlaceAdmin(admin.ModelAdmin):
     change_form_template = "admin/map/change_form.html"
-    list_display = ("name", "latitude", "longitude", "note", "is_enabled")
-    list_filter = ("is_enabled",)
+    list_display = ("name", "kind", "latitude", "longitude", "note", "is_enabled")
+    list_filter = ("kind", "is_enabled")
     search_fields = ("name", "note")
-    fields = ("name", ("latitude", "longitude"), "note", "is_enabled")
+    fields = ("name", "kind", ("latitude", "longitude"), "note", "is_enabled")
 
     def has_module_permission(self, request):
         return is_map_admin(request.user)

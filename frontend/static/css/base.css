@@ -390,6 +390,6 @@ i.fa, i.fab {
         display: block;
     }
 
-        .theme-switcher input:checked + .slider:after {
+        html[theme="dark"] .theme-switcher .slider:after {
             content: "🌒";
         }

@@ -75,14 +75,17 @@ class MapAssetsTests(SimpleTestCase):
                 self.assertEqual(feature["properties"], {})
                 self.assertIn(feature["geometry"]["type"], types)
         cities = json.loads((root / "cities.json").read_text())
-        primary = [city for city in cities if not city.get("secondary")]
+        primary = [city for city in cities if not city.get("secondary") and not city.get("tertiary")]
         secondary = [city for city in cities if city.get("secondary")]
+        tertiary = [city for city in cities if city.get("tertiary")]
+        self.assertEqual(len(tertiary), 2 * len(secondary))
         self.assertEqual(len(primary), 1251)
         self.assertEqual(len(secondary), sum(not city.get("hidden") for city in primary))
         self.assertEqual(len({tuple(city["coordinates"]) for city in cities}), len(cities))
-        for city in secondary:
-            self.assertEqual(set(city), {"coordinates", "secondary"})
-            self.assertIs(city["secondary"], True)
+        for city in secondary + tertiary:
+            tier = "tertiary" if city.get("tertiary") else "secondary"
+            self.assertEqual(set(city), {"coordinates", tier})
+            self.assertIs(city[tier], True)
             validate_longitude(city["coordinates"][0])
             validate_latitude(city["coordinates"][1])
         for city in primary:

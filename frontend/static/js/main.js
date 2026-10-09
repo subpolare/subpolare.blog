@@ -69,9 +69,12 @@ function initializeSpoilers() {
 }
 
 function toggleTheme(event) {
-    let theme = event.target.checked ? "dark" : "light";
+    const theme = document.documentElement.getAttribute("theme") === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("theme", theme);
     localStorage.setItem("theme", theme);
+    document.querySelectorAll('.theme-switcher').forEach(function (button) {
+        button.setAttribute('aria-pressed', String(theme === 'dark'));
+    });
 }
 
 function toggleHeaderSearch(event, targetId) {

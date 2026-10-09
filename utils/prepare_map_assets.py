@@ -168,6 +168,25 @@ def prepare_cities(directory):
             break
     if remaining:
         raise ValueError("Not enough additional towns to double the visible city dots")
+    # Double the two existing tiers again using additional real populated places.
+    # A tighter separation admits smaller neighbouring towns at this faint tier.
+    remaining = sum(not city.get("hidden") for city in cities)
+    for feature in candidates:
+        if feature["properties"]["pop_max"] < 1000:
+            continue
+        coordinates = round_coordinates(feature["geometry"]["coordinates"])
+        if coordinates[1] < -60:
+            continue
+        if any(abs(coordinates[1] - city["coordinates"][1]) < 0.05 and
+               abs((coordinates[0] - city["coordinates"][0] + 180) % 360 - 180) < 0.05
+               for city in cities):
+            continue
+        cities.append({"coordinates": coordinates, "tertiary": True})
+        remaining -= 1
+        if not remaining:
+            break
+    if remaining:
+        raise ValueError("Not enough additional towns for the third city tier")
     write_json("cities.json", cities)
 
 

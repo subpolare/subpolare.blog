@@ -20,6 +20,14 @@
     @media (max-width: 570px) {
         .header {
             justify-content: space-between;
+            column-gap: 8px;
+        }
+        .header-logo { margin-right: auto; }
+        .header .theme-switcher { order: 1; }
+        .header-burger { order: 2; }
+        .header-menu { order: 3; flex-basis: 100%; }
+        .header .theme-switcher, .header .header-burger {
+            flex-shrink: 0;
         }
     }
 

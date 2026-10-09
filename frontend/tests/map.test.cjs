@@ -309,3 +309,32 @@ test("without IntersectionObserver, scroll fallback still defers loading", async
     assert.equal(env.events.scroll, undefined);
     env.instance.destroy(env.element);
 });
+
+
+test("third city tier has secondary size and lower opacity; mobile softens every tier", () => {
+    for (const zoom of [0, 2.5, 6]) {
+        const size = api.pointSizes(zoom, 1).city;
+        const secondary = api.cityAppearance({secondary: true}, size);
+        const tertiary = api.cityAppearance({tertiary: true}, size);
+        assert.equal(tertiary.radius, secondary.radius);
+        assert.ok(tertiary.fillOpacity < secondary.fillOpacity);
+        for (const city of [{}, {secondary: true}, {tertiary: true}]) {
+            const desktop = api.cityAppearance(city, size, false);
+            const mobile = api.cityAppearance(city, size, true);
+            assert.equal(mobile.radius, desktop.radius * 0.65);
+            assert.equal(mobile.fillOpacity, desktop.fillOpacity * 0.5);
+        }
+    }
+});
+
+test("seas and oceans never render, while cities and countries remain dots", () => {
+    const doc = {createElement: node};
+    for (const kind of ["sea", "ocean", "unknown"]) {
+        assert.equal(api.placeElement(doc, {kind, name: "Удалённое место", note: ""}), null);
+    }
+    for (const kind of ["city", "country"]) {
+        const place = api.placeElement(doc, {kind, name: "Место", note: "Заметка"});
+        assert.equal(place.className, "map-place");
+        assert.equal(place.attributes["aria-label"], "Место. Заметка");
+    }
+});

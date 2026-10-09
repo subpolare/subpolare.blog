@@ -20,16 +20,22 @@ validate_color = RegexValidator(r"\A#[0-9a-fA-F]{6}\Z", "Укажите цвет
 
 
 class MapPlace(models.Model):
+    class Kind(models.TextChoices):
+        CITY = "city", "Город"
+        COUNTRY = "country", "Страна"
+
+    kind = models.CharField("Тип места", max_length=7, choices=Kind.choices, default=Kind.CITY,
+                            help_text="Город или страна, отмеченные точкой на карте.")
     name = models.CharField("Название", max_length=200)
     latitude = models.FloatField("Широта", validators=[validate_latitude])
     longitude = models.FloatField("Долгота", validators=[validate_longitude])
     note = models.CharField("Краткая заметка", max_length=500, blank=True,
-                            help_text="Показывается вместе с названием при наведении на жёлтую точку.")
+                            help_text="Показывается при наведении или нажатии на место.")
     is_enabled = models.BooleanField("Включена", default=True)
 
     class Meta:
-        verbose_name = "жёлтая точка"
-        verbose_name_plural = "жёлтые точки"
+        verbose_name = "посещённое место"
+        verbose_name_plural = "посещённые места"
         ordering = ("name", "pk")
         constraints = [
             models.CheckConstraint(condition=models.Q(latitude__gte=-90, latitude__lte=90), name="map_place_latitude_range"),

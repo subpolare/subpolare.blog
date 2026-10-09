@@ -32,7 +32,7 @@
         {% block css %}{% endblock %}
 
         <script defer src="{% static 'js/external-link-favicons.js' %}"></script>
-        <script defer src="{% static 'js/theme-switcher.js' %}"></script>
+        <script defer src="{% static 'js/theme-switcher.js' %}?v={{ settings.STYLES_HASH }}"></script>
     </head>
     <body class="{% block body_class %}{% endblock %}" style="{% block body_styles %}{% endblock %}">
         {% block menu %}

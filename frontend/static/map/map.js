@@ -112,13 +112,18 @@
         return {city: Math.min(3, 1.1 * scale), place: Math.min(10, 5 * scale), article: Math.min(72, 44 * scale)};
     }
 
-    function cityAppearance(city, size) {
-        return {radius: size * (city.secondary ? 0.85 : 1), fillOpacity: city.secondary ? 0.32 : 0.6};
+    function cityAppearance(city, size, mobile) {
+        const opacity = city.tertiary ? 0.16 : city.secondary ? 0.32 : 0.6;
+        return {
+            radius: size * (city.secondary || city.tertiary ? 0.85 : 1) * (mobile ? 0.65 : 1),
+            fillOpacity: opacity * (mobile ? 0.5 : 1)
+        };
     }
 
     function placeElement(doc, place) {
         const node = doc.createElement("button");
         node.type = "button";
+        if (place.kind && !["city", "country"].includes(place.kind)) return null;
         node.className = "map-place";
         node.setAttribute("aria-label", place.name + (place.note ? ". " + place.note : ""));
         const tooltip = doc.createElement("span");
@@ -137,9 +142,9 @@
     }
 
     function isHighlightedCity(city, places) {
-        return places.some(place => place.name === city.ru || place.name === city.en ||
+        return places.some(place => (!place.kind || place.kind === "city") && (place.name === city.ru || place.name === city.en ||
             (Math.abs(place.latitude - city.coordinates[1]) < 0.02 &&
-             Math.abs(wrapLongitude(place.longitude - city.coordinates[0])) < 0.02));
+             Math.abs(wrapLongitude(place.longitude - city.coordinates[0])) < 0.02)));
     }
 
     function safeURL(value, origin) {
@@ -388,8 +393,8 @@
                     if (city.hidden || isHighlightedCity(city, places)) return;
                     const position = pointFor(city.coordinates[1], city.coordinates[0]);
                     L.circleMarker(position, {
-                        ...cityAppearance(city, pointSizes(map.getZoom(), minimumWorldZoom(map.getSize())).city),
-                        secondary: Boolean(city.secondary),
+                        ...cityAppearance(city, pointSizes(map.getZoom(), minimumWorldZoom(map.getSize())).city, win.matchMedia("(max-width: 570px)").matches),
+                        secondary: Boolean(city.secondary), tertiary: Boolean(city.tertiary),
                         stroke: false, fillColor: color, interactive: false
                     }).addTo(cityLayer);
                 });
@@ -397,6 +402,7 @@
 
             places.forEach(function (place) {
                 const node = placeElement(doc, place);
+                if (!node) return;
                 L.DomEvent.disableClickPropagation(node);
                 L.marker(pointFor(place.latitude, place.longitude), {
                     icon: L.divIcon({html: node, className: "map-place-host", iconSize: [0, 0], iconAnchor: [0, 0]}),
@@ -408,7 +414,12 @@
                 const sizes = pointSizes(map.getZoom(), minimumWorldZoom(map.getSize()));
                 element.style.setProperty("--map-place-size", sizes.place + "px");
                 element.style.setProperty("--map-marker-size", sizes.article + "px");
-                cityLayer.eachLayer(city => city.setRadius(cityAppearance(city.options, sizes.city).radius));
+                const mobile = win.matchMedia("(max-width: 570px)").matches;
+                cityLayer.eachLayer(function (city) {
+                    const appearance = cityAppearance(city.options, sizes.city, mobile);
+                    city.setRadius(appearance.radius);
+                    city.setStyle({fillOpacity: appearance.fillOpacity});
+                });
             }
             map.on("zoom resize", resizePoints);
             resizePoints();
@@ -472,7 +483,7 @@
                     results.replaceChildren();
                     const query = input.value.trim().toLocaleLowerCase();
                     if (query.length < 2) return;
-                    cities.filter(city => !city.secondary && (city.ru + " " + city.en).toLocaleLowerCase().includes(query)).slice(0, 12).forEach(function (city) {
+                    cities.filter(city => !city.secondary && !city.tertiary && (city.ru + " " + city.en).toLocaleLowerCase().includes(query)).slice(0, 12).forEach(function (city) {
                         const button = doc.createElement("button");
                         button.type = "button";
                         button.textContent = cityName(city, language);

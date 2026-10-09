@@ -44,12 +44,11 @@
             🔍
         </div>
         -->
-
-        <label class="theme-switcher button button-inverted button-round header-menu-item header-menu-round" onclick="return toggleTheme(event);" for="checkbox">
-            <input type="checkbox" id="checkbox" />
-            <span class="slider round"></span>
-        </label>
     </div>
+    <button type="button" class="theme-switcher button button-inverted button-round header-menu-item header-menu-round"
+            onclick="toggleTheme(event);" aria-label="{% trans 'Тёмная тема' %}" aria-pressed="false">
+        <span class="slider round" aria-hidden="true"></span>
+    </button>
 </div>
 
 <div class="header-search header-search-hidden" id="header-search">

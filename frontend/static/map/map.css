@@ -10,7 +10,7 @@
     --map-coast: #d5dbe5;
     --map-river: #a8bdcc;
     --map-label: #626a70;
-    --map-place-color: #c76a24;
+    --map-place-color: #246bc1;
     --map-surface: #fff;
     --map-ink: #333;
     width: 100%;
@@ -185,7 +185,8 @@ html[data-theme="dark"] .article-map {
 #map-city-results button { padding: 6px 12px; cursor: pointer; }
 #content .article-map-shell { margin-bottom: 24px; }
 /* The site's padded admin theme needs more room than Django's fixed select height. */
-#mapmarker_form select { height: auto; min-height: 38px; max-width: 100%; }
+#mapmarker_form select,
+#mapplace_form select { height: auto; min-height: 38px; max-width: 100%; }
 .article-map[data-mode="overview"] { height: 360px; }
 .article-map[data-mode="edit"] { height: 400px; }
 .map-load-error { padding: 12px; }

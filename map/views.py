@@ -35,8 +35,8 @@ def markers(request):
 
 @require_GET
 def places(request):
-    response = JsonResponse(list(MapPlace.objects.filter(is_enabled=True).values(
-        "id", "name", "latitude", "longitude", "note",
+    response = JsonResponse(list(MapPlace.objects.filter(is_enabled=True, kind__in=[MapPlace.Kind.CITY, MapPlace.Kind.COUNTRY]).values(
+        "id", "name", "kind", "latitude", "longitude", "note",
     )), safe=False)
     patch_cache_control(response, no_store=True)
     return response
