@@ -23,7 +23,7 @@ docker compose -f docker-compose.production.yml run --rm --no-deps \
   -v "$PWD/tmp/image-rollout:/image-rollout" blog_app \
   poetry run python3 manage.py prepare_image_delivery \
   --warm-previews --audit-file /image-rollout/initial.json
-docker compose -f docker-compose.production.yml up -d --no-deps blog_app
+docker compose -f docker-compose.production.yml up -d --no-deps blog_app blog_previews
 docker compose -f docker-compose.production.yml run --rm --no-deps \
   -v "$PWD/tmp/image-rollout:/image-rollout" blog_app \
   poetry run python3 manage.py prepare_image_delivery \
@@ -33,8 +33,35 @@ docker compose -f docker-compose.production.yml run --rm --no-deps \
 Run the same command with `--verify` after rollout to check originals, text,
 image URLs and dates again. Cache refresh uses `QuerySet.update`, never
 `Post.save`, and does not affect view counts or publication dates.
-Warm new homepage covers before publishing them; unprepared covers safely
-use the original until the next preparation run.
+
+## Automatic preparation
+
+The `blog_previews` service uses the same image as `blog_app`, without an HTTP
+port or a writable media mount. It runs `warm_homepage_previews`, checking all
+posts marked for the homepage once an hour (3600 seconds between passes). This includes
+drafts, scheduled posts and every language. Assigning or changing `image` (or
+the `og_image` fallback for video/no cover) is picked up on the next pass.
+No model hooks, migrations or database writes are involved.
+
+Only missing 480/960/1440 derivatives smaller than the original are requested
+from Pepic. Existing copies are not downloaded again or replaced. On a network
+or database failure the worker retries on a later pass; completed derivatives
+survive container restarts. One failed cover does not stop the remaining covers.
+External covers are left alone.
+
+Saving and publishing do not wait for image processing. Until the worker
+finishes, cards safely use the original or already prepared sizes. A new cover
+published immediately can therefore use its original for up to an hour (longer
+if Pepic is unavailable); subsequent page
+loads pick up the previews automatically. Article images remain unchanged.
+
+Deploy both services after rebuilding `blog_app`. For a one-off readiness check:
+
+```sh
+docker compose -f docker-compose.production.yml run --rm --no-deps blog_previews \
+  poetry run python3 manage.py warm_homepage_previews --once
+docker compose -f docker-compose.production.yml logs --tail=20 blog_previews
+```
 
 ## Host configuration
 
@@ -52,7 +79,8 @@ or replace existing derivatives under an already published version. If resizing
 parameters change, use a new derivative namespace and update the version/URL
 builder together; Pepic's current on-disk cache is keyed only by length.
 
-To roll back, deploy the preceding Git revision and restore `html_cache` from
+Before rolling back to a revision without the automatic worker, stop
+`blog_previews` using Docker Compose. To roll back, deploy the preceding Git revision and restore `html_cache` from
 the audit using `QuerySet.update`. Restore the backed-up nginx config if needed,
 then test and reload nginx. Existing originals and links require no restoration.
 

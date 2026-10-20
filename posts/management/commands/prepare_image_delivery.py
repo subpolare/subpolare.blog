@@ -8,10 +8,8 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 import requests
 
-from common.images import (
-    PREVIEW_LENGTHS, PREVIEW_VERSION, image_dimensions, pepic_filename,
-    storage_path, file_dimensions,
-)
+from common.images import pepic_filename
+from common.image_previews import prepare_previews, PreviewPreparationError
 from common.markdown.markdown import markdown_text
 from posts.models import Post
 
@@ -106,25 +104,10 @@ class Command(BaseCommand):
         count = 0
         with requests.Session() as session:
             for url in sorted(u for u in urls if u):
-                name = pepic_filename(url)
-                dimensions = image_dimensions(url)
-                if not name or not dimensions:
+                if not pepic_filename(url):
                     raise CommandError(f"Cannot read homepage image dimensions: {url}")
-                for length in PREVIEW_LENGTHS:
-                    if length >= max(dimensions):
-                        continue
-                    resized_url = (
-                        f"{settings.PEPIC_MEDIA_ORIGIN}/{length}/{name}?v={PREVIEW_VERSION}"
-                    )
-                    with session.get(
-                        resized_url, timeout=(10, 60), stream=True, allow_redirects=False,
-                    ) as response:
-                        if response.status_code != 200:
-                            raise CommandError(f"Preview returned {response.status_code}: {resized_url}")
-                        for _ in response.iter_content(65536):
-                            pass
-                    actual = file_dimensions(storage_path(name, f"resize/{length}"))
-                    if not actual or max(actual) > max(dimensions):
-                        raise CommandError(f"Invalid or missing prepared preview: {resized_url}")
-                    count += 1
+                try:
+                    count += prepare_previews(url, session)
+                except (PreviewPreparationError, requests.RequestException, OSError) as error:
+                    raise CommandError(str(error)) from error
         self.stdout.write(f"Prepared {count} previews; upload quality settings unchanged.")

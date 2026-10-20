@@ -1,5 +1,6 @@
 services:
   blog_app:
+    image: subpolareblog-blog_app
     build: 
       context: .
       dockerfile: Dockerfile
@@ -36,6 +37,31 @@ services:
       driver: "json-file"
       options:
         max-size: "100M"
+        max-file: "3"
+
+  blog_previews:
+    image: subpolareblog-blog_app
+    command: poetry run python3 manage.py warm_homepage_previews --interval 3600
+    container_name: blog_previews
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DEBUG=false
+      - PEPIC_STORAGE_ROOT=/pepic-media
+      - POSTGRES_DB=subpolare_ru
+      - POSTGRES_USER=subpolare
+      - POSTGRES_PASSWORD=subpolare
+      - POSTGRES_HOST=postgres
+    env_file:
+      - .env
+    restart: always
+    volumes:
+      - /srv/pepic/uploads:/pepic-media:ro
+    depends_on:
+      - postgres
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10M"
         max-file: "3"
 
   postgres:
