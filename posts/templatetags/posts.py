@@ -28,16 +28,6 @@ def show_post(context, post):
 
     return mark_safe(render_post_blocks(context, html))
 
-    # # remove extra blocks for unauthorized users
-    # if settings.EXTRA_BLOCK_CLASS in text and not context["me"]:
-    #     soup = BeautifulSoup(text, "html.parser")
-    #     for block in soup.select("." + settings.EXTRA_BLOCK_CLASS):
-    #         block.string = ""
-    #         block["class"] = block.get("class", []) + ["block-extra-placeholder"]
-    #         block.append(BeautifulSoup(block_placeholder_template.render({"story": post}), "html.parser"))
-    #     text = str(soup)
-
-
 def render_post_blocks(context, html):
     """Expand legacy blocks without reading or writing the post/cache."""
     # Old markers should stay invisible when comments are retired.
@@ -55,9 +45,3 @@ def clicker(context, block, text=None):
         "votes": clicker.get("total") or 0,
         "is_voted": block in context["user_votes"],
     })
-
-
-def replace_host_if_mirror(request, text):
-    if request.get_host() in settings.MIRRORS:
-        text = text.replace(settings.APP_HOST, request.get_host())
-    return text

@@ -17,10 +17,10 @@ class MarkdownRegressionTests(SimpleTestCase):
             import django
             django.setup()
             from common.markdown.markdown import (
-                markdown_snippet, markdown_plain, markdown_text,
+                markdown_snippet, markdown_text,
             )
 
-            for render in (markdown_text, markdown_snippet, markdown_plain):
+            for render in (markdown_text, markdown_snippet):
                 for quote in ('"', "'"):
                     title = quote + '\\!' * 40
                     for source in ('[x](y ' + title + ')', '[x]: y ' + title):

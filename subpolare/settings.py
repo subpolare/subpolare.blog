@@ -75,7 +75,6 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "django.contrib.auth.context_processors.auth",
                 "subpolare.context_processors.settings_processor",
-                "subpolare.context_processors.cookies_processor",
                 "subpolare.context_processors.strings_processor",
             ],
         },
@@ -157,11 +156,6 @@ if DEBUG:
         **DOMAIN_LANGUAGES,
     }
 
-DOMAIN_LANGUAGE_SELECTOR = [
-    ("ru", "RU", "https://subpolare.ru"),
-    ("en", "EN", "https://en.subpolare.ru"),
-]
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
@@ -197,7 +191,6 @@ SESSION_COOKIE_AGE = 300 * 24 * 60 * 60  # 300 days
 SENTRY_DSN = os.getenv("SENTRY_DSN")
 
 APP_HOST = "subpolare.ru"
-MIRRORS = ["www.subpolare.ru"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://subpolare.ru",
