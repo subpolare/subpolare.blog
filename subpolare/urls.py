@@ -7,7 +7,7 @@ from django.views.decorators.cache import cache_page
 
 from clickers.views import click_comment, click_block
 from comments.views import delete_comment, create_comment
-from inside.views import donate, subscribe
+from subpolare.pages import donate, subscribe
 from posts.sitemaps import sitemaps
 from posts.views import index, show_post, list_posts, edit_post
 from posts.editor import preview_post, upload_post_image

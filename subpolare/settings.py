@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     "posts.apps.PostsConfig",
     "comments.apps.CommentsConfig",
     "rss.apps.RssConfig",
-    "inside.apps.InsideConfig",
     "clickers.apps.ClickersConfig",
     "map.apps.MapConfig",
 ]

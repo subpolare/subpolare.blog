@@ -46,3 +46,19 @@ class AdminNavigationTests(SimpleTestCase):
         self.request.user = User(is_staff=True)
         with patch.object(self.request.user, "has_module_perms", return_value=False):
             self.assertEqual(admin.site.get_app_list(self.request), [])
+
+
+class RetiredSectionsTests(SimpleTestCase):
+    def test_removed_post_types_are_not_public_routes(self):
+        for kind in ("inside", "365", "gallery"):
+            with self.subTest(kind=kind):
+                self.assertEqual(self.client.get(f"/{kind}/").status_code, 404)
+
+    def test_subscribe_stays_available_without_inside_app(self):
+        response = self.client.get("/subscribe/")
+        self.assertContains(response, "https://telegram.me/subpolare_blog")
+
+    def test_notes_and_donate_template_are_retained(self):
+        from subpolare.posts import POST_TYPES
+        self.assertIn("notes", POST_TYPES)
+        self.assertIn("Поддержать автора", render_to_string("donate.html"))

@@ -41,27 +41,7 @@ POST_TYPES: dict[str, PostTypeConfig] = {
         list_template="posts/lists/blog.html",
         show_template="posts/full/blog.html",
     ),
-    "gallery": PostTypeConfig(
-        name="Галлерея",
-        list_items_per_page=30,
-        card_template="posts/cards/vertical.html",
-        list_template="posts/lists/blog.html",
-        show_template="posts/full/legacy/gallery.html",
-    ),
-    "inside": PostTypeConfig(
-        name="Вастрик.Инсайд",
-        list_items_per_page=30,
-        card_template="posts/cards/vertical.html",
-        list_template="posts/lists/notes.html",
-        show_template="posts/full/notes.html",
-    ),
-    "365": PostTypeConfig(
-        name="Заметки",
-        list_items_per_page=50,
-        card_template="posts/cards/vertical.html",
-        list_template="posts/lists/notes.html",
-        show_template="posts/full/notes.html",
-    ),
+
 }
 
 
