@@ -30,7 +30,7 @@ ADMINS = [
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    "subpolare.admin.BlogAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",

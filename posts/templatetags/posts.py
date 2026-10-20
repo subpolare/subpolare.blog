@@ -6,6 +6,7 @@ from django.template import loader
 from django.utils.safestring import mark_safe
 
 from common.markdown.markdown import markdown_text
+from common.markdown.headings import semantic_headings
 from common.images import prepare_article_images
 
 register = template.Library()
@@ -24,7 +25,7 @@ def show_post(context, post):
                 # to not flood into history
                 post.html_cache = new_html
                 post.save(flush_cache=False)
-        html = post.html_cache or ""
+        html = semantic_headings(post.html_cache or "")
 
     return mark_safe(render_post_blocks(context, html))
 

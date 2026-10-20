@@ -31,6 +31,15 @@ h3,
     max-width: var(--max-content-width);
 }
 
+/* These Markdown levels previously used unstyled divs. */
+h4.header-4,
+h5.header-5,
+h6.header-6 {
+    font-size: inherit;
+    font-weight: inherit;
+    margin: 0;
+}
+
 .header-1 > a,
 .header-2 > a,
 .header-3 > a,
@@ -39,9 +48,10 @@ h3,
     text-decoration: none;
 }
 
-h1 + h2,
+/* :where keeps the specificity of the existing raw-HTML heading rules. */
+h1:not(:where(.header-1)) + h2:not(:where(.header-2)),
 .header-1 + .header-2,
-h2 + h3,
+h2:not(:where(.header-2)) + h3:not(:where(.header-3)),
 .header-2 + .header-3 {
     padding-top: 10px;
 }

@@ -16,7 +16,7 @@ class Vas3kRenderer(mistune.HTMLRenderer):
 
     def heading(self, text, level, **attrs):
         anchor = slugify(text[:24])
-        return f"<div class=\"header-{level}\" id=\"{anchor}\"><a href=\"#{anchor}\">{text}</a></div>\n"
+        return f"<h{level} class=\"header-{level}\" id=\"{anchor}\"><a href=\"#{anchor}\">{text}</a></h{level}>\n"
 
     def link(self, text, url, title=None):
         if not text and not title:

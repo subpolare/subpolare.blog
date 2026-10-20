@@ -44,10 +44,11 @@ html[theme="dark"] .block-text {
       color: #888;
     }
 
+    /* Markdown headings keep their .header-N layout from base.css. */
     .post p,
-    .post h1,
-    .post h2,
-    .post h3,
+    .post h1:not(:where(.header-1)),
+    .post h2:not(:where(.header-2)),
+    .post h3:not(:where(.header-3)),
     .post dl,
     .block-text {
         width: 100%;
@@ -68,9 +69,9 @@ html[theme="dark"] .block-text {
     }
 
     .post > p,
-    .post > h1,
-    .post > h2,
-    .post > h3 {
+    .post > h1:not(:where(.header-1)),
+    .post > h2:not(:where(.header-2)),
+    .post > h3:not(:where(.header-3)) {
         width: 90%;
     }
 
@@ -116,15 +117,15 @@ html[theme="dark"] .block-text {
     }
 
 
-    .post h1 + h1,
-    .post h1 + h2,
+    .post h1:not(:where(.header-1)) + h1:not(:where(.header-1)),
+    .post h1:not(:where(.header-1)) + h2:not(:where(.header-2)),
     .post .header-1 + .header-1,
     .post .header-1 + .header-2 {
         padding-top: 10px;
     }
 
-    .post h2 + h2,
-    .post h2 + h3,
+    .post h2:not(:where(.header-2)) + h2:not(:where(.header-2)),
+    .post h2:not(:where(.header-2)) + h3:not(:where(.header-3)),
     .post .header-2 + .header-2,
     .post .header-2 + .header-3 {
         padding-top: 10px;
@@ -389,9 +390,9 @@ html[theme="dark"] .block-text {
 }
 
     .block-background > p,
-    .block-background > h1,
-    .block-background > h2,
-    .block-background > h3 {
+    .block-background > h1:not(:where(.header-1)),
+    .block-background > h2:not(:where(.header-2)),
+    .block-background > h3:not(:where(.header-3)) {
         margin: 27px auto 35px;
         width: 95%;
     }
