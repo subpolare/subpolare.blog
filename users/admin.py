@@ -10,9 +10,6 @@ class UsersAdmin(admin.ModelAdmin):
         "city",
         "country",
         "created_at",
-        "vas3k_club_slug",
-        "patreon_id",
-        "telegram_id",
         "is_banned",
     )
     ordering = ("-created_at",)

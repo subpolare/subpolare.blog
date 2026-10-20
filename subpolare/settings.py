@@ -179,24 +179,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Auth
 
-CLUB_BASE_URL = "https://club.subpolare.ru"
-CLUB_OPENID_CONFIG = {
-    "name": "club",
-    "client_id": "subpolare",
-    "client_secret": os.getenv("CLUB_OPENID_CONFIG_SECRET") or "subpolare",
-    "api_base_url": CLUB_BASE_URL,
-    "server_metadata_url": f"{CLUB_BASE_URL}/.well-known/openid-configuration",
-    "client_kwargs": {"scope": "openid"},
-}
-
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-
-PATREON_AUTH_URL = "https://www.patreon.com/oauth2/authorize"
-PATREON_TOKEN_URL = "https://www.patreon.com/api/oauth2/token"
-PATREON_USER_URL = "https://www.patreon.com/api/oauth2/v2/identity"
-PATREON_CLIENT_ID = os.getenv("PATREON_CLIENT_ID")
-PATREON_CLIENT_SECRET = os.getenv("PATREON_CLIENT_SECRET")
-PATREON_SCOPE = "identity identity[email]"
 
 # Email
 
@@ -208,11 +191,6 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = True
 
 DEFAULT_FROM_EMAIL = _("Вастрик <inside@inside.subpolare.ru>")
-
-# Telegram
-
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-TELEGRAM_MAIN_CHAT_ID = os.getenv("TELEGRAM_MAIN_CHAT_ID")
 
 # App specific
 

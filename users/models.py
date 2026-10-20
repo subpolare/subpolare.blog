@@ -52,9 +52,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     updated_at = models.DateTimeField(auto_now=True)
     last_activity_at = models.DateTimeField(auto_now=True)
 
-    vas3k_club_slug = models.CharField(max_length=128, db_index=True, null=True, blank=True)
-    patreon_id = models.CharField(max_length=64, db_index=True, null=True, blank=True)
-    telegram_id = models.CharField(max_length=64, db_index=True, null=True, blank=True)
 
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
