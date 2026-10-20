@@ -115,20 +115,6 @@ DATABASES = {
     }
 }
 
-MIGRATE = os.getenv("MIGRATE")
-if MIGRATE:
-    DATABASES.update({
-        "old": {
-            "ENGINE": "django.db.backends.postgresql_psycopg2",
-            "NAME": os.getenv("MIGRATE"),
-            "USER": os.getenv("POSTGRES_USER") or "postgres",
-            "PASSWORD": os.getenv("POSTGRES_PASSWORD") or "",
-            "HOST": os.getenv("POSTGRES_HOST") or "localhost",
-            "PORT": os.getenv("POSTGRES_PORT") or 5432,
-        }
-    })
-
-
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
