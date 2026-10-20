@@ -24,7 +24,7 @@ def show_post(context, post):
             if new_html != post.html_cache:
                 # to not flood into history
                 post.html_cache = new_html
-                post.save(flush_cache=False)
+                post.save(flush_cache=False, update_fields=["html_cache"])
         html = semantic_headings(post.html_cache or "")
 
     return mark_safe(render_post_blocks(context, html))

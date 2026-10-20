@@ -1,15 +1,13 @@
 from datetime import datetime
 from uuid import uuid4
-import math
 
-from bs4 import BeautifulSoup
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.translation import get_language
 
-from common.markdown.markdown import markdown_text
+from posts.reading_time import calculate_reading_time
 from utils.slug import generate_unique_slug
 
 
@@ -44,6 +42,7 @@ class Post(models.Model):
     comment_count = models.PositiveIntegerField(default=0)
     view_count = models.PositiveIntegerField(default=0)
     word_count = models.PositiveIntegerField(default=0)
+    reading_time = models.PositiveIntegerField(default=5, editable=False)
 
     is_raw_html = models.BooleanField(default=False)
     is_visible = models.BooleanField(default=True)
@@ -70,6 +69,13 @@ class Post(models.Model):
         ).order_by("-published_at")
 
     def save(self, flush_cache=True, *args, **kwargs):
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None:
+            update_fields = set(update_fields)
+            kwargs["update_fields"] = update_fields
+            if not update_fields:
+                return
+
         if not self.slug:
             self.slug = generate_unique_slug(Post, self.title)
 
@@ -79,6 +85,14 @@ class Post(models.Model):
         if flush_cache:
             self.html_cache = None
             self.word_count = strip_tags(self.text).count(" ") if self.text else 0
+
+        # Cache writes during page rendering must not recalculate reading time.
+        if self._state.adding or (
+            flush_cache and update_fields is None
+        ) or (update_fields is not None and {"text", "is_raw_html"} & update_fields):
+            self.reading_time = calculate_reading_time(self.text, self.is_raw_html)
+            if update_fields is not None:
+                update_fields.add("reading_time")
 
         self.updated_at = datetime.utcnow()
         return super().save(*args, **kwargs)
@@ -104,17 +118,3 @@ class Post(models.Model):
         elif self.og_image:
             return self.og_image
         return None
-
-    @property
-    def reading_time(self) -> int:
-        html = self.text or ""
-        if not self.is_raw_html:
-            html = markdown_text(html)
-
-        # Parsing decodes HTML entities without treating escaped code as tags.
-        soup = BeautifulSoup(html, "html.parser")
-        for element in soup(["script", "style", "template"]):
-            element.decompose()
-        text = soup.get_text()
-        characters = sum(not character.isspace() for character in text)
-        return max(1, math.ceil(characters / 1500))
