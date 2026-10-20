@@ -257,9 +257,12 @@ html[theme="dark"] .block-text {
     }
 
     .post img {
-        height: auto;
         /* иначе легаси едет */
         max-width: 100%;
+    }
+
+    .post img[width][height] {
+        height: auto;
     }
 
     .post big {
