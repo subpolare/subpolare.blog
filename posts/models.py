@@ -1,15 +1,16 @@
 from datetime import datetime
 from uuid import uuid4
+import math
 
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.translation import get_language
 
+from common.markdown.markdown import markdown_text
 from utils.slug import generate_unique_slug
-import math
-import re
 
 
 class Post(models.Model):
@@ -106,22 +107,14 @@ class Post(models.Model):
 
     @property
     def reading_time(self) -> int:
-        text = strip_tags(self.text or "")
-        words = len(text.split())
-        words_per_minute = 220
+        html = self.text or ""
+        if not self.is_raw_html:
+            html = markdown_text(html)
 
-        raw = self.text or ""
-        markdown_images = re.findall(r"!\[[^\]]*\]\([^\)]+\)", raw)
-        html_images = re.findall(r"<img\b[^>]*>", raw, flags=re.IGNORECASE)
-        num_images = len(markdown_images) + len(html_images)
-
-        image_seconds = 0
-        for i in range(num_images):
-            if i < 10:
-                sec = max(12 - i, 3)
-            else:
-                sec = 3
-            image_seconds += sec
-
-        minutes = round(words / float(words_per_minute) + image_seconds / 60.0, -1)
-        return max(1, int(math.ceil(minutes)))
+        # Parsing decodes HTML entities without treating escaped code as tags.
+        soup = BeautifulSoup(html, "html.parser")
+        for element in soup(["script", "style", "template"]):
+            element.decompose()
+        text = soup.get_text()
+        characters = sum(not character.isspace() for character in text)
+        return max(1, math.ceil(characters / 1500))
