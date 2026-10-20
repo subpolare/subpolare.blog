@@ -50,13 +50,3 @@ def post_config_by_type(post_type):
         return POST_TYPES[post_type]
     else:
         return PostTypeConfig()
-
-
-INDEX_PAGE_BEST_POSTS = [
-    "quantum_computing",
-    "computational_photography",
-    "machine_learning",
-    "team",
-    "touchbar",
-    "blockchain",
-]
