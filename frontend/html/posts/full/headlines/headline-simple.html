@@ -1,6 +1,7 @@
 {% load text_filters %}
 {% load posts %}
 {% load i18n %}
+{% load images %}
 
 <style>
 {% if post.data.headline_title_size %}
@@ -34,7 +35,7 @@
 
     {% if post.image %}
         <div class="simple-headline-image">
-            <img src="{{ post.main_image }}" alt="" class="the-cover">
+            <img src="{{ post.main_image }}" alt="" class="the-cover" {% original_image_attributes post.main_image eager=True %}>
         </div>
     {% endif %}
 </div>

@@ -1,6 +1,8 @@
 {% load text_filters %}
 {% load posts %}
-<a href="{{ post.get_absolute_url }}" class="card card-post card-horizontal h-entry" style="background-image: url('{{ post.main_image }}');">
+{% load images %}
+<a href="{{ post.get_absolute_url }}" class="card card-post card-horizontal h-entry"{% if not home_previews %} style="background-image: url('{{ post.main_image }}');"{% endif %}>
+    {% if home_previews %}{% home_image post.main_image card_sizes card_eager %}{% endif %}
     {% if post.is_members_only %}
         <span class="card-icon-lock">
             {% if me %}<i class="fas fa-lock-open"></i>{% else %}<i class="fas fa-lock"></i>{% endif %}

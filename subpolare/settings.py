@@ -234,6 +234,8 @@ TELEGRAM_MAIN_CHAT_ID = os.getenv("TELEGRAM_MAIN_CHAT_ID")
 # Server-only Pepic credentials. Never include the code in templates or JS.
 PEPIC_UPLOAD_URL = os.getenv("PEPIC_UPLOAD_URL", "")
 PEPIC_UPLOAD_CODE = os.getenv("PEPIC_UPLOAD_CODE", "")
+PEPIC_MEDIA_ORIGIN = os.getenv("PEPIC_MEDIA_ORIGIN", "https://media.subpolare.ru").rstrip("/")
+PEPIC_STORAGE_ROOT = os.getenv("PEPIC_STORAGE_ROOT", "")
 
 MAP_IMAGE_ALLOWED_HOSTS = [host.strip().lower() for host in os.getenv("MAP_IMAGE_ALLOWED_HOSTS", "i.subpolare.ru").split(",") if host.strip()]
 

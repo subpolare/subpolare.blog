@@ -262,6 +262,7 @@
         .headline-image video {
             visibility: hidden;
             width: 100%;
+            height: auto;
             min-height: 270px;
         }
 
@@ -399,6 +400,8 @@
 
         .simple-headline-image img,
         .simple-headline-image video {
+            width: auto;
+            height: auto;
             max-width: 100%;
             max-height: 675px;
         }

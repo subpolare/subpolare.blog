@@ -8,6 +8,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - DEBUG=false
+      - PEPIC_STORAGE_ROOT=/pepic-media
       - POSTGRES_DB=subpolare_ru
       - POSTGRES_USER=subpolare
       - POSTGRES_PASSWORD=subpolare
@@ -26,6 +27,7 @@ services:
     restart: always
     volumes:
       - ./frontend/static:/tmp/static
+      - /srv/pepic/uploads:/pepic-media:ro
     depends_on:
       - postgres
     ports:

@@ -3,7 +3,7 @@
 {% block body %}
     {% for block in blocks %}
         {% if block and block.template %}
-            {% include block.template %}
+            {% include block.template with home_previews=True %}
         {% endif %}
     {% endfor %}
 {% endblock %}

@@ -7,3 +7,4 @@ __pycache__/
 /static/
 /media/
 pytest.ini
+tmp/image-rollout/

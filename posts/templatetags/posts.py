@@ -6,6 +6,7 @@ from django.template import loader
 from django.utils.safestring import mark_safe
 
 from common.markdown.markdown import markdown_text
+from common.images import prepare_article_images
 
 register = template.Library()
 clicker_template = loader.get_template("clickers/clicker.html")
@@ -15,7 +16,7 @@ inline_comments_template = loader.get_template("comments/inline-comment-list.htm
 @register.simple_tag(takes_context=True)
 def show_post(context, post):
     if post.is_raw_html:
-        html = post.text or post.html_cache
+        html = prepare_article_images(post.text or post.html_cache or "")
     else:
         if not post.html_cache or settings.DEBUG:
             new_html = markdown_text(post.text)

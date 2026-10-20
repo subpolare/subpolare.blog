@@ -11,7 +11,7 @@
 
     <div class="cards-group cards-group-2x">
         {% for post in block.posts %}
-            {% include "posts/cards/horizontal.html" %}
+            {% include "posts/cards/horizontal.html" with card_sizes="(width < 650px) calc(100vw - 20px), (min-width: 1000px) 460px, calc(50vw - 40px)" %}
         {% endfor %}
     </div>
 </section>

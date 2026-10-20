@@ -17,7 +17,7 @@
 
     <div class="cards-group cards-group-4x">
         {% for post in block.posts %}
-            {% include "posts/cards/vertical.html" %}
+            {% include "posts/cards/vertical.html" with card_sizes="(width < 650px) calc(100vw - 20px), (min-width: 1400px) 302px, max(300px, calc(24vw - 35px))" %}
         {% endfor %}
     </div>
 </section>

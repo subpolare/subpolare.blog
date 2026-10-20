@@ -1,4 +1,5 @@
 import mistune
+from common.images import prepare_article_images
 
 from common.markdown.club_renderer import Vas3kRenderer
 from common.markdown.email_renderer import EmailRenderer
@@ -25,7 +26,8 @@ def markdown_text(text, renderer=Vas3kRenderer):
             cite_block,
         ]
     )
-    return markdown(text)
+    html = markdown(text)
+    return prepare_article_images(html) if renderer is Vas3kRenderer else html
 
 
 def markdown_comment(text, renderer=Vas3kRenderer):

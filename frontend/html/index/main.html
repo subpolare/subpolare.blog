@@ -1,7 +1,7 @@
 <section class="container">
     <div class="cards-group cards-group-1x">
         {% with post=block.post %}
-            {% include "posts/cards/aspect.html" %}
+            {% include "posts/cards/aspect.html" with card_eager=True card_sizes="(min-width: 1000px) 980px, calc(100vw - 20px)" %}
         {% endwith %}
     </div>
 </section>
