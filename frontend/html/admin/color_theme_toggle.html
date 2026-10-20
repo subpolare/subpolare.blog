@@ -1,0 +1,16 @@
+{% load i18n %}
+{% comment %}Keep Django 5.2's larger symbols inside the existing 1rem icons.{% endcomment %}
+<button class="theme-toggle">
+  <span class="visually-hidden theme-label-when-auto">{% translate 'Toggle theme (current theme: auto)' %}</span>
+  <span class="visually-hidden theme-label-when-light">{% translate 'Toggle theme (current theme: light)' %}</span>
+  <span class="visually-hidden theme-label-when-dark">{% translate 'Toggle theme (current theme: dark)' %}</span>
+  <svg aria-hidden="true" class="theme-icon-when-auto" viewBox="0 0 24 24">
+    <use xlink:href="#icon-auto" />
+  </svg>
+  <svg aria-hidden="true" class="theme-icon-when-dark" viewBox="0 0 24 24">
+    <use xlink:href="#icon-moon" />
+  </svg>
+  <svg aria-hidden="true" class="theme-icon-when-light" viewBox="0 0 24 24">
+    <use xlink:href="#icon-sun" />
+  </svg>
+</button>

@@ -196,8 +196,9 @@ production compose уже подключает его через `env_file`. Н�
 Отдельный `collectstatic` для показанной конфигурации nginx не нужен: nginx отдаёт
 `frontend/static/`, обновлённый через Git; этот же каталог смонтирован в контейнер.
 Frontend-сборки нет. Перезапуск нужен для Python-кода и переменных окружения.
-Dockerfile уже выполняет `poetry lock` при сборке — это существующее поведение,
-зависимости и lock-файл в рамках редактора не изменялись.
+Dockerfile устанавливает зависимости из закоммиченного `poetry.lock`.
+Обновляйте lock-файл локально и проверяйте его до деплоя; сборка не разрешает
+зависимости повторно.
 
 ## Карта статей
 
@@ -300,7 +301,7 @@ git diff --check
 Тесты создают и удаляют `test_subpolare_map`, не подключайте их к рабочему кластеру.
 
 ```sh
-poetry run python manage.py test map.integration_tests --settings=subpolare.integration_test_settings --noinput
+poetry run python manage.py test posts.integration_tests map.integration_tests --settings=subpolare.integration_test_settings --noinput
 ```
 
 Перед запуском обновлённого приложения примените новую миграцию на нужной БД:

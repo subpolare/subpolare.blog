@@ -6,7 +6,7 @@ authors = ["Vlad Nachatoi <nachatoi@list.ru>"]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-Django = "5.1.5"
+Django = "5.2.18"
 python-slugify = "^8.0.0"
 psycopg2-binary = "^2.9.10"
 beautifulsoup4 = "^4.11.1"
