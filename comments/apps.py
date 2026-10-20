@@ -1,3 +1,4 @@
+"""Migration-only app: retained so existing databases can drop retired tables."""
 from django.apps import AppConfig
 
 

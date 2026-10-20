@@ -4,7 +4,7 @@
 <meta name="referrer" content="no-referrer">
 {% include "common/styles.html" %}
 {% if post.css %}<style>{{ post.css|safe }}</style>{% endif %}
-<style>html { background: var(--bg-color); } .post { padding: 16px; box-sizing: border-box; } .clicker, .inline-comments { pointer-events: none; }</style>
+<style>html { background: var(--bg-color); } .post { padding: 16px; box-sizing: border-box; } .clicker { pointer-events: none; }</style>
 </head><body class="{{ post.data.body_class }}" style="background-color: {{ post.data.background_color }}; color: {{ post.data.color }};">
 <div class="post e-content">{{ html|safe }}</div>
 </body></html>

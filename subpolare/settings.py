@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.sitemaps",
     "users.apps.UsersConfig",
     "posts.apps.PostsConfig",
-    "comments.apps.CommentsConfig",
+    "comments.apps.CommentsConfig",  # Migration history only; no runtime models.
     "rss.apps.RssConfig",
     "clickers.apps.ClickersConfig",
     "map.apps.MapConfig",
@@ -239,7 +239,6 @@ CSRF_TRUSTED_ORIGINS = [
 
 STYLES_HASH = os.getenv("GITHUB_SHA") or str(randint(1, 10000))
 
-MAX_COMMENTS_PER_24H = 50
 
 if SENTRY_DSN and not DEBUG:
     # activate sentry on production

@@ -6,7 +6,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.translation import gettext_lazy as _, get_language
 from django.views.decorators.cache import never_cache
 
-from comments.models import Comment
 from posts.forms import PostEditForm
 from posts.editor import admin_only
 from posts.models import Post
@@ -98,10 +97,6 @@ def show_post(request, post_type, post_slug):
     if post.url:
         return redirect(post.url)
 
-    comments = Comment.visible_objects()\
-        .filter(post=post)\
-        .order_by("created_at")
-
     translations = Post.objects.filter(
         type=post.type,
         slug=post.slug,
@@ -113,7 +108,6 @@ def show_post(request, post_type, post_slug):
 
     return render_post(request, post, {
         "post": post,
-        "comments": comments,
         "translations": translations,
     })
 

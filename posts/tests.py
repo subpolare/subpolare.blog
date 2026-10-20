@@ -15,7 +15,7 @@ from django.template.loader import render_to_string
 from django.test import RequestFactory, SimpleTestCase, override_settings
 from django.urls import resolve, reverse
 
-from common.markdown.markdown import markdown_comment, markdown_text
+from common.markdown.markdown import markdown_snippet, markdown_text
 from posts.editor import MAX_IMAGE_SIZE, preview_post, upload_post_image
 from posts.forms import PostEditForm
 from posts.models import Post
@@ -74,11 +74,11 @@ class SocialMetadataTests(SimpleTestCase):
                     og_description='Полевой дневник: "пять дней" & ягоды',
                     og_image="https://media.example.test/cover.jpg",
                     html_cache="<p>Article</p>", data={},
-                    published_at=datetime(2026, 9, 21), is_commentable=False,
+                    published_at=datetime(2026, 9, 21),
                 )
                 path = post.get_absolute_url()
                 html = render_to_string(config.show_template, {
-                    "post": post, "comments": [], "translations": [], "related": [],
+                    "post": post, "translations": [], "related": [],
                 }, request=self.request(path))
                 soup = self.assert_single_document(html)
                 expected = {
@@ -207,10 +207,11 @@ class EditorTests(SimpleTestCase):
         self.assertIn("connect-src 'none'", html)
         self.assertIn("form-action 'none'", html)
 
-    def test_preview_expands_legacy_blocks_without_comment_forms(self):
+    def test_preview_preserves_clickers_and_removes_comment_markers(self):
         html = json.loads(self.preview("[clicker 10]\n\n[commentable 20]").content)["html"]
         self.assertIn('class="clicker ', html)
-        self.assertIn('id="block-20"', html)
+        self.assertNotIn('id="block-20"', html)
+        self.assertNotIn("[commentable", html)
         self.assertNotIn("[clicker", html)
         self.assertNotIn("<form", html)
 
@@ -246,12 +247,12 @@ class EditorTests(SimpleTestCase):
 
     @override_settings(DEBUG=False)
     def test_existing_post_cache_rss_and_comment_rendering_are_unchanged(self):
-        context = Context({"post": self.post, "clickers": {}, "user_votes": set(), "cookies": {}, "comments": []})
+        context = Context({"post": self.post, "clickers": {}, "user_votes": set()})
         with patch.object(Post, "save") as save:
             self.assertEqual(render_post(context, self.post), "Cached")
             save.assert_not_called()
         self.assertEqual(FullFeed().item_description(self.post), "Cached")
-        self.assertNotIn("<script>", markdown_comment("<script>alert(1)</script>"))
+        self.assertNotIn("<script>", markdown_snippet("<script>alert(1)</script>"))
 
     def test_upload_validates_before_calling_pepic(self):
         with patch("posts.editor.requests.post") as upload:

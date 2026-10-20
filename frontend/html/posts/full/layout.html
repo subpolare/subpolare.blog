@@ -2,7 +2,6 @@
 {% load static %}
 {% load text_filters %}
 {% load posts %}
-{% load comments %}
 
 {% block title %}
     {{ post.title }}{% if post.subtitle %} — {{ post.subtitle }}{% endif %} — {{ post_type_config.name }} {{ block.super }}
@@ -64,14 +63,6 @@
         <div class="container container-width-max">
             {% include "common/post_footer.html" %}
         </div>
-    {% endblock %}
-
-    {% block comments %}
-        {% if post.is_commentable or comments|length > 0 %}
-            <div class="container">
-                {% include "comments/comment-list.html" %}
-            </div>
-         {% endif %}
     {% endblock %}
 
     {% block post_related %}

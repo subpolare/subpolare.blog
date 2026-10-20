@@ -5,8 +5,7 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from django.views.decorators.cache import cache_page
 
-from clickers.views import click_comment, click_block
-from comments.views import delete_comment, create_comment
+from clickers.views import click_block
 from subpolare.pages import donate, subscribe
 from posts.sitemaps import sitemaps
 from posts.views import index, show_post, list_posts, edit_post
@@ -28,11 +27,8 @@ urlpatterns = [
     path(r"rss/private/", cache_page(60 * 60)(FullFeed()), name="rss.private"),
     path(r"rss/blog/", cache_page(60 * 60)(FullFeed()), name="rss.blog"),  # legacy
 
-    path(r"clickers/comments/<str:comment_id>/", click_comment, name="click_comment"),
     path(r"clickers/blocks/<str:post_slug>/<str:block>/", click_block, name="click_block"),
 
-    path(r"comments/create/", create_comment, name="create_comment"),
-    path(r"comments/<str:comment_id>/delete/", delete_comment, name="delete_comment"),
 
     path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
     path("robots.txt", robots, name="robots"),

@@ -8,7 +8,6 @@ from django.test import Client, TestCase, TransactionTestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from comments.models import Comment
 from posts.models import Post
 from users.models import User
 
@@ -114,19 +113,6 @@ class PostPersistenceTests(TestCase):
         post.refresh_from_db()
         self.assertEqual(post.reading_time, 15)
 
-    def test_comment_persists_and_updates_count_with_csrf(self):
-        response = self.client.post(reverse("create_comment"), {
-            "csrfmiddlewaretoken": self.csrf,
-            "post_slug": self.post.slug,
-            "text": "A **saved** comment.",
-        })
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "<strong>saved</strong>")
-        comment = Comment.objects.get(post=self.post)
-        self.assertEqual(comment.author, self.owner)
-        self.assertEqual(comment.text, "A **saved** comment.")
-        self.post.refresh_from_db()
-        self.assertEqual(self.post.comment_count, 1)
 
 
 class ReadingTimeMigrationTests(TransactionTestCase):
@@ -153,7 +139,7 @@ class ReadingTimeMigrationTests(TransactionTestCase):
             executor.migrate(current)
             for slug, _, _, expected in cases:
                 with self.subTest(slug=slug):
-                    post = Post.objects.get(slug=slug)
+                    post = executor.loader.project_state(current).apps.get_model("posts", "Post").objects.get(slug=slug)
                     self.assertEqual(post.reading_time, expected)
                     self.assertEqual(post.created_at, timestamp)
                     self.assertEqual(post.published_at, timestamp)
@@ -162,4 +148,5 @@ class ReadingTimeMigrationTests(TransactionTestCase):
                     self.assertEqual(post.comment_count, 3)
                     self.assertEqual(post.html_cache, "Old cached HTML")
         finally:
-            MigrationExecutor(connection).migrate(current)
+            executor = MigrationExecutor(connection)
+            executor.migrate(executor.loader.graph.leaf_nodes())

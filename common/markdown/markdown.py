@@ -30,7 +30,7 @@ def markdown_text(text, renderer=Vas3kRenderer):
     return prepare_article_images(html) if renderer is Vas3kRenderer else html
 
 
-def markdown_comment(text, renderer=Vas3kRenderer):
+def markdown_snippet(text, renderer=Vas3kRenderer):
     markdown = mistune.create_markdown(
         escape=True,
         hard_wrap=True,

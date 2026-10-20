@@ -11,7 +11,6 @@ from common.images import prepare_article_images
 
 register = template.Library()
 clicker_template = loader.get_template("clickers/clicker.html")
-inline_comments_template = loader.get_template("comments/inline-comment-list.html")
 
 
 @register.simple_tag(takes_context=True)
@@ -41,7 +40,8 @@ def show_post(context, post):
 
 def render_post_blocks(context, html):
     """Expand legacy blocks without reading or writing the post/cache."""
-    html = re.sub(r"\[commentable (.+?)\]", lambda match: commentable(context, match.group(1)), html)
+    # Old markers should stay invisible when comments are retired.
+    html = re.sub(r"\[commentable (.+?)\]", "", html)
     return re.sub(r"\[clicker (.+?)\]", lambda match: clicker(context, match.group(1), match.group(1)), html)
 
 
@@ -54,15 +54,6 @@ def clicker(context, block, text=None):
         "block": block,
         "votes": clicker.get("total") or 0,
         "is_voted": block in context["user_votes"],
-    })
-
-
-def commentable(context, block):
-    return inline_comments_template.render({
-        **context.flatten(),
-        "username": context["cookies"].get("username") or "",
-        "block": block,
-        "block_comments": [c for c in context["comments"] if str(c.block) == str(block)],
     })
 
 

@@ -42,7 +42,7 @@ def preview_post(request, post_type, post_slug):
     # Never call show_post: it writes html_cache, timestamps and view counts.
     html = text if post.is_raw_html else markdown_text(text)
     html = render_post_blocks(Context({
-        "post": post, "clickers": {}, "user_votes": set(), "cookies": {}, "comments": [],
+        "post": post, "clickers": {}, "user_votes": set(),
     }), html)
     document = render_to_string("posts/editor-preview.html", {
         "html": html, "post": post,

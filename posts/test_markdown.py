@@ -6,7 +6,7 @@ import textwrap
 
 from django.test import SimpleTestCase
 
-from common.markdown.markdown import markdown_comment, markdown_text
+from common.markdown.markdown import markdown_snippet, markdown_text
 
 
 class MarkdownRegressionTests(SimpleTestCase):
@@ -17,10 +17,10 @@ class MarkdownRegressionTests(SimpleTestCase):
             import django
             django.setup()
             from common.markdown.markdown import (
-                markdown_comment, markdown_email, markdown_plain, markdown_text,
+                markdown_snippet, markdown_email, markdown_plain, markdown_text,
             )
 
-            for render in (markdown_text, markdown_comment, markdown_email, markdown_plain):
+            for render in (markdown_text, markdown_snippet, markdown_email, markdown_plain):
                 for quote in ('"', "'"):
                     title = quote + '\\!' * 40
                     for source in ('[x](y ' + title + ')', '[x]: y ' + title):
@@ -39,7 +39,7 @@ class MarkdownRegressionTests(SimpleTestCase):
         self.assertEqual(result.stdout.strip(), "ok")
 
     def test_valid_quoted_link_titles_still_render(self):
-        for render in (markdown_text, markdown_comment):
+        for render in (markdown_text, markdown_snippet):
             for quote in ('"', "'"):
                 title = quote + r'escaped\! title' + quote
                 for source in (
@@ -68,8 +68,8 @@ class MarkdownRegressionTests(SimpleTestCase):
             with self.subTest(source=source):
                 self.assertEqual(markdown_text(source), expected)
 
-    def test_comments_escape_html_and_keep_markdown_formatting(self):
-        html = markdown_comment('<script>alert(1)</script>\n\n**Bold** and ~~gone~~')
+    def test_snippets_escape_html_and_keep_markdown_formatting(self):
+        html = markdown_snippet('<script>alert(1)</script>\n\n**Bold** and ~~gone~~')
         self.assertNotIn('<script>', html)
         self.assertIn('&lt;script&gt;', html)
         self.assertIn('<strong>Bold</strong> and <del>gone</del>', html)

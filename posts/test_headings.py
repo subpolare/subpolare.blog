@@ -5,14 +5,14 @@ from django.template import Context
 from django.test import SimpleTestCase, override_settings
 
 from common.markdown.headings import semantic_headings
-from common.markdown.markdown import markdown_comment, markdown_text
+from common.markdown.markdown import markdown_snippet, markdown_text
 from posts.models import Post
 from posts.templatetags.posts import show_post
 
 
 class MarkdownHeadingTests(SimpleTestCase):
     def test_all_levels_keep_classes_anchors_and_inline_formatting(self):
-        for renderer in (markdown_text, markdown_comment):
+        for renderer in (markdown_text, markdown_snippet):
             for level in range(1, 7):
                 with self.subTest(renderer=renderer.__name__, level=level):
                     html = renderer(f'{"#" * level} Заголовок *курсивом*')

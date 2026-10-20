@@ -2,7 +2,7 @@ from django import template
 from django.utils.html import urlize
 from django.utils.safestring import mark_safe
 
-from common.markdown.markdown import markdown_comment
+from common.markdown.markdown import markdown_snippet
 
 register = template.Library()
 
@@ -18,7 +18,7 @@ def nl2p(text):
 
 @register.filter(is_safe=True)
 def markdown(text):
-    return mark_safe(markdown_comment(text))
+    return mark_safe(markdown_snippet(text))
 
 
 @register.filter

@@ -39,7 +39,6 @@ class Post(models.Model):
     published_at = models.DateTimeField()
     updated_at = models.DateTimeField()
 
-    comment_count = models.PositiveIntegerField(default=0)
     view_count = models.PositiveIntegerField(default=0)
     word_count = models.PositiveIntegerField(default=0)
     reading_time = models.PositiveIntegerField(default=5, editable=False)
@@ -47,7 +46,6 @@ class Post(models.Model):
     is_raw_html = models.BooleanField(default=False)
     is_visible = models.BooleanField(default=True)
     is_members_only = models.BooleanField(default=False)
-    is_commentable = models.BooleanField(default=True)
     is_visible_on_home_page = models.BooleanField(default=False)
 
     lang = models.CharField(max_length=2, default=settings.LANGUAGE_CODE)
