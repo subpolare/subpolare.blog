@@ -1,0 +1,10 @@
+#!/bin/sh
+# Certbot calls deploy hooks only after a successful renewal.
+set -eu
+
+case "${RENEWED_LINEAGE:-}" in
+    /etc/letsencrypt/live/media.subpolare.ru|/etc/letsencrypt/live/subpolare.ru)
+        /usr/sbin/nginx -t
+        /bin/systemctl reload nginx
+        ;;
+esac
