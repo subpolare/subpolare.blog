@@ -1,1 +1,1 @@
-{% load i18n %}<link rel="alternate" type="application/rss+xml" title="Full feed" href="https://{{ request.get_host }}/rss/"/>
+{% if settings.RSS_ENABLED %}{% load i18n %}<link rel="alternate" type="application/rss+xml" title="Full feed" href="https://{{ request.get_host }}/rss/"/>{% endif %}

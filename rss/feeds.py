@@ -1,16 +1,14 @@
 from django.contrib.syndication.views import Feed
 from django.template.defaultfilters import truncatechars
 from django.utils.html import strip_tags
-from django.utils.translation import gettext_lazy as _
 
 from posts.models import Post
-from django.conf import settings
 
 from subpolare.strings import DESCRIPTION
 
 
 class FullFeed(Feed):
-    title = _("Вастрик.ру")
+    title = "subpolare.ru"
     link = "/rss/"
     description = DESCRIPTION
 
@@ -25,7 +23,7 @@ class FullFeed(Feed):
         return item.title
 
     def author_name(self):
-        return _("Вастрик")
+        return "subpolare.ru"
 
     def item_copyright(self):
         return "subpolare.ru"
@@ -49,20 +47,3 @@ class FullFeed(Feed):
             result += truncatechars(item.text or "", 500)
 
         return result
-
-
-class PrivateFeed(FullFeed):
-    title = _("Вастрик.ру: Секретный фид")
-    link = "/rss/private/"
-
-
-class PublicFeed(FullFeed):
-    title = _("Вастрик.ру: Только публичные посты")
-    link = "/rss/public/"
-
-    def items(self):
-        items = Post.visible_objects()\
-            .filter(is_visible_on_home_page=True, is_members_only=False)\
-            .order_by("-created_at")\
-            .select_related()[:20]
-        return items

@@ -3,14 +3,13 @@ from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
 from django.urls import path, include
 from django.views.generic import RedirectView
-from django.views.decorators.cache import cache_page
 
 from clickers.views import click_block
 from subpolare.pages import donate, subscribe
 from posts.sitemaps import sitemaps
 from posts.views import index, show_post, list_posts, edit_post
 from posts.editor import preview_post, upload_post_image
-from rss.feeds import FullFeed
+from rss.views import full_feed
 from users.views import robots
 from users.views import yandex_verification
 
@@ -22,10 +21,10 @@ urlpatterns = [
     # path(r"donate/", donate, name="donate"),
     path(r"subscribe/", subscribe, name="subscribe"),
 
-    path(r"rss/", cache_page(60 * 60)(FullFeed()), name="rss.full"),
-    path(r"rss/public/", cache_page(60 * 60)(FullFeed()), name="rss.public"),
-    path(r"rss/private/", cache_page(60 * 60)(FullFeed()), name="rss.private"),
-    path(r"rss/blog/", cache_page(60 * 60)(FullFeed()), name="rss.blog"),  # legacy
+    path(r"rss/", full_feed, name="rss.full"),
+    path(r"rss/public/", full_feed, name="rss.public"),
+    path(r"rss/private/", full_feed, name="rss.private"),
+    path(r"rss/blog/", full_feed, name="rss.blog"),  # legacy
 
     path(r"clickers/blocks/<str:post_slug>/<str:block>/", click_block, name="click_block"),
 

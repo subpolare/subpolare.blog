@@ -175,6 +175,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# RSS is retained but disabled until explicitly enabled.
+RSS_ENABLED = os.getenv("RSS_ENABLED", "false").lower() == "true"
+
 # App specific
 
 # Server-only Pepic credentials. Never include the code in templates or JS.
