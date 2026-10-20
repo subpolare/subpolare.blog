@@ -14,38 +14,25 @@ class UserAccountManager(BaseUserManager):
     def create_superuser(self, username, email, password, **other_fields):
         other_fields.setdefault("is_staff", True)
         other_fields.setdefault("is_superuser", True)
-        user = self.create_user(
+        return self.create_user(
             username=username,
             email=email,
             password=password,
             **other_fields
         )
-        user.set_password(password)
-        user.save()
-        return user
 
     def create_user(self, username, email, password=None, **other_fields):
         if not email:
             raise ValueError("Email address is required!")
 
         email = self.normalize_email(email)
-        if password is not None:
-            user = self.model(
-                username=username,
-                email=email,
-                password=password,
-                **other_fields
-            )
-            user.save()
-        else:
-            user = self.model(
-                username=username,
-                email=email,
-                password=password,
-                **other_fields
-            )
-            user.set_unusable_password()
-            user.save()
+        user = self.model(
+            username=username,
+            email=email,
+            **other_fields
+        )
+        user.set_password(password)
+        user.save()
 
         return user
 
