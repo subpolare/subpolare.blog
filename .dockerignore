@@ -10,7 +10,6 @@ tmp/image-rollout
 **/.env
 **/.env.*
 !.env.example
-!**/.env.example
 
 # Keep these last: env.example exceptions must not traverse private trees.
 runtime
