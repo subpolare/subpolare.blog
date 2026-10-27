@@ -74,10 +74,10 @@ services:
   blog_maintenance:
     image: subpolareblog-blog_app
     command: python3 manage.py mirror_maintenance
-    env_file: [.env]
     environment:
       DEBUG: "false"
       SITE_REGION: ru
+      MIRROR_RUNTIME: /mirror-runtime
     restart: always
     volumes: ["./runtime:/mirror-runtime"]
     logging:
@@ -88,7 +88,6 @@ services:
     image: subpolareblog-blog_app
     command: python3 manage.py mirror_media_sync
     user: "1000:1000"
-    env_file: [.env]
     environment:
       DEBUG: "false"
       SITE_REGION: ru

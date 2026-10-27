@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import time
+from threading import Thread
 
 import maxminddb
 import requests
@@ -52,6 +53,16 @@ def refresh_crawlers(directory):
     atomic_write(directory / "crawlers.json", json.dumps(networks).encode())
 
 
+def refresh_databases(directory, stderr):
+    for name, update in (("country.mmdb", refresh_geo), ("crawlers.json", refresh_crawlers)):
+        path = directory / name
+        try:
+            if not path.exists() or time.time() - path.stat().st_mtime > 86400:
+                update(directory)
+        except (requests.RequestException, OSError, ValueError, KeyError, maxminddb.InvalidDatabaseError):
+            stderr.write(f"Could not refresh {name}; keeping previous data.")
+
+
 class Command(BaseCommand):
     help = "Refresh GeoIP daily and check peer health every 30 seconds."
 
@@ -62,14 +73,13 @@ class Command(BaseCommand):
         directory = Path(settings.MIRROR_RUNTIME)
         directory.mkdir(parents=True, exist_ok=True)
         peer = "subpolare.ru" if settings.SITE_REGION == "com" else "subpolare.com"
+        refresh = None
+        previous_local_ready = None
         while True:
-            for name, update in (("country.mmdb", refresh_geo), ("crawlers.json", refresh_crawlers)):
-                path = directory / name
-                if not path.exists() or time.time() - path.stat().st_mtime > 86400:
-                    try:
-                        update(directory)
-                    except (requests.RequestException, OSError, ValueError, KeyError, maxminddb.InvalidDatabaseError):
-                        self.stderr.write(f"Could not refresh {name}; keeping previous data.")
+            # Slow provider downloads must not stall health monitoring.
+            if refresh is None or not refresh.is_alive():
+                refresh = Thread(target=refresh_databases, args=(directory, self.stderr), daemon=True)
+                refresh.start()
             healthy = False
             try:
                 response = requests.get(f"https://{peer}/_mirror/health", timeout=(3, 5), allow_redirects=False)
@@ -77,6 +87,19 @@ class Command(BaseCommand):
             except (requests.RequestException, ValueError):
                 pass
             atomic_write(directory / "peer.json", json.dumps({"checked_at": time.time(), "healthy": healthy}).encode())
+            local_ready = False
+            try:
+                response = requests.get("http://blog_app:8022/_mirror/health",
+                    headers={"Host": "subpolare." + settings.SITE_REGION}, timeout=(3, 5))
+                local_ready = response.status_code == 200 and response.json().get("ready") is True
+            except (requests.RequestException, ValueError):
+                pass
+            if local_ready != previous_local_ready:
+                self.stderr.write("Mirror freshness recovered." if local_ready else
+                    "ALERT: mirror not ready; check replication and media synchronization.")
+                previous_local_ready = local_ready
+            atomic_write(directory / "local.json", json.dumps({"checked_at": time.time(), "ready": local_ready}).encode())
             if options["once"]:
+                refresh.join()
                 return
             time.sleep(30)

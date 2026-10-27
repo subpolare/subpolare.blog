@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 SSH = "ssh -i /mirror-secrets/media_sync -o UserKnownHostsFile=/mirror-secrets/known_hosts -o StrictHostKeyChecking=yes -o BatchMode=yes -o ConnectTimeout=10"
-SOURCES = (("/pepic-media/", "uploads/"), ("/legacy-images/", "legacy/images/"), ("/legacy-videos/", "legacy/videos/"))
+SOURCES = (("/pepic-media/", "uploads"), ("/legacy-images/", "legacy-images"), ("/legacy-videos/", "legacy-videos"))
 
 
 def synchronize():
@@ -25,12 +25,12 @@ def _synchronize():
         subprocess.run([
             "rsync", "-rt", "--safe-links", "--no-perms", "--omit-dir-times",
             "--timeout=90", "--exclude=.mirror-synced", "-e", SSH,
-            source, "subpolare@5.181.51.194:" + target,
+            "--rsync-path=" + target, source, "subpolare@5.181.51.194:./",
         ], check=True, timeout=600)
     marker = Path("/tmp/.mirror-synced")
     marker.write_text(str(int(time.time())))
-    subprocess.run(["rsync", "-t", "--timeout=30", "-e", SSH, str(marker),
-                    "subpolare@5.181.51.194:uploads/"], check=True, timeout=60)
+    subprocess.run(["rsync", "-t", "--timeout=30", "--rsync-path=uploads", "-e", SSH, str(marker),
+                    "subpolare@5.181.51.194:./"], check=True, timeout=60)
 
 
 class Command(BaseCommand):

@@ -1,0 +1,3 @@
+services:
+  pepic:
+    image: pepic-hardened:1

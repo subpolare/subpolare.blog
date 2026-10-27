@@ -3,6 +3,7 @@ from django.conf import settings
 from django.core import signing
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.utils.cache import patch_vary_headers
+from django.utils.encoding import escape_uri_path
 
 from mirrors import geo
 from utils.request import parse_ip_address
@@ -24,7 +25,7 @@ def redirect_to(request, region, **extra):
     for key in ("mirror", "_mirror_hop"):
         query.pop(key, None)
     query.update(extra)
-    location = "https://" + HOSTS[region] + request.path
+    location = "https://" + HOSTS[region] + escape_uri_path(request.path)
     if query:
         location += "?" + query.urlencode()
     if request.headers.get("HX-Request") == "true":

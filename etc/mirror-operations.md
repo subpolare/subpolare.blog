@@ -18,8 +18,14 @@ Deploy policy: `.agents/skills/deploy/SKILL.md`.
   and permits forwarding only to `127.0.0.1:54324` and `127.0.0.1:8022`.
   An SSH Match rule disables reverse forwarding for this peer.
 - RU media sync uses a different key `secrets/media/media_sync`. COM accepts it
-  only from `92.51.38.155`, with `restrict` and a forced `rrsync -wo -no-del
-  /srv/pepic` command. No shell, tunnels, downloads or deletion operations.
+  only from `92.51.38.155`, with `restrict` and the forced command
+  `/usr/bin/python3 /srv/subpolare.blog/etc/ssh/mirror-media-receive.py`.
+  The receiver accepts only `uploads`, `legacy-images`, `legacy-videos` selectors
+  and runs `rrsync -wo -no-del -munge` under their separate real data directories.
+  No key can write `/srv/pepic/.env`, application source, or the receiver itself.
+  No shell, tunnels, downloads or deletion operations.
+- Maintenance workers receive no database credentials. RU media synchronization
+  receives only its own database password, never `BLOG_DATABASE_PASSWORD`.
 - Replication secrets never enter Git, Docker images or logs. No service mounts
   the Docker socket. Existing administrative SSH access is independent.
 
@@ -31,6 +37,15 @@ syncs at startup and retries failures. RU originals and prepared sizes arrive in
 `/srv/pepic/uploads`; old storage is copied under `/srv/pepic/legacy`.
 Only after a successful full transfer is `uploads/.mirror-synced` updated.
 Unreferenced files are retained; this is intentional, not a deletion mirror.
+
+COM health reports readability separately from freshness. Automatic routing
+requires all subscription tables ready, an active apply worker with a received
+message in the last 120 seconds, and a successful media marker younger than
+180 seconds. Failed freshness returns 503 with `Cache-Control: no-store`;
+ordinary article reads remain available. Maintenance checks independently of
+GeoIP downloads, writes `runtime/local.json`, and logs transitions to an ALERT
+state. Inspect these signals with the existing monitoring; no external alert
+delivery is configured by this change.
 
 COM reads local PostgreSQL and local media while RU is down. Local view counts
 continue. Reactions go through the private tunnel to RU and return 503 during
@@ -58,6 +73,24 @@ by an HTTP redirect. GeoDNS is not part of this deployment.
 COM Nginx exposes only 80/443 and proxies owned media under `/media/`.
 Certbot renews using a webroot and signals Nginx through the ACME volume.
 The reverse proxy checks its configuration before reloading.
+Nginx runs as the foreground main process so its exit restarts the container.
+
+## Pepic security patch
+
+Both servers use `pepic-hardened:1`. RU retains its existing Compose project
+`pepic` and `/srv/pepic/docker-compose.yml`; COM uses the blog Compose project.
+`python3 utils/build-pepic.py`, run from `/srv/subpolare.blog`, copies only source
+files from `/srv/pepic` into a disposable build directory, checks/applies
+`etc/pepic/security.patch`, and runs the storage/handler Go regression tests
+before producing the image. It never changes the Pepic source checkout or media.
+Build on RU and copy the tested image to COM. Recreate the two Pepic containers
+only when deploying this patch or a subsequent intentional Pepic update.
+
+Storage errors return to callers instead of terminating the process. Dynamic
+derivatives accept only 480, 960 and 1440 pixels, with at most two concurrent
+cache-miss conversions; originals, full URLs and image-processing quality are
+unchanged. Existing media files are not regenerated. Requests at or above the
+configured original length still serve the original without processing.
 
 ## Verification
 

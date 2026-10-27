@@ -1,0 +1,90 @@
+--- a/pepic/storage/storage.go
++++ b/pepic/storage/storage.go
+@@ -58,7 +58,6 @@
+ 
+ 	data, err := s.Backend.GetObject(canonicalPath)
+ 	if err != nil {
+-		log.Fatalf("Error getting file '%s' from storage: %s", canonicalPath, err)
+ 		return err
+ 	}
+ 
+@@ -77,7 +76,6 @@
+ 
+ 	_, err := s.Backend.PutObject(canonicalPath, file.Bytes)
+ 	if err != nil {
+-		log.Fatalf("Error writing file '%s' to storage: %s", canonicalPath, err)
+ 		return err
+ 	}
+ 
+--- a/pepic/handler/proxy.go
++++ b/pepic/handler/proxy.go
+@@ -3,6 +3,7 @@
+ import (
+ 	"errors"
+ 	"net/http"
++	"os"
+ 	"path"
+ 	"strconv"
+ 
+@@ -11,7 +12,12 @@
+ 	"github.com/vas3k/pepic/pepic/entity"
+ )
+ 
+-const MinLength = 200
++// Bound both persistent variants and simultaneous cache-miss processing.
++var resizeSlots = make(chan struct{}, 2)
++
++func supportedLength(length int) bool {
++	return length == 480 || length == 960 || length == 1440
++}
+ 
+ // GET /:name
+ // Returns originally stored file
+@@ -42,15 +48,21 @@
+ 		return h.GetOriginalFile(c)
+ 	}
+ 
+-	// do not return too small images
+-	if length < MinLength {
+-		length = MinLength
++	if !supportedLength(length) {
++		return echo.NewHTTPError(http.StatusBadRequest, "Unsupported image size")
+ 	}
+ 
+ 	// resize and store the resized one
+ 	filename := c.Param("name")
+ 	file, err := h.resizeFile(filename, length)
+ 	if err != nil {
++		if errors.Is(err, os.ErrNotExist) {
++			return echo.NewHTTPError(http.StatusNotFound, "File not found")
++		}
++		var httpError *echo.HTTPError
++		if errors.As(err, &httpError) {
++			return httpError
++		}
+ 		return echo.NewHTTPError(http.StatusInternalServerError, err)
+ 	}
+ 
+@@ -58,6 +70,9 @@
+ }
+ 
+ func (h *PepicHandler) resizeFile(filename string, length int) (*entity.ProcessingFile, error) {
++	if !supportedLength(length) {
++		return nil, echo.NewHTTPError(http.StatusBadRequest, "Unsupported image size")
++	}
+ 	resizePath := path.Join("resize", strconv.Itoa(length))
+ 	file, err := h.Storage.GetFile(resizePath, filename)
+ 	if err == nil {
+@@ -66,6 +81,12 @@
+ 	}
+ 	if file == nil {
+ 		return nil, errors.New("file is empty or corrupted")
++	}
++	select {
++	case resizeSlots <- struct{}{}:
++		defer func() { <-resizeSlots }()
++	default:
++		return nil, echo.NewHTTPError(http.StatusServiceUnavailable, "Image processing busy")
+ 	}
+ 
+ 	if file.IsImage() {

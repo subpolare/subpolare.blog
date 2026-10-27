@@ -28,6 +28,7 @@ services:
 
   blog_maintenance:
     <<: *app
+    env_file: []
     command: python3 manage.py mirror_maintenance
 
   postgres:
@@ -60,7 +61,7 @@ services:
       options: {max-size: 10m, max-file: "3"}
 
   pepic:
-    image: pepic-local:latest
+    image: pepic-hardened:1
     pull_policy: never
     container_name: pepic
     restart: unless-stopped
@@ -85,10 +86,8 @@ services:
       - ./certificates:/etc/letsencrypt:ro
       - ./acme:/var/www/acme
       - /srv/pepic/legacy:/legacy:ro
-    command: >-
-      /bin/sh -c 'nginx -t && nginx || exit 1; while sleep 30; do
-      if test -f /var/www/acme/reload; then nginx -t && nginx -s reload && rm /var/www/acme/reload; fi;
-      done'
+      - ./etc/nginx/start-mirror.sh:/usr/local/bin/start-mirror:ro
+    command: ["/bin/sh", "/usr/local/bin/start-mirror"]
     depends_on: [blog_app, pepic, ru_tunnel]
     logging:
       driver: json-file

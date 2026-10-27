@@ -45,6 +45,18 @@ class RoutingTests(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response["HX-Redirect"].startswith("https://subpolare.com/blog/article/"))
 
+    def test_redirects_keep_encoded_resource_names(self):
+        from mirrors.middleware import redirect_to
+        for path in ("/blog/a%23b/", "/blog/a%3Fb/", "/blog/a%2523b/",
+                     "/blog/a%5Cb/", "/blog/a%0Ab/", "/blog/%D1%82%D0%B5%D1%81%D1%82/"):
+            for boosted in (False, True):
+                request = self.request(path + "?tag=a&tag=b")
+                if boosted:
+                    request.META["HTTP_HX_REQUEST"] = "true"
+                response = redirect_to(request, "com")
+                header = "HX-Redirect" if boosted else "Location"
+                self.assertEqual(response[header], "https://subpolare.com" + path + "?tag=a&tag=b")
+
     def test_unknown_country_or_unavailable_target_serves_current_site(self):
         for country, available in ((None, True), ("US", False)):
             self.assertEqual(self.route(self.request(), country, available).status_code, 200)
@@ -112,3 +124,75 @@ class GeoFallbackTests(SimpleTestCase):
             self.assertFalse(geo.target_available())
             Path(directory, "peer.json").write_text(json.dumps({"healthy": True, "checked_at": 0}))
             self.assertFalse(geo.target_available())
+
+
+@override_settings(SITE_REGION="com")
+class MirrorHealthTests(SimpleTestCase):
+    def test_readable_mirror_is_not_fresh_when_replication_or_media_stops(self):
+        from mirrors.views import health
+        with TemporaryDirectory() as directory, override_settings(PEPIC_STORAGE_ROOT=directory):
+            marker = Path(directory, ".mirror-synced")
+            for replica, timestamp, expected in ((True, 999, 200), (False, 999, 503),
+                                                  (True, 1, 503), (True, 1001, 503)):
+                marker.write_text(str(timestamp))
+                cursor = Mock()
+                cursor.fetchone.side_effect = [(True,), (replica,)]
+                with patch("mirrors.views.connection") as connection, patch("mirrors.views.time.time", return_value=1000):
+                    connection.cursor.return_value.__enter__.return_value = cursor
+                    response = health(RequestFactory().get("/_mirror/health"))
+                self.assertEqual(response.status_code, expected)
+                self.assertTrue(json.loads(response.content)["readable"])
+                self.assertEqual(response["Cache-Control"], "no-store")
+
+    def test_missing_or_invalid_media_marker_is_not_fresh(self):
+        from mirrors.views import media_fresh
+        with TemporaryDirectory() as directory, override_settings(PEPIC_STORAGE_ROOT=directory):
+            self.assertFalse(media_fresh())
+            Path(directory, ".mirror-synced").write_text("invalid")
+            self.assertFalse(media_fresh())
+
+
+class MediaReceiverTests(SimpleTestCase):
+    def test_only_fixed_data_roots_are_delegated_to_rrsync(self):
+        import runpy
+        receiver = runpy.run_path(str(Path(__file__).resolve().parents[1] / "etc/ssh/mirror-media-receive.py"))
+        with patch("os.path.realpath", side_effect=lambda value: value), patch("os.path.isdir", return_value=True), patch("os.execve") as execute:
+            for selector, root in receiver["ROOTS"].items():
+                receiver["receive"](selector + " --server -rt . ./")
+                command, arguments, env = execute.call_args.args
+                self.assertEqual(command, "/usr/bin/rrsync")
+                self.assertEqual(arguments, ["rrsync", "-wo", "-no-del", "-munge", root])
+                self.assertEqual(env["SSH_ORIGINAL_COMMAND"], "rsync --server -rt . ./")
+            for command in ("", "rsync --server -rt . ./", "../.env --server -rt . ./",
+                            "uploads;whoami --server -rt . ./", "uploads cat .env"):
+                with self.assertRaises(ValueError):
+                    receiver["receive"](command)
+
+    def test_symlinked_data_roots_are_rejected(self):
+        import runpy
+        receiver = runpy.run_path(str(Path(__file__).resolve().parents[1] / "etc/ssh/mirror-media-receive.py"))
+        with patch("os.path.realpath", return_value="/srv/pepic"), self.assertRaises(ValueError):
+            receiver["receive"]("uploads --server -rt . ./")
+
+
+class MirrorMaintenanceTests(SimpleTestCase):
+    def test_provider_refresh_does_not_block_health_and_once_waits_for_completion(self):
+        from threading import Event
+        from mirrors.management.commands.mirror_maintenance import Command
+        probe = Event()
+        refreshed = []
+
+        def slow_refresh(*args):
+            refreshed.append(probe.wait(timeout=2))
+
+        def health_response(*args, **kwargs):
+            probe.set()
+            return Mock(status_code=200, json=lambda: {"ready": True})
+
+        with TemporaryDirectory() as directory, override_settings(MIRROR_RUNTIME=directory), \
+                patch("mirrors.management.commands.mirror_maintenance.refresh_databases", side_effect=slow_refresh), \
+                patch("mirrors.management.commands.mirror_maintenance.requests.get", side_effect=health_response):
+            Command(stderr=Mock()).handle(once=True)
+            self.assertEqual(refreshed, [True])
+            self.assertTrue(json.loads(Path(directory, "peer.json").read_text())["healthy"])
+            self.assertTrue(json.loads(Path(directory, "local.json").read_text())["ready"])
