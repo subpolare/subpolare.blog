@@ -18,6 +18,9 @@ docker-run-production:  ## Runs production server in docker
 	poetry run python3 manage.py migrate
 	poetry run gunicorn subpolare.asgi:application -w 5 -k uvicorn.workers.UvicornWorker --bind=0.0.0.0:8022 --capture-output --log-level debug --access-logfile - --error-logfile -
 
+docker-run-mirror:  ## Migrations are applied separately with the deployment DB role.
+	poetry run gunicorn subpolare.asgi:application -w 2 -k uvicorn.workers.UvicornWorker --bind=0.0.0.0:8022 --capture-output --log-level info --access-logfile - --error-logfile -
+
 help:  ## Display this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 	  | sort \

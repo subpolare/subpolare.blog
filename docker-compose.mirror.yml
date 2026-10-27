@@ -1,0 +1,106 @@
+name: subpolareblog
+
+x-app: &app
+  image: subpolareblog-blog_app
+  env_file: [.env]
+  environment:
+    DEBUG: "false"
+    SITE_REGION: com
+    POSTGRES_HOST: postgres
+    PEPIC_STORAGE_ROOT: /pepic-media
+    MIRROR_RUNTIME: /mirror-runtime
+  restart: unless-stopped
+  volumes:
+    - ./runtime:/mirror-runtime
+    - /srv/pepic/uploads:/pepic-media:ro
+  logging:
+    driver: json-file
+    options: {max-size: 10m, max-file: "3"}
+
+services:
+  blog_app:
+    <<: *app
+    build: .
+    container_name: blog_app
+    command: make docker-run-mirror
+    ports: ["127.0.0.1:8022:8022"]
+    depends_on: [postgres]
+
+  blog_maintenance:
+    <<: *app
+    command: python3 manage.py mirror_maintenance
+
+  postgres:
+    image: postgres:15
+    container_name: blog_postgres
+    env_file: [secrets/database.env]
+    restart: unless-stopped
+    volumes: ["./pgdata:/var/lib/postgresql/data"]
+    # No published PostgreSQL port, including IPv6.
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+
+  ru_tunnel:
+    image: subpolareblog-blog_app
+    user: "1000:1000"
+    restart: unless-stopped
+    command: >-
+      ssh -NT -g -i /keys/ru_tunnel
+      -o UserKnownHostsFile=/keys/known_hosts -o StrictHostKeyChecking=yes
+      -o BatchMode=yes -o ExitOnForwardFailure=yes
+      -o ServerAliveInterval=15 -o ServerAliveCountMax=3
+      -L 0.0.0.0:5432:127.0.0.1:54324
+      -L 0.0.0.0:8022:127.0.0.1:8022
+      subpolare@92.51.38.155
+    volumes: ["./secrets/tunnel:/keys:ro"]
+    # Forwarded ports are reachable only within this Compose network.
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+
+  pepic:
+    image: pepic-local:latest
+    pull_policy: never
+    container_name: pepic
+    restart: unless-stopped
+    env_file: [/srv/pepic/.env]
+    environment:
+      BASE_URL: https://subpolare.com/media/
+      STORAGE_DIR: /uploads
+      IMAGE_LIVE_RESIZE: "true"
+      IMAGE_JPEG_QUALITY: "95"
+    volumes: ["/srv/pepic/uploads:/uploads"]
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+
+  nginx:
+    image: nginx:1.28-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./etc/nginx/subpolare.com.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend/static:/static:ro
+      - ./certificates:/etc/letsencrypt:ro
+      - ./acme:/var/www/acme
+      - /srv/pepic/legacy:/legacy:ro
+    command: >-
+      /bin/sh -c 'nginx; while sleep 30; do
+      if test -f /var/www/acme/reload; then nginx -t && nginx -s reload && rm /var/www/acme/reload; fi;
+      done'
+    depends_on: [blog_app, pepic, ru_tunnel]
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+
+  certbot:
+    image: certbot/certbot:v4.0.0
+    restart: unless-stopped
+    volumes:
+      - ./certificates:/etc/letsencrypt
+      - ./acme:/var/www/acme
+    entrypoint: /bin/sh
+    command: >-
+      -c 'while :; do certbot renew --webroot -w /var/www/acme
+      --deploy-hook "touch /var/www/acme/reload"; sleep 43200; done'

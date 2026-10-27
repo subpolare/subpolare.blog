@@ -12,8 +12,10 @@ from posts.editor import preview_post, upload_post_image
 from rss.views import full_feed
 from users.views import robots
 from users.views import yandex_verification
+from mirrors.views import health
 
 urlpatterns = [
+    path("_mirror/health", health, name="mirror_health"),
     path("", index, name="index"),
 
     path(r"godmode/", admin.site.urls),

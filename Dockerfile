@@ -13,6 +13,7 @@ RUN apt-get update \
       python3-pip \
       libpq-dev \
       make \
+      openssh-client rsync inotify-tools \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

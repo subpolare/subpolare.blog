@@ -3,6 +3,11 @@
 __pycache__
 **/__pycache__
 tmp/image-rollout
+runtime
+secrets
+pgdata
+certificates
+acme
 
 # Runtime secrets must not enter the build context; keep configuration examples.
 .env

@@ -91,8 +91,9 @@ def show_post(request, post_type, post_slug):
     ):
         raise Http404()
 
-    Post.objects.filter(id=post.id)\
-        .update(view_count=F("view_count") + 1)
+    from mirrors.models import LocalPostViews
+    LocalPostViews.objects.get_or_create(post_id=post.id)
+    LocalPostViews.objects.filter(post_id=post.id).update(count=F("count") + 1)
 
     if post.url:
         return redirect(post.url)

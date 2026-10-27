@@ -1,6 +1,8 @@
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import get_language
+from django.conf import settings
+from django.http import HttpResponse
 
 from clickers.models import Clicker
 from posts.models import Post
@@ -8,6 +10,8 @@ from utils.request import parse_ip_address
 
 
 def click_block(request, post_slug, block):
+    if settings.SITE_REGION == "com":
+        return HttpResponse("Реакции временно недоступны", status=503)
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 

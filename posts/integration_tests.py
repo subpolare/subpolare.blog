@@ -88,7 +88,8 @@ class PostPersistenceTests(TestCase):
                 )
         self.post.refresh_from_db()
         self.assertEqual(self.post.reading_time, 25)
-        self.assertEqual(self.post.view_count, 2)
+        self.assertEqual(self.post.local_view_count, 2)
+        self.assertEqual(self.post.view_count, 0)  # Legacy value is not replicated analytics.
 
     def test_partial_content_updates_persist_reading_time(self):
         self.post.text = "я" * (17 * 1500)

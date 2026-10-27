@@ -8,3 +8,8 @@ __pycache__/
 /media/
 pytest.ini
 tmp/image-rollout/
+runtime/
+secrets/
+pgdata/
+certificates/
+acme/

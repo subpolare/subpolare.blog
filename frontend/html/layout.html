@@ -11,7 +11,7 @@
         <meta name="google-site-verification" content="B8zgWa65q_o7zEV-YAA3rmgq4AlT-l37W-2nNbDE6pc">
         <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
         <meta name="format-detection" content="telephone=no">
-        <link rel="canonical" href="https://{{ request.get_host }}{{ request.get_full_path_info }}">
+        <link rel="canonical" href="https://subpolare.ru{{ request.path }}">
         {% block meta %}
             <meta property="og:title" content="{{ strings.TITLE }}">
             <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}">
@@ -43,6 +43,11 @@
 
         {% block footer %}
             <footer class="footer">
+                <div class="contacts" aria-label="Выбор зеркала">
+                    <a class="contacts-item" href="{{ mirror_ru_link }}">Сервер в России</a>
+                    <a class="contacts-item" href="{{ mirror_com_link }}">Сервер за рубежом</a>
+                    <a class="contacts-item" href="https://db-ip.com">IP Geolocation by DB-IP</a>
+                </div>
                 {% block footer_contacts %}
                     <div class="contacts">
                         <a href="{% trans "mailto:nachatoi@list.ru" %}" class="contacts-item" target="_blank" rel="me">

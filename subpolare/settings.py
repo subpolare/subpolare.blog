@@ -19,6 +19,8 @@ ALLOWED_HOSTS = [
     "localhost",
     "subpolare.ru",
     ".subpolare.ru",
+    "subpolare.com",
+    "www.subpolare.com",
 ]
 INTERNAL_IPS = ["127.0.0.1"]
 
@@ -44,9 +46,11 @@ INSTALLED_APPS = [
     "rss.apps.RssConfig",
     "clickers.apps.ClickersConfig",
     "map.apps.MapConfig",
+    "mirrors.apps.MirrorsConfig",
 ]
 
 MIDDLEWARE = [
+    "mirrors.middleware.MirrorMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "subpolare.middleware.DomainLocaleMiddleware",
     "subpolare.middleware.RequestLoggingMiddleware",
@@ -142,6 +146,8 @@ LOCALE_PATHS = [
 
 # Domain to language mapping
 DOMAIN_LANGUAGES = {
+    "subpolare.com": "ru",
+    "www.subpolare.com": "ru",
     "subpolare.ru": "ru",
     "en.subpolare.ru": "en",
     "es.subpolare.ru": "es",
@@ -196,11 +202,18 @@ SENTRY_DSN = os.getenv("SENTRY_DSN")
 APP_HOST = "subpolare.ru"
 
 CSRF_TRUSTED_ORIGINS = [
+    "https://subpolare.com",
+    "https://www.subpolare.com",
     "https://subpolare.ru",
     "https://*.subpolare.ru",
 ]
 
 STYLES_HASH = os.getenv("GITHUB_SHA") or str(randint(1, 10000))
+
+SITE_REGION = os.getenv("SITE_REGION", "ru")
+MIRROR_RUNTIME = os.getenv("MIRROR_RUNTIME", "/mirror-runtime")
+GEO_REDIRECT_ENABLED = os.getenv("GEO_REDIRECT_ENABLED", "false").lower() == "true"
+MIRROR_SIGNING_KEY = os.getenv("MIRROR_SIGNING_KEY", SECRET_KEY)
 
 
 if SENTRY_DSN and not DEBUG:

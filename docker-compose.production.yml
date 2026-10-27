@@ -12,7 +12,7 @@ services:
       - PEPIC_STORAGE_ROOT=/pepic-media
       - POSTGRES_DB=subpolare_ru
       - POSTGRES_USER=subpolare
-      - POSTGRES_PASSWORD=subpolare
+      - POSTGRES_PASSWORD=${BLOG_DATABASE_PASSWORD:?Set BLOG_DATABASE_PASSWORD}
       - POSTGRES_HOST=postgres
       - SENTRY_DSN
     env_file:
@@ -21,6 +21,7 @@ services:
     volumes:
       - ./frontend/static:/tmp/static
       - /srv/pepic/uploads:/pepic-media:ro
+      - ./runtime:/mirror-runtime:ro
     depends_on:
       - postgres
     ports:
@@ -41,7 +42,7 @@ services:
       - PEPIC_STORAGE_ROOT=/pepic-media
       - POSTGRES_DB=subpolare_ru
       - POSTGRES_USER=subpolare
-      - POSTGRES_PASSWORD=subpolare
+      - POSTGRES_PASSWORD=${BLOG_DATABASE_PASSWORD:?Set BLOG_DATABASE_PASSWORD}
       - POSTGRES_HOST=postgres
     env_file:
       - .env
@@ -58,13 +59,49 @@ services:
 
   postgres:
     image: postgres:15
+    command: postgres -c wal_level=logical -c max_slot_wal_keep_size=1GB
     container_name: blog_postgres
     restart: always
     environment:
       POSTGRES_USER: subpolare
-      POSTGRES_PASSWORD: subpolare
+      POSTGRES_PASSWORD: ${BLOG_DATABASE_PASSWORD:?Set BLOG_DATABASE_PASSWORD}
       POSTGRES_DB: subpolare_ru
     volumes:
       - /home/subpolare/pgdata_subpolare_ru:/var/lib/postgresql/data:rw
     ports:
       - "127.0.0.1:54324:5432"
+
+  blog_maintenance:
+    image: subpolareblog-blog_app
+    command: python3 manage.py mirror_maintenance
+    env_file: [.env]
+    environment:
+      DEBUG: "false"
+      SITE_REGION: ru
+    restart: always
+    volumes: ["./runtime:/mirror-runtime"]
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}
+
+  blog_media_sync:
+    image: subpolareblog-blog_app
+    command: python3 manage.py mirror_media_sync
+    user: "1000:1000"
+    env_file: [.env]
+    environment:
+      DEBUG: "false"
+      SITE_REGION: ru
+      POSTGRES_DB: subpolare_ru
+      POSTGRES_USER: blog_media_worker
+      POSTGRES_PASSWORD: ${BLOG_MEDIA_PASSWORD:?Set BLOG_MEDIA_PASSWORD}
+      POSTGRES_HOST: postgres
+    restart: always
+    volumes:
+      - ./secrets/media:/mirror-secrets:ro
+      - /srv/pepic/uploads:/pepic-media:ro
+      - /srv/i.subpolare.ru/images:/legacy-images:ro
+      - /srv/i.subpolare.ru/videos:/legacy-videos:ro
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: "3"}

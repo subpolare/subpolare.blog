@@ -99,7 +99,16 @@ class Post(models.Model):
         return self.is_visible and self.published_at < datetime.utcnow()
 
     def get_host(self):
+        if self.lang == "ru":
+            return "subpolare.com" if settings.SITE_REGION == "com" else "subpolare.ru"
         return next((domain for domain, lang in settings.DOMAIN_LANGUAGES.items() if lang == self.lang), None)
+
+    @property
+    def local_view_count(self):
+        if self._state.adding:
+            return self.view_count
+        from mirrors.models import LocalPostViews
+        return LocalPostViews.objects.filter(post_id=self.pk).values_list("count", flat=True).first() or 0
 
     def get_absolute_url(self):
         if self.url:
