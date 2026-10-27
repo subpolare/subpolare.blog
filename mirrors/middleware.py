@@ -1,14 +1,14 @@
 """Choose an available mirror, preserving the requested public resource."""
 from django.conf import settings
 from django.core import signing
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.utils.cache import patch_vary_headers
 
 from mirrors import geo
 from utils.request import parse_ip_address
 
 HOSTS = {"ru": "subpolare.ru", "com": "subpolare.com"}
-EXCLUDED = ("/godmode/", "/editor/", "/clickers/", "/static/", "/media/", "/legacy/", "/_mirror/", "/rss/")
+EXCLUDED = ("/godmode/", "/editor/", "/clickers/", "/map/", "/static/", "/media/", "/legacy/", "/_mirror/", "/rss/")
 
 
 def public_navigation(request):
@@ -27,7 +27,13 @@ def redirect_to(request, region, **extra):
     location = "https://" + HOSTS[region] + request.path
     if query:
         location += "?" + query.urlencode()
-    response = HttpResponseRedirect(location)
+    if request.headers.get("HX-Request") == "true":
+        # Cross-origin XHR redirects cannot navigate the browser and may fail
+        # CORS. Let htmx perform a full navigation, retaining the same URL.
+        response = HttpResponse()
+        response["HX-Redirect"] = location
+    else:
+        response = HttpResponseRedirect(location)
     response["Cache-Control"] = "private, no-store"
     response["Referrer-Policy"] = "strict-origin-when-cross-origin"
     return response

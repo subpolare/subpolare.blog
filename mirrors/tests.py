@@ -38,12 +38,19 @@ class RoutingTests(SimpleTestCase):
     def test_russia_returns_to_ru(self):
         self.assertTrue(self.route(self.request(host="subpolare.com"), country="RU")["Location"].startswith("https://subpolare.ru/"))
 
+    def test_boosted_navigation_uses_full_page_redirect(self):
+        request = self.request()
+        request.META["HTTP_HX_REQUEST"] = "true"
+        response = self.route(request)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response["HX-Redirect"].startswith("https://subpolare.com/blog/article/"))
+
     def test_unknown_country_or_unavailable_target_serves_current_site(self):
         for country, available in ((None, True), ("US", False)):
             self.assertEqual(self.route(self.request(), country, available).status_code, 200)
 
     def test_post_admin_api_preview_and_assets_never_geo_redirect(self):
-        for path in ("/godmode/", "/editor/upload/", "/clickers/blocks/x/y/", "/map/markers/?preview=1", "/static/a.css", "/_mirror/health", "/robots.txt", "/sitemap.xml", "/blog/x/edit/", "/blog/x/?preview=1"):
+        for path in ("/godmode/", "/editor/upload/", "/clickers/blocks/x/y/", "/map/markers/", "/map/places/", "/map/markers/?preview=1", "/static/a.css", "/_mirror/health", "/robots.txt", "/sitemap.xml", "/blog/x/edit/", "/blog/x/?preview=1"):
             self.assertEqual(self.route(self.request(path)).status_code, 200, path)
         self.assertEqual(self.route(self.request(method="post")).status_code, 200)
 
