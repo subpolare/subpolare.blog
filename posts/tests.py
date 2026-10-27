@@ -49,6 +49,56 @@ class HeaderAdminLinkTests(SimpleTestCase):
                 self.assertNotIn("🔏", html)
 
 
+class ViewCountVisibilityTests(SimpleTestCase):
+    templates = (
+        "posts/cards/aspect.html",
+        "posts/cards/horizontal.html",
+        "posts/cards/vertical.html",
+        "posts/full/headlines/headline-cover.html",
+    )
+
+    def setUp(self):
+        self.post = Post(
+            type="blog", slug="view-count", title="Title", data={},
+            image="https://example.test/cover.jpg", view_count=427,
+            reading_time=15, published_at=datetime(2026, 9, 21),
+        )
+
+    def render_template(self, template, user):
+        request = RequestFactory().get("/")
+        request.user = user
+        return render_to_string(template, {"post": self.post}, request=request)
+
+    def test_superuser_sees_counts_on_all_cards_and_both_cover_layouts(self):
+        for template in self.templates:
+            with self.subTest(template=template):
+                html = self.render_template(template, User(is_superuser=True, is_staff=True))
+                soup = BeautifulSoup(html, "html.parser")
+                counters = soup.select(".fa-eye")
+                self.assertEqual(len(counters), 2 if "headline-cover" in template else 1)
+                for counter in counters:
+                    self.assertIn("427", counter.parent.get_text())
+
+    def test_counts_are_absent_from_html_for_visitors_members_and_staff(self):
+        for user in (AnonymousUser(), User(), User(is_staff=True)):
+            for template in self.templates:
+                with self.subTest(template=template, user=type(user).__name__, is_staff=user.is_staff):
+                    html = self.render_template(template, user)
+                    self.assertNotIn("fa-eye", html)
+                    self.assertNotIn("card-views", html)
+                    self.assertNotIn("427", html)
+                    if "headline-cover" in template:
+                        self.assertIn("~15 минут чтения", html)
+                        self.assertIn("21 сентября 2026", html)
+
+    def test_counts_are_hidden_when_request_is_missing(self):
+        for template in self.templates:
+            with self.subTest(template=template):
+                html = render_to_string(template, {"post": self.post})
+                self.assertNotIn("fa-eye", html)
+                self.assertNotIn("427", html)
+
+
 class SocialMetadataTests(SimpleTestCase):
     def request(self, path):
         request = RequestFactory().get(path, secure=True)
