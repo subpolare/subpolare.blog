@@ -3,11 +3,6 @@
 __pycache__
 **/__pycache__
 tmp/image-rollout
-runtime
-secrets
-pgdata
-certificates
-acme
 
 # Runtime secrets must not enter the build context; keep configuration examples.
 .env
@@ -16,3 +11,10 @@ acme
 **/.env.*
 !.env.example
 !**/.env.example
+
+# Keep these last: env.example exceptions must not traverse private trees.
+runtime
+secrets
+pgdata
+certificates
+acme
