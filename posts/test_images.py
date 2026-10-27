@@ -123,7 +123,7 @@ class ImageDeliveryTests(SimpleTestCase):
                         "card_eager": eager, "card_sizes": "300px",
                     }), "html.parser")
                     image = homepage.select_one(".card-image")
-                    self.assertEqual(image["loading"], "eager" if eager else "lazy")
+                    self.assertEqual(image["loading"], "eager")
                     self.assertEqual(image.get("fetchpriority"), "high" if eager else None)
                     self.assertIn("240w", image["srcset"])
                     self.assertNotIn("background-image", homepage.a.get("style", ""))
@@ -138,7 +138,7 @@ class ImageDeliveryTests(SimpleTestCase):
             self.assertEqual(image["loading"], "eager")
             self.assertNotIn("srcset", image.attrs)
 
-    def test_homepage_grid_does_not_inherit_top_card_priority(self):
+    def test_homepage_loads_all_cards_immediately_and_only_prioritizes_top_card(self):
         post = Post(type="blog", slug="test", image=self.url, title="Title", data={})
         html = render_to_string("index.html", {"blocks": [
             {"template": "index/main.html", "post": post},
@@ -146,7 +146,8 @@ class ImageDeliveryTests(SimpleTestCase):
         ]})
         images = BeautifulSoup(html, "html.parser").select(".card-image")
         self.assertEqual(len(images), 3)
-        self.assertEqual([image["loading"] for image in images], ["eager", "lazy", "lazy"])
+        self.assertEqual([image["loading"] for image in images], ["eager"] * 3)
+        self.assertEqual([image.get("fetchpriority") for image in images], ["high", None, None])
         self.assertTrue(all(image["sizes"] for image in images))
 
     def test_refresh_cache_does_not_save_or_update_post_text_dates(self):

@@ -13,9 +13,10 @@ def original_image_attributes(url, eager=False):
 
 @register.simple_tag
 def home_image(url, sizes, eager=False):
+    # All homepage cards load immediately; only the top card gets high priority.
     return render_to_string("posts/cards/image.html", {
         "src": url,
         "srcset": preview_sources(url),
         "sizes": sizes,
-        "attributes": image_attributes(url, eager=eager),
+        "attributes": image_attributes(url, eager=eager, loading="eager"),
     })

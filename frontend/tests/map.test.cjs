@@ -188,7 +188,6 @@ function environment({mountError = false, deferredMount = false, observer = true
     };
     const instance = loader(win, doc);
     return {instance, events, element, observers, resources, fallback,
-        enter() { observers[0].callback([{isIntersecting: true}]); },
         finish() { finishMount(); },
         get mounts() { return mounts; }, get destroys() { return destroys; }, get signal() { return signal; }};
 }
@@ -237,18 +236,17 @@ test("yellow cities replace matching background dots without hiding nearby towns
     assert.equal(api.isHighlightedCity(city, [{name: "Соседний город", latitude: 55.9, longitude: 37.8}]), false);
 });
 
-test("lazy load makes no resource requests before 300px threshold and initializes once", async () => {
+test("map below the viewport requests its resources immediately and initializes once", async () => {
     const env = environment();
-    assert.equal(env.resources.length, 0);
-    assert.equal(env.observers[0].options.rootMargin, "300px");
+    assert.deepEqual(env.resources.map(resource => resource.src || resource.href), ["leaflet.js", "leaflet.css", "map.css"]);
+    assert.equal(env.observers.length, 0);
+    assert.equal(env.events.scroll, undefined);
+    assert.equal(env.events.resize, undefined);
     env.instance.scan();
-    assert.equal(env.observers.length, 1);
-    env.enter();
-    env.enter();
+    assert.equal(env.resources.length, 3);
     await tick();
     assert.equal(env.mounts, 1);
     assert.equal(env.fallback.hidden, true);
-    assert.equal(env.observers[0].disconnected, true);
     env.events["htmx:load"]();
     assert.equal(env.mounts, 1);
     env.instance.destroy(env.element);
@@ -256,14 +254,12 @@ test("lazy load makes no resource requests before 300px threshold and initialize
 
 test("HTMX cleanup destroys map, aborts work and allows a fresh restored map", async () => {
     const env = environment();
-    env.enter();
     await tick();
     env.events["htmx:beforeCleanupElement"]({detail: {elt: {contains: () => true}}});
     assert.equal(env.destroys, 1);
     assert.equal(env.signal.aborted, true);
     assert.equal(env.fallback.hidden, false);
     env.events["htmx:historyRestore"]();
-    env.observers[1].callback([{isIntersecting: true}]);
     await tick();
     assert.equal(env.mounts, 2);
     env.events["htmx:beforeHistorySave"]();
@@ -272,7 +268,6 @@ test("HTMX cleanup destroys map, aborts work and allows a fresh restored map", a
 
 test("removal while mount is pending disposes the late map", async () => {
     const env = environment({deferredMount: true});
-    env.enter();
     await tick();
     env.instance.destroy(env.element);
     env.finish();
@@ -283,7 +278,6 @@ test("removal while mount is pending disposes the late map", async () => {
 
 test("data failures preserve fallback and do not retry repeatedly", async () => {
     const env = environment({mountError: true});
-    env.enter();
     await tick();
     assert.equal(env.fallback.hidden, false);
     env.instance.scan();
@@ -292,21 +286,19 @@ test("data failures preserve fallback and do not retry repeatedly", async () => 
 
 test("library or CSS loading failure leaves the article list usable", async () => {
     const env = environment({resourceError: true});
-    env.enter();
     await tick();
     assert.equal(env.fallback.hidden, false);
     assert.equal(env.mounts, 0);
     assert.ok(env.resources.every(resource => resource.removed));
 });
 
-test("without IntersectionObserver, scroll fallback still defers loading", async () => {
+test("without IntersectionObserver, map also loads immediately without scroll handlers", async () => {
     const env = environment({observer: false});
-    assert.equal(env.resources.length, 0);
-    env.element.getBoundingClientRect = () => ({top: 1000, bottom: 1560});
-    env.events.scroll();
+    assert.equal(env.resources.length, 3);
     await tick();
     assert.equal(env.mounts, 1);
     assert.equal(env.events.scroll, undefined);
+    assert.equal(env.events.resize, undefined);
     env.instance.destroy(env.element);
 });
 

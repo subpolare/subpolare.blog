@@ -3,6 +3,8 @@
 Article images, including the cover and zoom view, use the existing original
 URLs and bytes. Pepic upload settings remain 1800 px / JPEG quality 95.
 Only homepage cards use prepared 480 / 960 / 1440 px previews.
+All homepage cards load eagerly, with high fetch priority only for the top card.
+The homepage map starts loading on page initialization, without waiting for scrolling.
 
 The blog reads dimensions from the read-only `/srv/pepic/uploads` volume,
 mounted at `/pepic-media`. Rendering does not make HTTP requests. Missing
@@ -88,7 +90,8 @@ then test and reload nginx. Existing originals and links require no restoration.
 
 Run Django offline tests and the frontend tests, plus `git diff --check`.
 Compare desktop/mobile and light/dark views of the homepage, article cover,
-portrait/landscape images, captions and zoom. Check native lazy loading before
-scrolling, intrinsic aspect ratios, original image URLs, prepared `currentSrc`,
+portrait/landscape images, captions and zoom. Check that all homepage covers and
+map resources start loading before scrolling, and that article images retain native
+lazy loading. Check intrinsic aspect ratios, original image URLs, prepared `currentSrc`,
 cache headers on successful images and absence on error/HTML responses.
 Geographic network performance requires real probes in each intended region.

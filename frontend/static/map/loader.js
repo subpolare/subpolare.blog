@@ -48,7 +48,6 @@
         const state = states.get(element);
         if (!state) return;
         states.delete(element);
-        if (state.stopObserving) state.stopObserving();
         if (state.controller) state.controller.destroy();
         if (state.abort) state.abort.abort();
         element.replaceChildren();
@@ -58,7 +57,6 @@
     async function start(element, state) {
         if (state.started) return;
         state.started = true;
-        if (state.stopObserving) state.stopObserving();
         try {
             await loadAssets(element);
             if (states.get(element) !== state || !element.isConnected) return;
@@ -84,26 +82,7 @@
             if (states.has(element)) return;
             const state = {};
             states.set(element, state);
-            if (element.dataset.mode !== "public") { start(element, state); return; }
-            if (win.IntersectionObserver) {
-                const observer = new win.IntersectionObserver(function (entries) {
-                    if (entries.some(entry => entry.isIntersecting)) start(element, state);
-                }, {rootMargin: "300px"});
-                state.stopObserving = function () { observer.disconnect(); };
-                observer.observe(element);
-            } else {
-                const check = function () {
-                    const rect = element.getBoundingClientRect();
-                    if (rect.top <= win.innerHeight + 300 && rect.bottom >= -300) start(element, state);
-                };
-                win.addEventListener("scroll", check, {passive: true});
-                win.addEventListener("resize", check);
-                state.stopObserving = function () {
-                    win.removeEventListener("scroll", check);
-                    win.removeEventListener("resize", check);
-                };
-                check();
-            }
+            start(element, state);
         });
     }
 

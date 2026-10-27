@@ -56,8 +56,8 @@ def image_dimensions(url):
     return file_dimensions(storage_path(name)) if name else None
 
 
-def image_attributes(url, eager=False):
-    attrs = {"loading": "eager" if eager else "lazy", "decoding": "async"}
+def image_attributes(url, eager=False, *, loading=None):
+    attrs = {"loading": loading or ("eager" if eager else "lazy"), "decoding": "async"}
     if eager:
         attrs["fetchpriority"] = "high"
     dimensions = image_dimensions(url)
