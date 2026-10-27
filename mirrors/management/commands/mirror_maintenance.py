@@ -19,7 +19,7 @@ def atomic_write(path, data):
 
 
 def refresh_geo(directory):
-    # DB-IP Lite is CC BY 4.0; the footer carries the required attribution.
+    # Country data: DB-IP Lite (https://db-ip.com), CC BY 4.0.
     from datetime import datetime, timedelta, timezone
     for offset in (0, 1):
         month = (datetime.now(timezone.utc).replace(day=1) - timedelta(days=offset)).strftime("%Y-%m")

@@ -49,7 +49,7 @@ slot requires a deliberate resync, never silent data replacement.
 known countries prefer COM; unknown IPs stay put. Manual mirror cookies override
 GeoIP. Health state older than 120 seconds suppresses automatic redirects.
 Signed arrival markers suppress loops without trusting arbitrary country headers.
-Country data is DB-IP Lite (CC BY 4.0, attributed in the footer), updated daily;
+Country data is [DB-IP Lite](https://db-ip.com) (CC BY 4.0), updated daily;
 Google/Bing crawler ranges are fetched from their official HTTPS endpoints.
 Only public navigation is redirected; POST, administration, APIs, static/media,
 robots and sitemaps are excluded. A failed first connection cannot be rescued

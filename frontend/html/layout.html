@@ -43,11 +43,6 @@
 
         {% block footer %}
             <footer class="footer">
-                <div class="contacts" aria-label="Выбор зеркала">
-                    <a class="contacts-item" href="{{ mirror_ru_link }}">Сервер в России</a>
-                    <a class="contacts-item" href="{{ mirror_com_link }}">Сервер за рубежом</a>
-                    <a class="contacts-item" href="https://db-ip.com">IP Geolocation by DB-IP</a>
-                </div>
                 {% block footer_contacts %}
                     <div class="contacts">
                         <a href="{% trans "mailto:nachatoi@list.ru" %}" class="contacts-item" target="_blank" rel="me">
