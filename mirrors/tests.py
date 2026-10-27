@@ -66,6 +66,13 @@ class RoutingTests(SimpleTestCase):
         response = self.route(self.request("/blog/x/?mirror=https://evil.test"), country=None)
         self.assertEqual(response.status_code, 200)
 
+    def test_manual_switch_updates_departure_domain_cookie_too(self):
+        request = self.request("/blog/x/?mirror=ru", host="subpolare.com")
+        request.COOKIES["mirror"] = "com"
+        response = self.route(request)
+        self.assertEqual(response.cookies["mirror"].value, "ru")
+        self.assertEqual(response["Location"], "https://subpolare.ru/blog/x/?mirror=ru")
+
     def test_signed_arrival_prevents_reverse_redirect(self):
         token = signing.dumps({"region": "com", "path": "/blog/x/"}, key="test-hop-key", salt="mirror-hop")
         response = self.route(self.request("/blog/x/?_mirror_hop=" + token, host="subpolare.com"), country="RU")

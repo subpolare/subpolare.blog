@@ -86,7 +86,7 @@ services:
       - ./acme:/var/www/acme
       - /srv/pepic/legacy:/legacy:ro
     command: >-
-      /bin/sh -c 'nginx; while sleep 30; do
+      /bin/sh -c 'nginx -t && nginx || exit 1; while sleep 30; do
       if test -f /var/www/acme/reload; then nginx -t && nginx -s reload && rm /var/www/acme/reload; fi;
       done'
     depends_on: [blog_app, pepic, ru_tunnel]

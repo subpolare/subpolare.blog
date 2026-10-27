@@ -59,8 +59,9 @@ class MirrorMiddleware:
             chosen = request.GET.get("mirror")
             if chosen in HOSTS:
                 if chosen != current:
-                    return redirect_to(request, chosen, mirror=chosen)
-                response = redirect_to(request, current)
+                    response = redirect_to(request, chosen, mirror=chosen)
+                else:
+                    response = redirect_to(request, current)
                 response.set_cookie("mirror", chosen, max_age=365 * 86400, secure=True, httponly=True, samesite="Lax")
                 return response
             hop = request.GET.get("_mirror_hop")

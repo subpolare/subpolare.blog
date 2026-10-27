@@ -30,7 +30,7 @@ def _synchronize():
     marker = Path("/tmp/.mirror-synced")
     marker.write_text(str(int(time.time())))
     subprocess.run(["rsync", "-t", "--timeout=30", "-e", SSH, str(marker),
-                    "subpolare@5.181.51.194:uploads/.mirror-synced"], check=True, timeout=60)
+                    "subpolare@5.181.51.194:uploads/"], check=True, timeout=60)
 
 
 class Command(BaseCommand):
