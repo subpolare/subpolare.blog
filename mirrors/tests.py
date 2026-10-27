@@ -92,6 +92,12 @@ class RoutingTests(SimpleTestCase):
 
 
 class GeoFallbackTests(SimpleTestCase):
+    def test_ip_fallback_supports_asgi_requests_without_environ(self):
+        from types import SimpleNamespace
+        from utils.request import parse_ip_address
+        request = SimpleNamespace(META={"REMOTE_ADDR": "203.0.113.12"})
+        self.assertEqual(parse_ip_address(request), "203.0.113.12")
+
     def test_missing_database_or_health_state_fails_open(self):
         from mirrors import geo
         with TemporaryDirectory() as directory, override_settings(MIRROR_RUNTIME=directory):
