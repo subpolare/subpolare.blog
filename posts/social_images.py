@@ -14,7 +14,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 from common.images import pepic_filename, storage_path
 from posts.models import Post
 
-VERSION = "2"
+VERSION = "3"
 SIZE = (1200, 800)
 
 
@@ -70,6 +70,7 @@ def render_card(title, subtitle, author, domain, cover=None):
         icon = ImageOps.fit(source.convert("RGBA"), (48, 48))
     mask = Image.new("L", (48, 48))
     ImageDraw.Draw(mask).ellipse((0, 0, 47, 47), fill=255)
+    draw.ellipse((45, 35, 98, 88), fill="white")
     canvas.paste(icon, (48, 38), mask)
     label = font(25, "SemiBold")
     draw.text((110, 62), author, font=label, fill="white", anchor="lm")
