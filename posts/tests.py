@@ -131,13 +131,15 @@ class SocialMetadataTests(SimpleTestCase):
                     "post": post, "translations": [], "related": [],
                 }, request=self.request(path))
                 soup = self.assert_single_document(html)
+                from posts.social_images import social_image_url
+                image_url = social_image_url(self.request(path), post)
                 expected = {
                     "og:type": "article", "og:title": post.og_title,
-                    "og:description": post.og_description, "og:image": post.og_image,
+                    "og:description": post.og_description, "og:image": image_url,
                     "og:url": f"https://testserver{path}",
                     "twitter:card": "summary_large_image", "twitter:title": post.og_title,
-                    "twitter:description": post.og_description, "twitter:image": post.og_image,
-                    "twitter:image:src": post.og_image,
+                    "twitter:description": post.og_description, "twitter:image": image_url,
+                    "twitter:image:src": image_url,
                 }
                 for name, value in expected.items():
                     attribute = "property" if name.startswith("og:") else "name"

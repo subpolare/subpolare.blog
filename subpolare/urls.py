@@ -6,6 +6,7 @@ from django.views.generic import RedirectView
 
 from clickers.views import click_block
 from subpolare.pages import donate, subscribe
+from posts.social_images import post_social_image
 from posts.sitemaps import sitemaps
 from posts.views import index, show_post, list_posts, edit_post
 from posts.editor import preview_post, upload_post_image
@@ -15,6 +16,7 @@ from users.views import yandex_verification
 from mirrors.views import health
 
 urlpatterns = [
+    path("_social/<str:post_type>/<str:post_slug>.jpg", post_social_image, name="post_social_image"),
     path("_mirror/health", health, name="mirror_health"),
     path("", index, name="index"),
 

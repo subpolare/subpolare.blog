@@ -9,7 +9,7 @@ from mirrors import geo
 from utils.request import parse_ip_address
 
 HOSTS = {"ru": "subpolare.ru", "com": "subpolare.com"}
-EXCLUDED = ("/godmode/", "/editor/", "/clickers/", "/map/", "/static/", "/media/", "/legacy/", "/_mirror/", "/rss/")
+EXCLUDED = ("/_social/", "/godmode/", "/editor/", "/clickers/", "/map/", "/static/", "/media/", "/legacy/", "/_mirror/", "/rss/")
 
 
 def public_navigation(request):

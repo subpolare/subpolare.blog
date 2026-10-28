@@ -17,6 +17,7 @@
 {% endblock %}
 
 {% block meta %}
+    {% post_social_image_url post as social_image %}
     <meta name="robots" content="index, follow">
     <meta property="author" content="{{ strings.AUTHOR }}">
     <meta property="article:publisher" content="{{ request.scheme }}://{{ request.get_host }}">
@@ -26,14 +27,17 @@
     <meta property="og:type" content="article">
     <meta property="og:title" content="{{ post.og_title }}" />
     <meta property="og:description" content="{{ post.og_description }}" />
-    <meta property="og:image" content="{{ post.og_image }}" />
+    <meta property="og:image" content="{{ social_image }}" />
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/jpeg">
     <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ post.get_absolute_url }}" />
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ post.og_title }}">
     <meta name="twitter:description" content="{{ post.og_description }}">
-    <meta name="twitter:image" content="{{ post.og_image }}">
-    <meta name="twitter:image:src" content="{{ post.og_image }}">
+    <meta name="twitter:image" content="{{ social_image }}">
+    <meta name="twitter:image:src" content="{{ social_image }}">
     <meta name="twitter:creator" content="{{ strings.AUTHOR }}">
 {% endblock %}
 
