@@ -14,8 +14,8 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 from common.images import pepic_filename, storage_path
 from posts.models import Post
 
-VERSION = "1"
-SIZE = (1200, 630)
+VERSION = "2"
+SIZE = (1200, 800)
 
 
 def card_fields(post):
@@ -74,22 +74,38 @@ def render_card(title, subtitle, author, domain, cover=None):
     label = font(25, "SemiBold")
     draw.text((110, 62), author, font=label, fill="white", anchor="lm")
     draw.text((1152, 62), domain, font=label, fill="white", anchor="rm")
-    for size in range(62, 17, -1):
-        title_font, subtitle_font = font(size), font(round(size * .61), "Regular")
-        titles = wrap(title, title_font, 1056)
-        subtitles = wrap(subtitle, subtitle_font, 1056)
-        title_step, subtitle_step = round(size * 1.28), round(size * .84)
-        height = len(titles) * title_step + len(subtitles) * subtitle_step + (18 if subtitles else 0)
-        if height <= 410:
+    # Desktop /all/ cards are 980px wide. Scale their CSS metrics to 1200px:
+    # Ubuntu 500/400, 57.6/37.44px, 20px side and 40px bottom padding.
+    scale = SIZE[0] / 980
+    side, bottom = round(20 * scale), round(40 * scale)
+    gap = round(20 * scale)
+    for size in range(round(57.6 * scale), 17, -1):
+        title_font = ImageFont.truetype(str(settings.BASE_DIR / "frontend/static/fonts/ubuntu/Ubuntu-Medium.woff"), size)
+        subtitle_size = round(size * .65)
+        subtitle_font = ImageFont.truetype(str(settings.BASE_DIR / "frontend/static/fonts/ubuntu/Ubuntu-Regular.woff"), subtitle_size)
+        titles = wrap(title, title_font, SIZE[0] - 4 * side)
+        subtitles = wrap(subtitle, subtitle_font, SIZE[0] - 4 * side)
+        title_step = round(size * 1.3)
+        subtitle_step = round(subtitle_size * 1.3)
+        subtitle_height = len(subtitles) * subtitle_step + round(6 * scale) if subtitles else 0
+        height = len(titles) * title_step + subtitle_height + (gap if subtitles else 0)
+        if height <= SIZE[1] - 180:
             break
-    y = 582 - height
-    for lines, face, step in ((titles, title_font, title_step), (subtitles, subtitle_font, subtitle_step)):
-        for line in lines:
-            width = draw.textlength(line, font=face)
-            draw.rectangle((600 - width / 2 - 16, y, 600 + width / 2 + 16, y + step), fill="white")
-            draw.text((600, y + step / 2), line, font=face, fill="#333333", anchor="mm")
-            y += step
-        y += 18
+    y = SIZE[1] - bottom - height
+    for line in titles:
+        width = draw.textlength(line, font=title_font)
+        draw.rectangle((600 - width / 2 - round(10 * scale), y,
+                        600 + width / 2 + round(10 * scale), y + title_step), fill="#333333")
+        draw.text((600, y + title_step / 2), line, font=title_font, fill="white", anchor="mm")
+        y += title_step
+    if subtitles:
+        y += gap
+        # The subtitle is a stretched flex item, so its strip spans the card.
+        draw.rectangle((side, y, SIZE[0] - side, y + subtitle_height), fill="#333333")
+        y += round(3 * scale)
+        for line in subtitles:
+            draw.text((600, y + subtitle_step / 2), line, font=subtitle_font, fill="white", anchor="mm")
+            y += subtitle_step
     output = BytesIO()
     canvas.convert("RGB").save(output, "JPEG", quality=92, optimize=True)
     return output.getvalue()

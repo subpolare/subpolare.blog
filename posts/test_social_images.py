@@ -14,7 +14,7 @@ class SocialImageTests(SimpleTestCase):
     def test_jpeg_dimensions_and_cyrillic_long_titles(self):
         content = render_card("Длинный заголовок на русском " * 8, "Подзаголовок " * 10, "Влад Начатой", "subpolare.ru")
         with Image.open(BytesIO(content)) as image:
-            self.assertEqual(image.size, (1200, 630))
+            self.assertEqual(image.size, (1200, 800))
             self.assertEqual(image.format, "JPEG")
 
     def test_url_tracks_domain_and_content_without_changing_fields(self):
