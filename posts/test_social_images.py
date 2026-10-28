@@ -19,13 +19,22 @@ class SocialImageTests(SimpleTestCase):
         self.assertTrue(any(0 < value < 255 for value in alpha.getdata()))
         self.assertEqual(badge.getpixel((badge.width // 2, 1))[:3], (255, 255, 255))
 
-    def test_share_title_uses_saved_og_title_and_current_domain(self):
-        post = Post(title="Япония", og_title="Япония")
+    def test_share_title_combines_title_and_subtitle_without_domain(self):
+        post = Post(title="Япония", subtitle="Верь во что угодно, лишь бы ты был счастлив", og_title="Другой OG-заголовок")
         for domain in ("subpolare.ru", "subpolare.com"):
             request = RequestFactory().get("/", HTTP_HOST=domain)
-            self.assertEqual(post_social_title({"request": request}, post), f"Япония — {domain}")
-        post.og_title = ""
-        self.assertEqual(post_social_title({"request": request}, post), "Япония — subpolare.com")
+            self.assertEqual(post_social_title({"request": request}, post), "Япония. Верь во что угодно, лишь бы ты был счастлив")
+
+    def test_share_title_handles_missing_fields_and_final_periods(self):
+        for title, subtitle, og_title, expected in (
+            (" Япония. ", " Подзаголовок... ", "", "Япония. Подзаголовок"),
+            ("Япония.", "", "", "Япония"),
+            ("", "", "Запасной OG-заголовок.", "Запасной OG-заголовок"),
+            ("", "Подзаголовок.", "", "Подзаголовок"),
+        ):
+            with self.subTest(title=title, subtitle=subtitle):
+                post = Post(title=title, subtitle=subtitle, og_title=og_title)
+                self.assertEqual(post_social_title({}, post), expected)
 
     def test_jpeg_dimensions_and_cyrillic_long_titles(self):
         content = render_card("Длинный заголовок на русском " * 8, "Подзаголовок " * 10, "Влад Начатой", "subpolare.ru")

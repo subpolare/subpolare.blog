@@ -120,6 +120,7 @@ class SocialMetadataTests(SimpleTestCase):
             with self.subTest(post_type=post_type):
                 post = Post(
                     type=post_type, slug="teriberka", title="Териберка",
+                    subtitle='Морошка, "ромашки" & крабы.',
                     og_title='Териберка: "Морошка" & море',
                     og_description='Полевой дневник: "пять дней" & ягоды',
                     og_image="https://media.example.test/cover.jpg",
@@ -134,11 +135,11 @@ class SocialMetadataTests(SimpleTestCase):
                 from posts.social_images import social_image_url
                 image_url = social_image_url(self.request(path), post)
                 expected = {
-                    "og:type": "article", "og:title": f"{post.og_title} — testserver",
+                    "og:type": "article", "og:title": 'Териберка. Морошка, "ромашки" & крабы',
                     "og:site_name": "testserver",
                     "og:description": post.og_description, "og:image": image_url,
                     "og:url": f"https://testserver{path}",
-                    "twitter:card": "summary_large_image", "twitter:title": f"{post.og_title} — testserver",
+                    "twitter:card": "summary_large_image", "twitter:title": 'Териберка. Морошка, "ромашки" & крабы',
                     "twitter:description": post.og_description, "twitter:image": image_url,
                     "twitter:image:src": image_url,
                 }

@@ -56,5 +56,6 @@ def post_social_image_url(context, post):
 
 @register.simple_tag(takes_context=True)
 def post_social_title(context, post):
-    domain = context["request"].get_host().split(":")[0]
-    return f"{post.og_title or post.title or ''} — {domain}"
+    title = (post.title or post.og_title or "").strip().rstrip(". ")
+    subtitle = (post.subtitle or "").strip().rstrip(". ")
+    return ". ".join(part for part in (title, subtitle) if part)
