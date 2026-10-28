@@ -134,10 +134,11 @@ class SocialMetadataTests(SimpleTestCase):
                 from posts.social_images import social_image_url
                 image_url = social_image_url(self.request(path), post)
                 expected = {
-                    "og:type": "article", "og:title": post.og_title,
+                    "og:type": "article", "og:title": f"{post.og_title} — testserver",
+                    "og:site_name": "testserver",
                     "og:description": post.og_description, "og:image": image_url,
                     "og:url": f"https://testserver{path}",
-                    "twitter:card": "summary_large_image", "twitter:title": post.og_title,
+                    "twitter:card": "summary_large_image", "twitter:title": f"{post.og_title} — testserver",
                     "twitter:description": post.og_description, "twitter:image": image_url,
                     "twitter:image:src": image_url,
                 }

@@ -6,11 +6,27 @@ from django.test import RequestFactory, SimpleTestCase, override_settings
 from PIL import Image
 
 from posts.models import Post
-from posts.social_images import post_social_image, render_card, social_image_url
+from posts.social_images import avatar_badge, post_social_image, render_card, social_image_url
+from posts.templatetags.posts import post_social_title
 
 
 @override_settings(ALLOWED_HOSTS=["testserver", "subpolare.com", "subpolare.ru"])
 class SocialImageTests(SimpleTestCase):
+    def test_avatar_has_smooth_transparent_edges(self):
+        badge = avatar_badge()
+        alpha = badge.getchannel("A")
+        self.assertEqual(alpha.getpixel((0, 0)), 0)
+        self.assertTrue(any(0 < value < 255 for value in alpha.getdata()))
+        self.assertEqual(badge.getpixel((badge.width // 2, 1))[:3], (255, 255, 255))
+
+    def test_share_title_uses_saved_og_title_and_current_domain(self):
+        post = Post(title="Япония", og_title="Япония")
+        for domain in ("subpolare.ru", "subpolare.com"):
+            request = RequestFactory().get("/", HTTP_HOST=domain)
+            self.assertEqual(post_social_title({"request": request}, post), f"Япония — {domain}")
+        post.og_title = ""
+        self.assertEqual(post_social_title({"request": request}, post), "Япония — subpolare.com")
+
     def test_jpeg_dimensions_and_cyrillic_long_titles(self):
         content = render_card("Длинный заголовок на русском " * 8, "Подзаголовок " * 10, "Влад Начатой", "subpolare.ru")
         with Image.open(BytesIO(content)) as image:

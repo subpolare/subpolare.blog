@@ -52,3 +52,9 @@ def clicker(context, block, text=None):
 def post_social_image_url(context, post):
     from posts.social_images import social_image_url
     return social_image_url(context["request"], post)
+
+
+@register.simple_tag(takes_context=True)
+def post_social_title(context, post):
+    domain = context["request"].get_host().split(":")[0]
+    return f"{post.og_title or post.title or ''} — {domain}"

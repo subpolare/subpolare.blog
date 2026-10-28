@@ -14,7 +14,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 from common.images import pepic_filename, storage_path
 from posts.models import Post
 
-VERSION = "3"
+VERSION = "4"
 SIZE = (1200, 800)
 
 
@@ -30,6 +30,20 @@ def social_image_url(request, post):
 
 def font(size, weight="Medium"):
     return ImageFont.truetype(str(settings.BASE_DIR / f"frontend/static/fonts/raleway/Raleway-{weight}.ttf"), size)
+
+
+def avatar_badge():
+    # Draw both circular edges at 4x, then downsample for a smooth white ring.
+    scale, diameter, border = 4, 56, 3
+    size = (diameter + 2 * border) * scale
+    badge = Image.new("RGBA", (size, size))
+    ImageDraw.Draw(badge).ellipse((0, 0, size - 1, size - 1), fill="white")
+    with Image.open(settings.BASE_DIR / "frontend/static/images/logo_128.png") as source:
+        icon = ImageOps.fit(source.convert("RGBA"), (diameter * scale, diameter * scale), method=Image.Resampling.LANCZOS)
+    mask = Image.new("L", icon.size)
+    ImageDraw.Draw(mask).ellipse((0, 0, icon.width - 1, icon.height - 1), fill=255)
+    badge.paste(icon, (border * scale, border * scale), mask)
+    return badge.resize((diameter + 2 * border,) * 2, Image.Resampling.LANCZOS)
 
 
 def wrap(text, face, width):
@@ -65,15 +79,9 @@ def render_card(title, subtitle, author, domain, cover=None):
         draw.line((0, y, 1200, y), fill=(0, 0, 0, round(125 * (1 - y / 180) ** 2)))
     canvas = Image.alpha_composite(canvas.convert("RGBA"), shade)
     draw = ImageDraw.Draw(canvas)
-    icon_path = settings.BASE_DIR / "frontend/static/images/logo_128.png"
-    with Image.open(icon_path) as source:
-        icon = ImageOps.fit(source.convert("RGBA"), (48, 48))
-    mask = Image.new("L", (48, 48))
-    ImageDraw.Draw(mask).ellipse((0, 0, 47, 47), fill=255)
-    draw.ellipse((45, 35, 98, 88), fill="white")
-    canvas.paste(icon, (48, 38), mask)
-    label = font(25, "SemiBold")
-    draw.text((110, 62), author, font=label, fill="white", anchor="lm")
+    canvas.alpha_composite(avatar_badge(), (45, 31))
+    label = font(30, "SemiBold")
+    draw.text((122, 62), author, font=label, fill="white", anchor="lm")
     draw.text((1152, 62), domain, font=label, fill="white", anchor="rm")
     # Desktop /all/ cards are 980px wide. Scale their CSS metrics to 1200px:
     # Ubuntu 500/400, 57.6/37.44px, 20px side and 40px bottom padding.
