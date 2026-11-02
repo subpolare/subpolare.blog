@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.staticfiles import finders
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.paginator import Paginator
 from django.db.models import Model
 from django.http import Http404
 from django.middleware.csrf import CsrfViewMiddleware, get_token
@@ -22,7 +23,7 @@ from posts.models import Post
 from posts.templatetags.posts import show_post as render_post
 from posts.views import edit_post, show_post
 from rss.feeds import FullFeed
-from subpolare.posts import POST_TYPES
+from subpolare.posts import POST_TYPES, PostTypeConfig
 from users.models import User
 
 
@@ -100,8 +101,8 @@ class ViewCountVisibilityTests(SimpleTestCase):
 
 
 class SocialMetadataTests(SimpleTestCase):
-    def request(self, path):
-        request = RequestFactory().get(path, secure=True)
+    def request(self, path, host="testserver"):
+        request = RequestFactory().get(path, secure=True, HTTP_HOST=host)
         request.user = AnonymousUser()
         return request
 
@@ -136,7 +137,7 @@ class SocialMetadataTests(SimpleTestCase):
                 image_url = social_image_url(self.request(path), post)
                 expected = {
                     "og:type": "article", "og:title": 'Териберка. Морошка, "ромашки" & крабы',
-                    "og:site_name": "testserver",
+                    "og:site_name": "subpolare",
                     "og:description": post.og_description, "og:image": image_url,
                     "og:url": f"https://testserver{path}",
                     "twitter:card": "summary_large_image", "twitter:title": 'Териберка. Морошка, "ромашки" & крабы',
@@ -152,13 +153,56 @@ class SocialMetadataTests(SimpleTestCase):
     def test_default_layout_keeps_site_metadata_and_shared_assets_once(self):
         html = render_to_string("layout.html", request=self.request("/"))
         soup = self.assert_single_document(html)
-        for name in ("og:title", "og:description", "og:image", "og:url", "og:type"):
+        for name in ("og:title", "og:site_name", "og:description", "og:image", "og:url", "og:type"):
             self.assertEqual(len(soup.find_all("meta", property=name)), 1, name)
         self.assertEqual(soup.find("meta", property="og:type")["content"], "website")
         for name in ("theme-switcher.js", "vendor/htmx.min.js", "main.js"):
             scripts = [tag for tag in soup.find_all("script", src=True) if name in tag["src"]]
             self.assertEqual(len(scripts), 1, name)
         self.assertEqual(len(soup.select(".header.h-card")), 1)
+
+    @override_settings(ALLOWED_HOSTS=["subpolare.ru", "subpolare.com"])
+    def test_homepage_identifies_same_site_on_both_mirrors(self):
+        for host in ("subpolare.ru", "subpolare.com"):
+            with self.subTest(host=host):
+                request = self.request("/", host=host)
+                html = render_to_string("index.html", {"blocks": []}, request=request)
+                soup = self.assert_single_document(html)
+                scripts = soup.find_all("script", type="application/ld+json")
+                self.assertEqual(len(scripts), 1)
+                self.assertEqual(json.loads(scripts[0].string), {
+                    "@context": "https://schema.org",
+                    "@type": "WebSite",
+                    "name": "subpolare",
+                    "url": soup.find("link", rel="canonical")["href"],
+                })
+                site_names = soup.find_all("meta", property="og:site_name")
+                self.assertEqual(len(site_names), 1)
+                self.assertEqual(site_names[0]["content"], "subpolare")
+
+    @override_settings(ALLOWED_HOSTS=["subpolare.ru", "subpolare.com"])
+    def test_post_list_metadata_identifies_page_and_excludes_footer_from_snippets(self):
+        for host in ("subpolare.ru", "subpolare.com"):
+            with self.subTest(host=host):
+                html = render_to_string("posts/lists/all.html", {
+                    "post_type_config": PostTypeConfig(),
+                    "post_blocks": [],
+                    "posts": Paginator([], 30).page(1),
+                }, request=self.request("/all/", host=host))
+                soup = self.assert_single_document(html)
+                self.assertEqual(soup.title.get_text().strip(), "Посты — subpolare")
+                for name, value in {
+                    "og:title": "Посты — subpolare",
+                    "og:site_name": "subpolare",
+                    "og:url": f"https://{host}/all/",
+                }.items():
+                    tags = soup.find_all("meta", property=name)
+                    self.assertEqual(len(tags), 1, name)
+                    self.assertEqual(tags[0]["content"], value, name)
+                self.assertIsNone(soup.find("script", type="application/ld+json"))
+                for selector in (".contacts", ".footer-warning"):
+                    self.assertTrue(soup.select_one(selector).has_attr("data-nosnippet"))
+                self.assertIsNotNone(soup.select_one('.footer-warning a[href="https://vas3k.blog"]'))
 
 
 class EditorTests(SimpleTestCase):

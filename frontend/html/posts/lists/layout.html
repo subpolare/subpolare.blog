@@ -10,7 +10,7 @@
 
 {% block meta %}
     <meta property="og:title" content="{{ post_type_config.name }} — {{ strings.TITLE }}" />
-    <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}" />
+    <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}" />
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ post_type_config.name }} — {{ strings.TITLE }}">

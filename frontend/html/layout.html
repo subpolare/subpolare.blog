@@ -12,6 +12,17 @@
         <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
         <meta name="format-detection" content="telephone=no">
         <link rel="canonical" href="https://subpolare.ru{{ request.path }}">
+        <meta property="og:site_name" content="{{ strings.TITLE }}">
+        {% if request.path == "/" %}
+            <script type="application/ld+json">
+                {
+                    "@context": "https://schema.org",
+                    "@type": "WebSite",
+                    "name": "{{ strings.TITLE|escapejs }}",
+                    "url": "https://subpolare.ru/"
+                }
+            </script>
+        {% endif %}
         {% block meta %}
             <meta property="og:title" content="{{ strings.TITLE }}">
             <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}">
@@ -44,7 +55,7 @@
         {% block footer %}
             <footer class="footer">
                 {% block footer_contacts %}
-                    <div class="contacts">
+                    <div class="contacts" data-nosnippet>
                         <a href="{% trans "mailto:nachatoi@list.ru" %}" class="contacts-item" target="_blank" rel="me">
                             <i class="fas fa-envelope"></i>
                             <span>{% trans "me@subpolare.ru" %}</span>
@@ -60,7 +71,7 @@
                     </div>
                 {% endblock %}
 
-                <div class="footer-warning">
+                <div class="footer-warning" data-nosnippet>
                     <span>
                         {% blocktrans with club='<a href="https://vas3k.club" target="_blank" rel="noopener">vas3k.club</a>'|safe blog='<a href="https://vas3k.blog" target="_blank" rel="noopener">vas3k.blog</a>'|safe %}
                             Дизайн и код основаны на {{ club }} и {{ blog }} — самом ламповом комьюнити и самом душевном блоге. Они и вдохновили меня создать это место.
