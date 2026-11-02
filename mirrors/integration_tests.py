@@ -10,7 +10,7 @@ from django.test import Client, TestCase, TransactionTestCase, override_settings
 from django.template import Context
 from django.http import HttpResponse
 
-from mirrors.models import LocalPostViews, PostViewTotals
+from mirrors.models import LocalPostViews, MirrorViewBaseline, PostViewTotals
 from mirrors.view_counts import SIGNING_SALT, local_snapshots, merge_totals, record_view, reconcile_ru_views
 from posts.models import Post
 from posts.templatetags.posts import show_post
@@ -101,6 +101,22 @@ class ViewSyncPersistenceTests(TestCase):
         self.assertEqual([len(batch) for batch in batches], [2, 2, 2, 1])
         self.assertEqual(len({post_id for batch in batches for post_id, _ in batch}), 7)
 
+    @override_settings(SITE_REGION="com")
+    def test_only_views_after_baseline_are_sent_and_local_history_is_preserved(self):
+        MirrorViewBaseline.objects.create(post_id=self.post.pk, count=120)
+        self.assertEqual(list(local_snapshots()), [[(self.post.pk, 0)]])
+        record_view(self.post.pk)
+        self.assertEqual(list(local_snapshots()), [[(self.post.pk, 1)]])
+        self.assertEqual(self.post.local_view_count, 121)
+        self.assertEqual(MirrorViewBaseline.objects.get(pk=self.post.pk).count, 120)
+        self.assertEqual(self.post.total_view_count, 120)
+
+    @override_settings(SITE_REGION="com")
+    def test_new_com_posts_have_zero_baseline(self):
+        post_id = uuid4()
+        record_view(post_id)
+        self.assertEqual(dict(row for batch in local_snapshots() for row in batch)[post_id], 1)
+
 
 @override_settings(SITE_REGION="ru")
 class ConcurrentViewsTests(TransactionTestCase):
@@ -145,3 +161,48 @@ class ViewMigrationTests(TransactionTestCase):
                 finally:
                     executor = MigrationExecutor(connection)
                     executor.migrate(executor.loader.graph.leaf_nodes())
+
+
+class ViewBaselineMigrationTests(TransactionTestCase):
+    def test_com_history_is_excluded_without_changing_ru_total(self):
+        previous = [("mirrors", "0002_postviewtotals")]
+        current = [("mirrors", "0003_mirrorviewbaseline")]
+        for region in ("ru", "com"):
+            with self.subTest(region=region), override_settings(SITE_REGION=region):
+                executor = MigrationExecutor(connection)
+                executor.migrate(previous)
+                try:
+                    LocalPostViews.objects.all().delete()
+                    PostViewTotals.objects.all().delete()
+                    post_id = uuid4()
+                    LocalPostViews.objects.create(post_id=post_id, count=325)
+                    PostViewTotals.objects.create(post_id=post_id, ru_count=4040)
+                    MigrationExecutor(connection).migrate(current)
+                    total = PostViewTotals.objects.get(pk=post_id)
+                    self.assertEqual((total.ru_count, total.com_count), (4040, 0))
+                    self.assertEqual(LocalPostViews.objects.get(pk=post_id).count, 325)
+                    if region == "com":
+                        self.assertEqual(MirrorViewBaseline.objects.get(pk=post_id).count, 325)
+                        self.assertEqual(list(local_snapshots()), [[(post_id, 0)]])
+                        record_view(post_id)
+                        self.assertEqual(list(local_snapshots()), [[(post_id, 1)]])
+                    else:
+                        self.assertFalse(MirrorViewBaseline.objects.exists())
+                        self.assertEqual(list(local_snapshots()), [[(post_id, 325)]])
+                finally:
+                    executor = MigrationExecutor(connection)
+                    executor.migrate(executor.loader.graph.leaf_nodes())
+
+    @override_settings(SITE_REGION="com")
+    def test_refuses_to_rebase_com_views_already_accepted_by_ru(self):
+        previous = [("mirrors", "0002_postviewtotals")]
+        current = [("mirrors", "0003_mirrorviewbaseline")]
+        MigrationExecutor(connection).migrate(previous)
+        try:
+            PostViewTotals.objects.create(post_id=uuid4(), ru_count=4040, com_count=325)
+            with self.assertRaisesMessage(RuntimeError, "COM views already accepted by RU"):
+                MigrationExecutor(connection).migrate(current)
+        finally:
+            PostViewTotals.objects.all().delete()
+            executor = MigrationExecutor(connection)
+            executor.migrate(executor.loader.graph.leaf_nodes())

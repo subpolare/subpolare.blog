@@ -64,7 +64,7 @@ slot requires a deliberate resync, never silent data replacement.
 
 `mirrors_localpostviews` remains an independent, durable cumulative counter on
 each server. Only RU writes `mirrors_postviewtotals`, which stores the highest
-accepted RU and COM count for every article. Their sum is used in all article
+accepted RU count and new COM views since activation for every article. Their sum is used in all article
 templates and the admin. The old `posts.view_count` is legacy data, not a live
 counter. Content saves cannot overwrite analytics. View updates do not trigger
 media synchronization.
@@ -81,13 +81,18 @@ COM cannot write the canonical table. PostgreSQL replication delivers RU's
 accepted total back to COM. The usual lag is one worker interval plus network
 and replication time; this is not instantaneous consistency during an outage.
 
-All local snapshots are periodically resent, including historical COM counts.
-They must never be truncated or reset after delivery. The initial COM setup in
-this repository ran migrations on an empty content database, so COM's local
-counter contains only COM reads; RU's counter contains the pre-mirror history.
-Do not seed COM's local counter from a new RU backup. After restoring an older
-COM database, preserve/recover its latest local counters before resuming reads;
-otherwise new views below RU's last accepted COM high-water mark are hidden.
+The existing RU total is preserved. Migration 0003 captures each COM local count
+in `mirrors_mirrorviewbaseline`; those historical COM reads are **not added** to
+RU. Only `local count - baseline` is sent, starting from zero at activation.
+Posts first read after activation have a zero baseline. The baseline is local,
+unreplicated and read-only for the application. Its migration refuses to proceed
+if COM views have already been accepted by RU, preventing an unsafe rebase.
+
+All adjusted snapshots are periodically resent. Neither local counters nor their
+baselines may be truncated or reset after delivery. Do not seed COM's local
+counter from a new RU backup. After restoring an older COM database, preserve or
+recover its latest counters and baselines before resuming reads; otherwise new
+views below RU's last accepted COM high-water mark are hidden.
 
 ### First rollout of shared views
 
@@ -97,7 +102,8 @@ no new secrets, users, tunnels or direct PostgreSQL access from the app are need
 Build both images first. In `/srv/subpolare.blog` on the respective servers:
 
 1. COM: `python3 utils/mirror-db-owner.py migrate --noinput`. Migration 0002
-   creates an empty totals table; it preserves all COM local counts.
+   creates an empty totals table; migration 0003 records the COM starting point.
+   Both preserve all local counts. New COM views begin accumulating at this step.
 2. RU: update `blog_app` normally. Its startup migration seeds totals from RU's
    existing local counters. Wait for the new application to be ready.
 3. RU: `docker compose -p subpolareblog -f docker-compose.production.yml exec -T
@@ -105,16 +111,17 @@ Build both images first. In `/srv/subpolare.blog` on the respective servers:
    local reads during migration, grants replication SELECT access, and adds
    the totals table to the existing publication. It is safe to repeat.
 4. COM: `python3 utils/mirror-db-owner.py configure_view_replication`. This grants
-   the reader SELECT access and refreshes the existing subscription, copying
+   the reader SELECT access to totals and baselines and refreshes the subscription, copying
    totals from RU. It refuses a nonempty, unregistered target table. Wait until
    the new `pg_subscription_rel` entry is ready (`srsubstate = 'r'`).
 5. COM: update `blog_app blog_maintenance blog_views_sync` with Compose
-   `up -d --no-deps`. The new worker delivers existing COM counts on its first
-   pass. Future deployments must recreate `blog_views_sync` along with the app.
+   `up -d --no-deps`. The new worker delivers only COM reads since step 1.
+   Future deployments must recreate `blog_views_sync` along with the app.
 6. Check worker logs for failure/recovery messages, both health endpoints, and
    read-only totals on RU/COM. In a quiet interval, `ru_count` and `com_count`
    must match on both servers; on RU `com_count` should catch up with COM's
-   local counter. Active traffic can account for one interval of difference.
+   local counter minus its baseline. Active traffic can account for one interval
+   of difference.
 
 For a one-shot retry on COM, run `python3 manage.py mirror_views_sync --once`
 inside `blog_views_sync`. A failure exits nonzero and keeps every local count.

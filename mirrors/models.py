@@ -14,3 +14,10 @@ class PostViewTotals(models.Model):
     post_id = models.UUIDField(primary_key=True)
     ru_count = models.PositiveBigIntegerField(default=0)
     com_count = models.PositiveBigIntegerField(default=0)
+
+
+class MirrorViewBaseline(models.Model):
+    # Immutable COM-only starting point, captured by the deployment migration.
+    # Keep historical local reads without adding them to RU's existing total.
+    post_id = models.UUIDField(primary_key=True)
+    count = models.PositiveBigIntegerField(default=0)

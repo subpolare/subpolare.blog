@@ -30,6 +30,7 @@ class Command(BaseCommand):
                 if not cursor.fetchone():
                     raise CommandError("Bootstrap the content mirror first.")
                 cursor.execute("GRANT SELECT ON mirrors_postviewtotals TO blog_reader")
+                cursor.execute("GRANT SELECT ON mirrors_mirrorviewbaseline TO blog_reader")
                 cursor.execute("""
                     SELECT 1 FROM pg_subscription_rel r
                     JOIN pg_subscription s ON s.oid = r.srsubid

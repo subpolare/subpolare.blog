@@ -2,7 +2,7 @@
 from django.conf import settings
 from django.db import connection, transaction
 
-from mirrors.models import LocalPostViews
+from mirrors.models import LocalPostViews, MirrorViewBaseline
 
 SIGNING_SALT = "mirror-view-counts-v1"
 BATCH_SIZE = 250
@@ -51,7 +51,13 @@ def local_snapshots():
         batch = list(rows.values_list("post_id", "count")[:BATCH_SIZE])
         if not batch:
             return
-        yield batch
+        if settings.SITE_REGION == "com":
+            baselines = dict(MirrorViewBaseline.objects.filter(
+                post_id__in=[post_id for post_id, _ in batch]
+            ).values_list("post_id", "count"))
+            yield [(post_id, max(0, count - baselines.get(post_id, 0))) for post_id, count in batch]
+        else:
+            yield batch
         last_id = batch[-1][0]
 
 
