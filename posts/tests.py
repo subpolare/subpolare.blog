@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, PropertyMock, patch
 
 import requests
 from bs4 import BeautifulSoup
@@ -79,6 +79,15 @@ class ViewCountVisibilityTests(SimpleTestCase):
                 self.assertEqual(len(counters), 2 if "headline-cover" in template else 1)
                 for counter in counters:
                     self.assertIn("427", counter.parent.get_text())
+
+    def test_all_templates_use_ru_total_instead_of_local_or_legacy_count(self):
+        with patch.object(Post, "total_view_count", new_callable=PropertyMock, return_value=731):
+            for template in self.templates:
+                with self.subTest(template=template):
+                    html = self.render_template(template, User(is_superuser=True, is_staff=True))
+                    for counter in BeautifulSoup(html, "html.parser").select(".fa-eye"):
+                        self.assertIn("731", counter.parent.get_text())
+                        self.assertNotIn("427", counter.parent.get_text())
 
     def test_counts_are_absent_from_html_for_visitors_members_and_staff(self):
         for user in (AnonymousUser(), User(), User(is_staff=True)):

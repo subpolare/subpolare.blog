@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from django.db.models import F
 from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.translation import gettext_lazy as _, get_language
@@ -91,9 +90,8 @@ def show_post(request, post_type, post_slug):
     ):
         raise Http404()
 
-    from mirrors.models import LocalPostViews
-    LocalPostViews.objects.get_or_create(post_id=post.id)
-    LocalPostViews.objects.filter(post_id=post.id).update(count=F("count") + 1)
+    from mirrors.view_counts import record_view
+    record_view(post.id)
 
     if post.url:
         return redirect(post.url)

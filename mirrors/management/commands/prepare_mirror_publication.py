@@ -3,7 +3,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
 
-TABLES = ("posts", "clickers", "map_mapplace", "map_mapmarker")
+CONTENT_TABLES = ("posts", "clickers", "map_mapplace", "map_mapmarker")
+TABLES = (*CONTENT_TABLES, "mirrors_postviewtotals")
 
 
 class Command(BaseCommand):
@@ -24,7 +25,8 @@ class Command(BaseCommand):
                     RETURN NULL;
                 END $$
             """)
-            for table in TABLES:
+            # Analytics must not trigger a media reconciliation on every view.
+            for table in CONTENT_TABLES:
                 cursor.execute(f"DROP TRIGGER IF EXISTS mirror_content_change ON {table}")
                 cursor.execute(f"CREATE TRIGGER mirror_content_change AFTER INSERT OR UPDATE OR DELETE ON {table} FOR EACH STATEMENT EXECUTE FUNCTION mirror_notify_content()")
-        self.stdout.write("Content publication ready; local counters, accounts and sessions are excluded.")
+        self.stdout.write("Content and view totals published; local counters, accounts and sessions are excluded.")

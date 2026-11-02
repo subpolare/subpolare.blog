@@ -6,11 +6,12 @@ Deploy policy: `.agents/skills/deploy/SKILL.md`.
 
 ## Trust boundaries
 
-- RU remains the only writer of `posts`, `clickers`, `map_mapplace`, and `map_mapmarker`.
+- RU remains the only writer of `posts`, `clickers`, `map_mapplace`, `map_mapmarker`,
+  and canonical `mirrors_postviewtotals`.
 - PostgreSQL logical publication `blog_content` sends committed changes immediately.
   `mirrors_localpostviews`, users, sessions and permissions are not published.
 - COM's application uses `blog_reader`, with read access to shared content and
-  writes only to local counters and local sessions. Schema updates use a separate
+  writes only to local cumulative counters and local sessions. Schema updates use a separate
   owner credential via `python3 utils/mirror-db-owner.py migrate --noinput`.
 - COM PostgreSQL has **no published ports**. RU's existing 54324 is loopback only.
 - `ru_tunnel` connects to RU SSH using `secrets/tunnel/ru_tunnel` with a pinned
@@ -48,7 +49,8 @@ state. Inspect these signals with the existing monitoring; no external alert
 delivery is configured by this change.
 
 COM reads local PostgreSQL and local media while RU is down. Local view counts
-continue. Reactions go through the private tunnel to RU and return 503 during
+continue and are delivered to RU after recovery. The displayed total remains
+the last replicated RU value. Reactions go through the private tunnel to RU and return 503 during
 outages. Editing always uses RU; COM rejects writes to admin/editor routes.
 There is no automatic promotion of COM or bidirectional content replication.
 
@@ -57,6 +59,68 @@ to COM first, then RU. Incompatible schema changes need an explicit coordinated
 deployment plan. Monitor `pg_stat_subscription` on COM and
 `pg_replication_slots` on RU; WAL retention is bounded at 1 GiB. An invalidated
 slot requires a deliberate resync, never silent data replacement.
+
+## Shared view counts
+
+`mirrors_localpostviews` remains an independent, durable cumulative counter on
+each server. Only RU writes `mirrors_postviewtotals`, which stores the highest
+accepted RU and COM count for every article. Their sum is used in all article
+templates and the admin. The old `posts.view_count` is legacy data, not a live
+counter. Content saves cannot overwrite analytics. View updates do not trigger
+media synchronization.
+
+RU updates its own contribution in the same database transaction as the local
+increment. COM's `blog_views_sync` sends batches of up to 250 signed snapshots
+every 15 seconds through `ru_tunnel:8022/_mirror/views`. It uses the existing
+shared `MIRROR_SIGNING_KEY`, a separate signing salt, and a five-minute signature
+lifetime. Keep clocks synchronized. There is no browser request to RU and no
+transfer of reader IPs, cookies or identities. Article requests never wait on
+the network. Repeated, concurrent or reordered snapshots are merged with
+`GREATEST`; neither retries nor a lost acknowledgement can add duplicate views.
+COM cannot write the canonical table. PostgreSQL replication delivers RU's
+accepted total back to COM. The usual lag is one worker interval plus network
+and replication time; this is not instantaneous consistency during an outage.
+
+All local snapshots are periodically resent, including historical COM counts.
+They must never be truncated or reset after delivery. The initial COM setup in
+this repository ran migrations on an empty content database, so COM's local
+counter contains only COM reads; RU's counter contains the pre-mirror history.
+Do not seed COM's local counter from a new RU backup. After restoring an older
+COM database, preserve/recover its latest local counters before resuming reads;
+otherwise new views below RU's last accepted COM high-water mark are hidden.
+
+### First rollout of shared views
+
+This is an additive schema change **and an explicit replication configuration
+change**, not just a normal application restart. Use existing owner credentials;
+no new secrets, users, tunnels or direct PostgreSQL access from the app are needed.
+Build both images first. In `/srv/subpolare.blog` on the respective servers:
+
+1. COM: `python3 utils/mirror-db-owner.py migrate --noinput`. Migration 0002
+   creates an empty totals table; it preserves all COM local counts.
+2. RU: update `blog_app` normally. Its startup migration seeds totals from RU's
+   existing local counters. Wait for the new application to be ready.
+3. RU: `docker compose -p subpolareblog -f docker-compose.production.yml exec -T
+   blog_app python3 manage.py configure_view_replication`. This reconciles any
+   local reads during migration, grants replication SELECT access, and adds
+   the totals table to the existing publication. It is safe to repeat.
+4. COM: `python3 utils/mirror-db-owner.py configure_view_replication`. This grants
+   the reader SELECT access and refreshes the existing subscription, copying
+   totals from RU. It refuses a nonempty, unregistered target table. Wait until
+   the new `pg_subscription_rel` entry is ready (`srsubstate = 'r'`).
+5. COM: update `blog_app blog_maintenance blog_views_sync` with Compose
+   `up -d --no-deps`. The new worker delivers existing COM counts on its first
+   pass. Future deployments must recreate `blog_views_sync` along with the app.
+6. Check worker logs for failure/recovery messages, both health endpoints, and
+   read-only totals on RU/COM. In a quiet interval, `ru_count` and `com_count`
+   must match on both servers; on RU `com_count` should catch up with COM's
+   local counter. Active traffic can account for one interval of difference.
+
+For a one-shot retry on COM, run `python3 manage.py mirror_views_sync --once`
+inside `blog_views_sync`. A failure exits nonzero and keeps every local count.
+On RU, the same command reconciles RU history without making network requests.
+New installations use `configure_mirror_database` as before; its publication
+already includes the totals table.
 
 ## Geo routing
 

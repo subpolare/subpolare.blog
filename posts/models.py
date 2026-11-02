@@ -104,6 +104,14 @@ class Post(models.Model):
         return next((domain for domain, lang in settings.DOMAIN_LANGUAGES.items() if lang == self.lang), None)
 
     @property
+    def total_view_count(self):
+        if self._state.adding:
+            return self.view_count
+        from mirrors.models import PostViewTotals
+        counts = PostViewTotals.objects.filter(post_id=self.pk).values_list("ru_count", "com_count").first()
+        return sum(counts) if counts else 0
+
+    @property
     def local_view_count(self):
         if self._state.adding:
             return self.view_count

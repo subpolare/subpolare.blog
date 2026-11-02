@@ -64,10 +64,20 @@ with source.cursor() as cursor:
     cursor.execute("UPDATE posts SET title='After' WHERE id=%s", (post_id,))
 eventually(lambda: scalar(target, "SELECT title FROM posts WHERE id=%s", (post_id,)) == "After")
 assert scalar(target, "SELECT count FROM mirrors_localpostviews WHERE post_id=%s", (post_id,)) == 17
+# Only RU may publish the canonical total. Repeated/older COM snapshots must
+# neither double count nor decrease it, and replication preserves COM's queue.
+manage(SOURCE, "ru", "shell", "-c", "from mirrors.view_counts import record_view, merge_totals; from uuid import UUID; p=UUID('" + post_id + "'); record_view(p); merge_totals([(p,0,17)]); merge_totals([(p,0,17)]); merge_totals([(p,0,12)])")
+eventually(lambda: scalar(target, "SELECT ru_count+com_count FROM mirrors_postviewtotals WHERE post_id=%s", (post_id,)) == 18)
+assert scalar(target, "SELECT count FROM mirrors_localpostviews WHERE post_id=%s", (post_id,)) == 17
+assert not scalar(target, "SELECT has_table_privilege('blog_reader','mirrors_postviewtotals','INSERT')")
+assert not scalar(target, "SELECT has_table_privilege('blog_reader','mirrors_postviewtotals','UPDATE')")
+assert not scalar(target, "SELECT has_table_privilege('blog_reader','mirrors_postviewtotals','DELETE')")
+assert scalar(source, "SELECT has_table_privilege('blog_replicator','mirrors_postviewtotals','SELECT')")
+assert not scalar(source, "SELECT EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid='mirrors_postviewtotals'::regclass AND NOT tgisinternal)")
 with source.cursor() as cursor:
     cursor.execute("DELETE FROM posts WHERE id=%s", (post_id,))
 eventually(lambda: scalar(target, "SELECT title FROM posts WHERE id=%s", (post_id,)) is None)
 assert not scalar(target, "SELECT has_table_privilege('blog_reader','posts','INSERT')")
 assert not scalar(source, "SELECT has_table_privilege('blog_replicator','users','SELECT')")
 assert not scalar(source, "SELECT has_table_privilege('blog_replicator','posts','UPDATE')")
-print("PASS: replicated insert/update/delete; local counter retained; shared content and users protected.")
+print("PASS: content and canonical views replicated; COM counts retained; retries idempotent; shared content, totals and users protected.")

@@ -7,9 +7,9 @@ import sys
 ROOT = Path("/srv/subpolare.blog")
 if Path.cwd().resolve() != ROOT:
     raise SystemExit("Run only from /srv/subpolare.blog")
-allowed = (["migrate", "--noinput"], ["configure_mirror_database", "--target"])
+allowed = (["migrate", "--noinput"], ["configure_mirror_database", "--target"], ["configure_view_replication"])
 if sys.argv[1:] not in allowed:
-    raise SystemExit("Only migrate --noinput or configure_mirror_database --target is supported")
+    raise SystemExit("Only migrate --noinput, configure_mirror_database --target or configure_view_replication is supported")
 credentials = dict(line.split("=", 1) for line in (ROOT / "secrets/database.env").read_text().splitlines() if "=" in line)
 environment = os.environ.copy()
 environment.update({name: credentials[name] for name in ("POSTGRES_USER", "POSTGRES_PASSWORD")})
