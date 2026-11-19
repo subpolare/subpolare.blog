@@ -286,8 +286,8 @@ html[theme="dark"] .block-text {
         height: 35px;
         font-weight: 400;
         vertical-align: bottom;
-        background-color: #4E4E4E;
-        color: #EEE;
+        background-color: var(--opposite-bg-color);
+        color: var(--opposite-text-color);
         padding: 4px 7px 5px;
         line-height: 1.6em;
         -webkit-box-decoration-break: clone;
@@ -296,7 +296,7 @@ html[theme="dark"] .block-text {
 
         .post strong > em a,
         .post .starting a {
-            color: #EEE;
+            color: var(--opposite-text-color);
         }
 
     .post table {
